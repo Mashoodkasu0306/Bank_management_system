@@ -1,0 +1,26 @@
+<h2>Create Account</h2>
+
+<form method="post">
+    {% csrf_token %}
+
+    <label>Select Customer:</label>
+    <select name="customer">
+        {% for customer in customers %}
+            <option value="{{ customer.id }}">
+                {{ customer.user.username }}
+            </option>
+        {% endfor %}
+    </select>
+
+    <br><br>
+
+    <label>Account Type:</label>
+    <select name="account_type">
+        <option value="SAVINGS">Savings</option>
+        <option value="CURRENT">Current</option>
+    </select>
+
+    <br><br>
+
+    <button type="submit">Create Account</button>
+</form>
