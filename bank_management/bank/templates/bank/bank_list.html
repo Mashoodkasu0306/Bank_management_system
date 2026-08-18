@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>All Banks</h2>
+
+<a href="{% url 'create_bank' %}">+ Create New Bank</a>
+<br><br>
+
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Name</th>
+        <th>Code</th>
+        <th>Contact Email</th>
+        <th>Contact Phone</th>
+        <th>Established</th>
+    </tr>
+    {% for bank in banks %}
+    <tr>
+        <td>{{ bank.name }}</td>
+        <td>{{ bank.code }}</td>
+        <td>{{ bank.contact_email }}</td>
+        <td>{{ bank.contact_phone }}</td>
+        <td>{{ bank.established_date|default:"-" }}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="5">No banks created yet.</td></tr>
+    {% endfor %}
+</table>
+{% endblock %}

@@ -25,7 +25,7 @@ class Customer(models.Model):
 
 class Employee(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    branch = models.ForeignKey(Branch, on_delete=models.CASCADE)
+    branch = models.ForeignKey(Branch, on_delete=models.SET_NULL, null=True, blank=True)
     role = models.CharField(max_length=50)
     department = models.CharField(max_length=50)
     salary = models.DecimalField(max_digits=10, decimal_places=2)

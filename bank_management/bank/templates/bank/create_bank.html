@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Create Bank</h2>
+
+{% if messages %}
+  {% for message in messages %}
+    <p style="color:green;">{{ message }}</p>
+  {% endfor %}
+{% endif %}
+
+<form method="POST">
+    {% csrf_token %}
+    <label>Bank Name</label><br>
+    <input type="text" name="name" required><br><br>
+
+    <label>Bank Code</label><br>
+    <input type="text" name="code" required><br><br>
+
+    <label>Head Office Address</label><br>
+    <textarea name="head_office_address"></textarea><br><br>
+
+    <label>Contact Email</label><br>
+    <input type="email" name="contact_email"><br><br>
+
+    <label>Contact Phone</label><br>
+    <input type="text" name="contact_phone"><br><br>
+
+    <button type="submit">Create Bank</button>
+</form>
+
+<a href="{% url 'bank_list' %}">View All Banks</a>
+{% endblock %}

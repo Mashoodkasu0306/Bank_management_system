@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>All Branches</h2>
+
+<a href="{% url 'create_branch' %}">+ Create New Branch</a>
+<br><br>
+
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Branch Name</th>
+        <th>Bank</th>
+        <th>Branch Code</th>
+        <th>City</th>
+        <th>State</th>
+        <th>IFSC Code</th>
+    </tr>
+    {% for branch in branches %}
+    <tr>
+        <td>{{ branch.name }}</td>
+        <td>{{ branch.bank.name }}</td>
+        <td>{{ branch.branch_code }}</td>
+        <td>{{ branch.city }}</td>
+        <td>{{ branch.state }}</td>
+        <td>{{ branch.ifsc_code }}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="6">No branches created yet.</td></tr>
+    {% endfor %}
+</table>
+{% endblock %}

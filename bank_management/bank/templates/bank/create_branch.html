@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Create Branch</h2>
+
+{% if messages %}
+  {% for message in messages %}
+    <p style="color:green;">{{ message }}</p>
+  {% endfor %}
+{% endif %}
+
+<form method="POST">
+    {% csrf_token %}
+    <label>Bank</label><br>
+    <select name="bank" required>
+        <option value="">-- Select Bank --</option>
+        {% for bank in banks %}
+        <option value="{{ bank.id }}">{{ bank.name }}</option>
+        {% endfor %}
+    </select><br><br>
+
+    <label>Branch Name</label><br>
+    <input type="text" name="name" required><br><br>
+
+    <label>Branch Code</label><br>
+    <input type="text" name="branch_code" required><br><br>
+
+    <label>Address</label><br>
+    <textarea name="address" required></textarea><br><br>
+
+    <label>City</label><br>
+    <input type="text" name="city" required><br><br>
+
+    <label>State</label><br>
+    <input type="text" name="state" required><br><br>
+
+    <label>IFSC Code</label><br>
+    <input type="text" name="ifsc_code" required><br><br>
+
+    <label>Contact Phone</label><br>
+    <input type="text" name="contact_phone"><br><br>
+
+    <button type="submit">Create Branch</button>
+</form>
+
+<a href="{% url 'branch_list' %}">View All Branches</a>
+{% endblock %}
