@@ -12,11 +12,19 @@ def is_admin(user):
         return False
     if Employee.objects.filter(user=user).exists():
         return False
-    return True  # no customer/employee record = treated as admin, same as user_login logic
+    return True
+
+
+def is_admin_or_employee(user):
+    if not user.is_authenticated:
+        return False
+    if Customer.objects.filter(user=user).exists():
+        return False
+    return True  # admin (no records) OR employee — both allowed to view
 
 
 @login_required
-@user_passes_test(is_admin)
+@user_passes_test(is_admin_or_employee)
 def bank_list(request):
     banks = Bank.objects.all()
     return render(request, "bank/bank_list.html", {"banks": banks})
@@ -39,7 +47,7 @@ def create_bank(request):
 
 
 @login_required
-@user_passes_test(is_admin)
+@user_passes_test(is_admin_or_employee)
 def branch_list(request):
     branches = Branch.objects.select_related("bank").all()
     return render(request, "bank/branch_list.html", {"branches": branches})

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Customer Dashboard</h2>
+
+<p>Welcome, {{ user.username }}.</p>
+
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Customer Type</th>
+        <td>{{ user.customer.customer_type }}</td>
+    </tr>
+    <tr>
+        <th>Date of Birth</th>
+        <td>{{ user.customer.dob }}</td>
+    </tr>
+    <tr>
+        <th>Gender</th>
+        <td>{{ user.customer.gender }}</td>
+    </tr>
+    <tr>
+        <th>Address</th>
+        <td>{{ user.customer.address }}</td>
+    </tr>
+    <tr>
+        <th>KYC Status</th>
+        <td>{{ user.customer.kyc_status }}</td>
+    </tr>
+</table>
+{% endblock %}

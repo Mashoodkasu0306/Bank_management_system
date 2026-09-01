@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Employee Dashboard</h2>
+
+<p>Welcome, {{ user.username }}.</p>
+
+<h3>Bank Structure</h3>
+<ul>
+    <li><a href="{% url 'bank_list' %}">View Banks</a></li>
+    <li><a href="{% url 'branch_list' %}">View Branches</a></li>
+</ul>
+
+<h3>Customer Management</h3>
+<ul>
+    <li><a href="{% url 'register_customer' %}">Register New Customer</a></li>
+    <li><a href="{% url 'customer_list' %}">View All Customers</a></li>
+</ul>
+{% endblock %}

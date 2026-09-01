@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Update Customer: {{ customer.user.username }}</h2>
+
+<form method="POST">
+    {% csrf_token %}
+    <label>Customer Type</label><br>
+    <select name="customer_type" required>
+        <option value="INDIVIDUAL" {% if customer.customer_type == "INDIVIDUAL" %}selected{% endif %}>Individual</option>
+        <option value="BUSINESS" {% if customer.customer_type == "BUSINESS" %}selected{% endif %}>Business</option>
+    </select><br><br>
+
+    <label>Date of Birth</label><br>
+    <input type="date" name="dob" value="{{ customer.dob|date:'Y-m-d' }}" required><br><br>
+
+    <label>Gender</label><br>
+    <select name="gender" required>
+        <option value="MALE" {% if customer.gender == "MALE" %}selected{% endif %}>Male</option>
+        <option value="FEMALE" {% if customer.gender == "FEMALE" %}selected{% endif %}>Female</option>
+        <option value="OTHER" {% if customer.gender == "OTHER" %}selected{% endif %}>Other</option>
+    </select><br><br>
+
+    <label>Address</label><br>
+    <textarea name="address" required>{{ customer.address }}</textarea><br><br>
+
+    <label>KYC Status</label><br>
+    <select name="kyc_status" required>
+        <option value="PENDING" {% if customer.kyc_status == "PENDING" %}selected{% endif %}>Pending</option>
+        <option value="VERIFIED" {% if customer.kyc_status == "VERIFIED" %}selected{% endif %}>Verified</option>
+    </select><br><br>
+
+    <button type="submit">Update Customer</button>
+</form>
+
+<a href="{% url 'customer_list' %}">Back to Customer List</a>
+{% endblock %}
