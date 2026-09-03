@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>All Accounts</h2>
+<a href="{% url 'create_account' %}">+ Open New Account</a>
+<table border="1" cellpadding="6">
+    <tr>
+        <th>Account No</th>
+        <th>Customer</th>
+        <th>Branch</th>
+        <th>Type</th>
+        <th>Balance</th>
+        <th>Status</th>
+    </tr>
+    {% for account in accounts %}
+    <tr>
+        <td><a href="{% url 'account_detail' account.id %}">{{ account.account_no }}</a></td>
+        <td>{{ account.customer.user.get_full_name|default:account.customer.user.username }}</td>
+        <td>{{ account.branch.name }}</td>
+        <td>{{ account.get_account_type_display }}</td>
+        <td>{{ account.balance }}</td>
+        <td>{{ account.get_status_display }}</td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="6">No accounts yet.</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

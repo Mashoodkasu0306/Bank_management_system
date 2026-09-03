@@ -1,26 +1,26 @@
-<h2>Create Account</h2>
-
+{% extends "base.html" %}
+{% block content %}
+<h2>Open New Account</h2>
 <form method="post">
     {% csrf_token %}
-
-    <label>Select Customer:</label>
-    <select name="customer">
+    <label>Customer:</label>
+    <select name="customer" required>
+        <option value="">Select Customer</option>
         {% for customer in customers %}
-            <option value="{{ customer.id }}">
-                {{ customer.user.username }}
-            </option>
+        <option value="{{ customer.id }}">{{ customer.user.get_full_name|default:customer.user.username }}</option>
         {% endfor %}
     </select>
 
-    <br><br>
-
     <label>Account Type:</label>
-    <select name="account_type">
+    <select name="account_type" required>
         <option value="SAVINGS">Savings</option>
         <option value="CURRENT">Current</option>
+        <option value="LOAN">Loan</option>
     </select>
 
-    <br><br>
+    <label>Opening Deposit:</label>
+    <input type="number" name="balance" step="0.01" min="0" value="0">
 
     <button type="submit">Create Account</button>
 </form>
+{% endblock %}

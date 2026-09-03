@@ -1,27 +1,60 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from bank.views import is_admin_or_employee
 from users.models import Customer
 from .models import Account
 
+
 @login_required
 def create_account(request):
-    # Only employees allowed
-    if not hasattr(request.user, 'employee'):
-        return redirect("login")
+    if not hasattr(request.user, "employee"):
+        messages.error(request, "Only branch employees can open accounts.")
+        return redirect("employee_dashboard")
 
-    customers = Customer.objects.all()
+    employee = request.user.employee
+    if employee.branch is None:
+        messages.error(request, "You are not assigned to a branch yet. Contact admin.")
+        return redirect("employee_dashboard")
+
+    customers = Customer.objects.filter(user__is_active=True)
 
     if request.method == "POST":
         customer_id = request.POST.get("customer")
         account_type = request.POST.get("account_type")
+        opening_balance = request.POST.get("balance") or 0
 
-        customer = Customer.objects.get(id=customer_id)
+        customer = get_object_or_404(Customer, id=customer_id)
 
-        Account.objects.create(
+        account = Account.objects.create(
             customer=customer,
-            account_type=account_type
+            branch=employee.branch,
+            account_type=account_type,
+            balance=opening_balance,
         )
-
-        return redirect("employee_dashboard")
+        messages.success(request, f"Account {account.account_no} created for {customer.user.username}.")
+        return redirect("account_list")
 
     return render(request, "accounts/create_account.html", {"customers": customers})
+
+
+@login_required
+def account_list(request):
+    if not is_admin_or_employee(request.user):
+        messages.error(request, "You do not have permission to view accounts.")
+        return redirect("customer_dashboard")
+
+    accounts = Account.objects.select_related("customer__user", "branch").order_by("-open_date")
+    return render(request, "accounts/account_list.html", {"accounts": accounts})
+
+
+@login_required
+def account_detail(request, account_id):
+    account = get_object_or_404(Account, id=account_id)
+
+    is_owner = hasattr(request.user, "customer") and account.customer == request.user.customer
+    if not (is_owner or is_admin_or_employee(request.user)):
+        messages.error(request, "You do not have permission to view this account.")
+        return redirect("customer_dashboard")
+
+    return render(request, "accounts/account_detail.html", {"account": account})

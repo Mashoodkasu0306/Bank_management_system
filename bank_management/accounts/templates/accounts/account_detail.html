@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Account Detail</h2>
+<p><strong>Account No:</strong> {{ account.account_no }}</p>
+<p><strong>Customer:</strong> {{ account.customer.user.get_full_name|default:account.customer.user.username }}</p>
+<p><strong>Branch:</strong> {{ account.branch.name }}</p>
+<p><strong>Type:</strong> {{ account.get_account_type_display }}</p>
+<p><strong>Balance:</strong> {{ account.balance }}</p>
+<p><strong>Status:</strong> {{ account.get_status_display }}</p>
+<p><strong>Opened:</strong> {{ account.open_date }}</p>
+{% endblock %}

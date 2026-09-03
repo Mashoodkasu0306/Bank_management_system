@@ -26,4 +26,26 @@
         <td>{{ user.customer.kyc_status }}</td>
     </tr>
 </table>
+
+<h3>My Accounts</h3>
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Account No</th>
+        <th>Type</th>
+        <th>Balance</th>
+        <th>Status</th>
+    </tr>
+    {% for account in user.customer.accounts.all %}
+    <tr>
+        <td><a href="{% url 'account_detail' account.id %}">{{ account.account_no }}</a></td>
+        <td>{{ account.get_account_type_display }}</td>
+        <td>{{ account.balance }}</td>
+        <td>{{ account.get_status_display }}</td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="4">No accounts yet.</td>
+    </tr>
+    {% endfor %}
+</table>
 {% endblock %}
