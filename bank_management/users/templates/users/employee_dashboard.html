@@ -29,4 +29,12 @@
     <li><a href="{% url 'create_account' %}">Open New Account</a></li>
     <li><a href="{% url 'account_list' %}">View All Accounts</a></li>
 </ul>
+
+<h3>Transactions</h3>
+<ul>
+    <li><a href="{% url 'deposit' %}">Deposit</a></li>
+    <li><a href="{% url 'withdraw' %}">Withdraw</a></li>
+    <li><a href="{% url 'transfer' %}">Transfer</a></li>
+    <li><a href="{% url 'all_transactions' %}">All Transactions</a></li>
+</ul>
 {% endblock %}

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>All Transactions</h2>
+<table border="1" cellpadding="6">
+    <tr>
+        <th>Date</th><th>Type</th><th>From</th><th>To</th><th>Amount</th><th>Mode</th><th>Status</th><th>Performed By</th>
+    </tr>
+    {% for txn in transactions %}
+    <tr>
+        <td>{{ txn.timestamp }}</td>
+        <td>{{ txn.transaction_type }}</td>
+        <td>{{ txn.from_account.account_no|default:"-" }}</td>
+        <td>{{ txn.to_account.account_no|default:"-" }}</td>
+        <td>{{ txn.amount }}</td>
+        <td>{{ txn.mode_of_transaction }}</td>
+        <td>{{ txn.status }}</td>
+        <td>{{ txn.performed_by.username|default:"-" }}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="8">No transactions yet.</td></tr>
+    {% endfor %}
+</table>
+{% endblock %}

@@ -4,6 +4,7 @@
 
 <p>Welcome, {{ user.username }}.</p>
 
+<h3>Your Profile</h3>
 <table border="1" cellpadding="8">
     <tr>
         <th>Customer Type</th>
@@ -27,24 +28,28 @@
     </tr>
 </table>
 
-<h3>My Accounts</h3>
+<h3>Your Accounts</h3>
 <table border="1" cellpadding="8">
     <tr>
         <th>Account No</th>
+        <th>Branch</th>
         <th>Type</th>
         <th>Balance</th>
         <th>Status</th>
+        <th>Actions</th>
     </tr>
     {% for account in user.customer.accounts.all %}
     <tr>
-        <td><a href="{% url 'account_detail' account.id %}">{{ account.account_no }}</a></td>
+        <td>{{ account.account_no }}</td>
+        <td>{{ account.branch.name }}</td>
         <td>{{ account.get_account_type_display }}</td>
         <td>{{ account.balance }}</td>
         <td>{{ account.get_status_display }}</td>
+        <td><a href="{% url 'transaction_history' account.id %}">View History</a></td>
     </tr>
     {% empty %}
     <tr>
-        <td colspan="4">No accounts yet.</td>
+        <td colspan="6">You have no accounts yet. Contact your branch to open one.</td>
     </tr>
     {% endfor %}
 </table>

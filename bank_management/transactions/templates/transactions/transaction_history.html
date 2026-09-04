@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Transaction History: {{ account.account_no }}</h2>
+
+<p>Current Balance: {{ account.balance }}</p>
+
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Date</th>
+        <th>Type</th>
+        <th>From</th>
+        <th>To</th>
+        <th>Amount</th>
+        <th>Mode</th>
+        <th>Status</th>
+    </tr>
+    {% for txn in transactions %}
+    <tr>
+        <td>{{ txn.timestamp }}</td>
+        <td>{{ txn.transaction_type }}</td>
+        <td>{{ txn.from_account.account_no|default:"-" }}</td>
+        <td>{{ txn.to_account.account_no|default:"-" }}</td>
+        <td>{{ txn.amount }}</td>
+        <td>{{ txn.mode_of_transaction }}</td>
+        <td>{{ txn.status }}</td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="7">No transactions yet.</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}
