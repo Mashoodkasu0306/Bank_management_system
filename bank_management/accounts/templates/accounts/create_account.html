@@ -11,6 +11,16 @@
         {% endfor %}
     </select>
 
+    {% if is_admin %}
+    <label>Branch:</label>
+    <select name="branch" required>
+        <option value="">Select Branch</option>
+        {% for branch in branches %}
+        <option value="{{ branch.id }}">{{ branch.name }} ({{ branch.branch_code }})</option>
+        {% endfor %}
+    </select>
+    {% endif %}
+
     <label>Account Type:</label>
     <select name="account_type" required>
         <option value="SAVINGS">Savings</option>

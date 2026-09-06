@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Admin Dashboard</h2>
+<p>Welcome, {{ user.username }}.</p>
+
+<h3>Summary</h3>
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Total Customers</th>
+        <td>{{ total_customers }}</td>
+    </tr>
+    <tr>
+        <th>Total Employees</th>
+        <td>{{ total_employees }}</td>
+    </tr>
+    <tr>
+        <th>Total Banks</th>
+        <td>{{ total_banks }}</td>
+    </tr>
+    <tr>
+        <th>Total Branches</th>
+        <td>{{ total_branches }}</td>
+    </tr>
+    <tr>
+        <th>Total Accounts</th>
+        <td>{{ total_accounts }}</td>
+    </tr>
+    <tr>
+        <th>Total Balance Across All Accounts</th>
+        <td>{{ total_balance }}</td>
+    </tr>
+    <tr>
+        <th>Total Transactions</th>
+        <td>{{ total_transactions }}</td>
+    </tr>
+    <tr>
+        <th>Total Successful Transaction Volume</th>
+        <td>{{ total_successful_volume }}</td>
+    </tr>
+</table>
+
+<h3>Bank Structure</h3>
+<ul>
+    <li><a href="{% url 'bank_list' %}">View Banks</a></li>
+    <li><a href="{% url 'branch_list' %}">View Branches</a></li>
+    <li><a href="{% url 'create_bank' %}">Create Bank</a></li>
+    <li><a href="{% url 'create_branch' %}">Create Branch</a></li>
+    <li><a href="{% url 'assign_employee' %}">Assign Employee to Branch</a></li>
+</ul>
+
+<h3>Customers</h3>
+<ul>
+    <li><a href="{% url 'customer_list' %}">View All Customers</a></li>
+</ul>
+
+<h3>Accounts</h3>
+<ul>
+    <li><a href="{% url 'create_account' %}">Open New Account</a></li>
+    <li><a href="{% url 'account_list' %}">View All Accounts</a></li>
+</ul>
+
+<h3>Transactions</h3>
+<ul>
+    <li><a href="{% url 'all_transactions' %}">All Transactions (with Employee/Customer filter)</a></li>
+</ul>
+
+<h3>Django Admin Panel</h3>
+<ul>
+    <li><a href="{% url 'admin:index' %}">Open Django Admin Panel</a></li>
+</ul>
+{% endblock %}

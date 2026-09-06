@@ -1,9 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 <h2>Employee Dashboard</h2>
-
 <p>Welcome, {{ user.username }}.</p>
-
 {% if messages %}
 <ul>
     {% for message in messages %}
@@ -11,30 +9,27 @@
     {% endfor %}
 </ul>
 {% endif %}
-
 <h3>Bank Structure</h3>
 <ul>
     <li><a href="{% url 'bank_list' %}">View Banks</a></li>
     <li><a href="{% url 'branch_list' %}">View Branches</a></li>
 </ul>
-
 <h3>Customer Management</h3>
 <ul>
     <li><a href="{% url 'register_customer' %}">Register New Customer</a></li>
     <li><a href="{% url 'customer_list' %}">View All Customers</a></li>
 </ul>
-
 <h3>Accounts</h3>
 <ul>
     <li><a href="{% url 'create_account' %}">Open New Account</a></li>
     <li><a href="{% url 'account_list' %}">View All Accounts</a></li>
 </ul>
-
 <h3>Transactions</h3>
 <ul>
     <li><a href="{% url 'deposit' %}">Deposit</a></li>
     <li><a href="{% url 'withdraw' %}">Withdraw</a></li>
     <li><a href="{% url 'transfer' %}">Transfer</a></li>
-    <li><a href="{% url 'all_transactions' %}">All Transactions</a></li>
+    <li><a href="{% url 'my_transactions' %}">My Transactions</a></li>
+    <li><a href="{% url 'employee_search_customer_transactions' %}">Search Customer Transactions</a></li>
 </ul>
 {% endblock %}

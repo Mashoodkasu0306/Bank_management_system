@@ -1,9 +1,23 @@
 {% extends "base.html" %}
 {% block content %}
 <h2>All Transactions</h2>
+<p>
+    <a href="{% url 'all_transactions' %}"><strong>{% if filter_type == "all" %}[All]{% else %}All{% endif %}</strong></a>
+    |
+    <a href="{% url 'all_transactions' %}?filter=employee"><strong>{% if filter_type == "employee" %}[By Employees]{% else %}By Employees{% endif %}</strong></a>
+    |
+    <a href="{% url 'all_transactions' %}?filter=customer"><strong>{% if filter_type == "customer" %}[By Customers]{% else %}By Customers{% endif %}</strong></a>
+</p>
 <table border="1" cellpadding="6">
     <tr>
-        <th>Date</th><th>Type</th><th>From</th><th>To</th><th>Amount</th><th>Mode</th><th>Status</th><th>Performed By</th>
+        <th>Date</th>
+        <th>Type</th>
+        <th>From</th>
+        <th>To</th>
+        <th>Amount</th>
+        <th>Mode</th>
+        <th>Status</th>
+        <th>Performed By</th>
     </tr>
     {% for txn in transactions %}
     <tr>
@@ -17,7 +31,9 @@
         <td>{{ txn.performed_by.username|default:"-" }}</td>
     </tr>
     {% empty %}
-    <tr><td colspan="8">No transactions yet.</td></tr>
+    <tr>
+        <td colspan="8">No transactions yet.</td>
+    </tr>
     {% endfor %}
 </table>
 {% endblock %}

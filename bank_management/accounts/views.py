@@ -1,23 +1,27 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from bank.views import is_admin_or_employee
+from bank.views import is_admin, is_admin_or_employee
+from bank.models import Branch
 from users.models import Customer
 from .models import Account
 
 
 @login_required
 def create_account(request):
-    if not hasattr(request.user, "employee"):
-        messages.error(request, "Only branch employees can open accounts.")
+    user_is_admin = is_admin(request.user)
+    employee = getattr(request.user, "employee", None)
+
+    if not user_is_admin and not employee:
+        messages.error(request, "Only branch employees or admin can open accounts.")
         return redirect("employee_dashboard")
 
-    employee = request.user.employee
-    if employee.branch is None:
+    if employee and not user_is_admin and employee.branch is None:
         messages.error(request, "You are not assigned to a branch yet. Contact admin.")
         return redirect("employee_dashboard")
 
     customers = Customer.objects.filter(user__is_active=True)
+    branches = Branch.objects.all() if user_is_admin else None
 
     if request.method == "POST":
         customer_id = request.POST.get("customer")
@@ -26,16 +30,26 @@ def create_account(request):
 
         customer = get_object_or_404(Customer, id=customer_id)
 
+        if user_is_admin:
+            branch_id = request.POST.get("branch")
+            branch = get_object_or_404(Branch, id=branch_id)
+        else:
+            branch = employee.branch
+
         account = Account.objects.create(
             customer=customer,
-            branch=employee.branch,
+            branch=branch,
             account_type=account_type,
             balance=opening_balance,
         )
         messages.success(request, f"Account {account.account_no} created for {customer.user.username}.")
         return redirect("account_list")
 
-    return render(request, "accounts/create_account.html", {"customers": customers})
+    return render(request, "accounts/create_account.html", {
+        "customers": customers,
+        "branches": branches,
+        "is_admin": user_is_admin,
+    })
 
 
 @login_required

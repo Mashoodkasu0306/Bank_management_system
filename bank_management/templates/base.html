@@ -1,26 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>{% block title %}Bank Management System{% endblock %}</title>
 </head>
+
 <body>
     <header>
-        <h1>Bank Management System</h1>
+        <h1>
+            {% if user.is_authenticated %}
+            {% if user.customer %}
+            <a href="{% url 'customer_dashboard' %}">Bank Management System</a>
+            {% elif user.employee %}
+            <a href="{% url 'employee_dashboard' %}">Bank Management System</a>
+            {% else %}
+            <a href="{% url 'admin_dashboard' %}">Bank Management System</a>
+            {% endif %}
+            {% else %}
+            Bank Management System
+            {% endif %}
+        </h1>
         <nav>
             {% if user.is_authenticated %}
-                Logged in as {{ user.username }} |
-                <a href="{% url 'logout' %}">Logout</a>
-            {% else %}
-                <a href="{% url 'login' %}">Login</a>
+            Logged in as {{ user.username }} |
+            <a href="{% url 'logout' %}">Logout</a>
+            {% elif request.path != "/login/" %}
+            <a href="{% url 'login' %}">Login</a>
             {% endif %}
         </nav>
         <hr>
     </header>
-
     <main>
         {% block content %}
         {% endblock %}
     </main>
 </body>
+
 </html>
