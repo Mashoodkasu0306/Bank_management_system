@@ -35,6 +35,8 @@
         <th>Branch</th>
         <th>Type</th>
         <th>Balance</th>
+        <th>Daily Limit</th>
+        <th>Remaining Today</th>
         <th>Status</th>
         <th>Actions</th>
     </tr>
@@ -44,12 +46,14 @@
         <td>{{ account.branch.name }}</td>
         <td>{{ account.get_account_type_display }}</td>
         <td>{{ account.balance }}</td>
+        <td>{{ account.daily_limit }}</td>
+        <td>{{ account.get_remaining_daily_limit }}</td>
         <td>{{ account.get_status_display }}</td>
         <td><a href="{% url 'transaction_history' account.id %}">View History</a></td>
     </tr>
     {% empty %}
     <tr>
-        <td colspan="6">You have no accounts yet. Contact your branch to open one.</td>
+        <td colspan="7">You have no accounts yet. Contact your branch to open one.</td>
     </tr>
     {% endfor %}
 </table>

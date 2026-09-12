@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Branch Report: {{ branch.name }} ({{ branch.branch_code }})</h2>
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Total Accounts</th>
+        <td>{{ total_accounts }}</td>
+    </tr>
+    <tr>
+        <th>Total Balance</th>
+        <td>{{ total_balance }}</td>
+    </tr>
+    <tr>
+        <th>Total Transactions</th>
+        <td>{{ total_transactions }}</td>
+    </tr>
+</table>
+
+<h3>Accounts</h3>
+<table border="1" cellpadding="6">
+    <tr>
+        <th>Account No</th>
+        <th>Customer</th>
+        <th>Type</th>
+        <th>Balance</th>
+        <th>Status</th>
+    </tr>
+    {% for account in accounts %}
+    <tr>
+        <td>{{ account.account_no }}</td>
+        <td>{{ account.customer.user.get_full_name|default:account.customer.user.username }}</td>
+        <td>{{ account.account_type }}</td>
+        <td>{{ account.balance }}</td>
+        <td>{{ account.status }}</td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="5">No accounts in this branch.</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<h3>Recent Transactions (last 50)</h3>
+<table border="1" cellpadding="6">
+    <tr>
+        <th>Date</th>
+        <th>Type</th>
+        <th>From</th>
+        <th>To</th>
+        <th>Amount</th>
+        <th>Status</th>
+    </tr>
+    {% for txn in recent_transactions %}
+    <tr>
+        <td>{{ txn.timestamp }}</td>
+        <td>{{ txn.transaction_type }}</td>
+        <td>{{ txn.from_account.account_no|default:"-" }}</td>
+        <td>{{ txn.to_account.account_no|default:"-" }}</td>
+        <td>{{ txn.amount }}</td>
+        <td>{{ txn.status }}</td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="6">No transactions yet.</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

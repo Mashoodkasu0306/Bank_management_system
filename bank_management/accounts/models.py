@@ -21,6 +21,7 @@ class Account(models.Model):
     account_type = models.CharField(max_length=10, choices=ACCOUNT_TYPES)
     balance = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="ACTIVE")
+    daily_limit = models.DecimalField(max_digits=12, decimal_places=2, default=50000.00)
     open_date = models.DateField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
@@ -49,6 +50,22 @@ class Account(models.Model):
             next_seq += 1
             candidate = f"{prefix}{next_seq:06d}"
         return candidate
+
+    def get_remaining_daily_limit(self):
+        from django.utils import timezone
+        from django.db.models import Sum
+        from transactions.models import Transaction  # local import avoids circular import
+
+        today = timezone.localdate()
+        debited_today = Transaction.objects.filter(
+            from_account=self,
+            transaction_type__in=["WITHDRAW", "TRANSFER"],
+            status="SUCCESS",
+            timestamp__date=today,
+        ).aggregate(total=Sum("amount"))["total"] or 0
+
+        remaining = self.daily_limit - debited_today
+        return remaining if remaining > 0 else 0
 
     def __str__(self):
         return self.account_no

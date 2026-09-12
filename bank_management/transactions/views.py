@@ -1,13 +1,15 @@
-from django.db.models import Q
+from django.db.models import Q, Sum
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.db import transaction as db_transaction
+from django.utils import timezone
 from decimal import Decimal, InvalidOperation
 
 from accounts.models import Account
 from .models import Transaction
 from users.models import Employee, Customer
+from bank.views import is_admin_or_employee
 
 
 def is_employee(user):
@@ -25,11 +27,38 @@ def is_admin_user(user):
 
 
 def can_view_account(user, account):
+    if is_admin_user(user):
+        return True
     if Employee.objects.filter(user=user).exists():
         return True
     if hasattr(user, "customer") and account.customer_id == user.customer.id:
         return True
     return False
+
+
+def get_today_transacted_amount(account, transaction_type):
+    today = timezone.localdate()
+    if transaction_type == "DEPOSIT":
+        qs = Transaction.objects.filter(
+            to_account=account, transaction_type="DEPOSIT", status="SUCCESS", timestamp__date=today
+        )
+    else:
+        qs = Transaction.objects.filter(
+            from_account=account, transaction_type="WITHDRAW", status="SUCCESS", timestamp__date=today
+        )
+    return qs.aggregate(total=Sum("amount"))["total"] or Decimal("0")
+
+
+def get_today_debit_total(account):
+    """Combines withdrawals and outgoing transfers - both are debits against the account's daily limit."""
+    today = timezone.localdate()
+    qs = Transaction.objects.filter(
+        from_account=account,
+        transaction_type__in=["WITHDRAW", "TRANSFER"],
+        status="SUCCESS",
+        timestamp__date=today,
+    )
+    return qs.aggregate(total=Sum("amount"))["total"] or Decimal("0")
 
 
 @login_required
@@ -52,6 +81,21 @@ def deposit_view(request):
         try:
             with db_transaction.atomic():
                 account = Account.objects.select_for_update().get(account_no=account_no, status="ACTIVE")
+
+                today_total = get_today_transacted_amount(account, "DEPOSIT")
+                if today_total + amount > account.daily_limit:
+                    Transaction.objects.create(
+                        transaction_type="DEPOSIT",
+                        to_account=account,
+                        amount=amount,
+                        mode_of_transaction=request.POST.get("mode_of_transaction", "CASH"),
+                        status="PENDING",
+                        performed_by=request.user,
+                        remarks=f"Exceeds daily limit ({account.daily_limit}); awaiting approval",
+                    )
+                    messages.error(request, f"This deposit exceeds the account's daily limit of {account.daily_limit}. Sent for approval.")
+                    return redirect("deposit")
+
                 account.balance += amount
                 account.save()
 
@@ -93,6 +137,20 @@ def withdraw_view(request):
         try:
             with db_transaction.atomic():
                 account = Account.objects.select_for_update().get(account_no=account_no, status="ACTIVE")
+
+                today_total = get_today_debit_total(account)
+                if today_total + amount > account.daily_limit:
+                    Transaction.objects.create(
+                        transaction_type="WITHDRAW",
+                        from_account=account,
+                        amount=amount,
+                        mode_of_transaction=request.POST.get("mode_of_transaction", "CASH"),
+                        status="PENDING",
+                        performed_by=request.user,
+                        remarks=f"Exceeds daily limit ({account.daily_limit}); awaiting approval",
+                    )
+                    messages.error(request, f"This withdrawal exceeds the account's daily limit of {account.daily_limit}. Sent for approval.")
+                    return redirect("withdraw")
 
                 if account.balance < amount:
                     Transaction.objects.create(
@@ -152,7 +210,6 @@ def transfer_view(request):
 
         try:
             with db_transaction.atomic():
-                # Lock both rows in a consistent order to avoid deadlocks
                 accounts = Account.objects.select_for_update().filter(
                     account_no__in=[from_no, to_no], status="ACTIVE"
                 ).order_by("account_no")
@@ -163,6 +220,21 @@ def transfer_view(request):
 
                 if not from_account or not to_account:
                     messages.error(request, "One or both accounts not found or not active.")
+                    return redirect("transfer")
+
+                today_total = get_today_debit_total(from_account)
+                if today_total + amount > from_account.daily_limit:
+                    Transaction.objects.create(
+                        transaction_type="TRANSFER",
+                        from_account=from_account,
+                        to_account=to_account,
+                        amount=amount,
+                        mode_of_transaction=request.POST.get("mode_of_transaction", "NETBANKING"),
+                        status="PENDING",
+                        performed_by=request.user,
+                        remarks=f"Exceeds daily limit ({from_account.daily_limit}); awaiting approval",
+                    )
+                    messages.error(request, f"This transfer exceeds the source account's daily limit of {from_account.daily_limit}. Sent for approval.")
                     return redirect("transfer")
 
                 if from_account.balance < amount:
@@ -241,6 +313,13 @@ def all_transactions(request):
 
 
 @login_required
+@user_passes_test(is_employee)
+def my_transactions(request):
+    txns = Transaction.objects.filter(performed_by=request.user).order_by("-timestamp")
+    return render(request, "transactions/my_transactions.html", {"transactions": txns})
+
+
+@login_required
 def customer_transfer_view(request):
     if not hasattr(request.user, "customer"):
         messages.error(request, "Only customers can access self-service transfers.")
@@ -254,8 +333,6 @@ def customer_transfer_view(request):
         to_no = request.POST["to_account_no"]
         amount_raw = request.POST["amount"]
 
-        # Server-side ownership check: the submitted from-account must genuinely
-        # belong to this customer, regardless of what the dropdown showed client-side.
         if not my_accounts.filter(account_no=from_no).exists():
             messages.error(request, "You can only transfer from your own account.")
             return redirect("customer_transfer")
@@ -297,6 +374,21 @@ def customer_transfer_view(request):
 
                 if not from_account or not to_account:
                     messages.error(request, "One or both accounts not found or not active.")
+                    return redirect("customer_transfer")
+
+                today_total = get_today_debit_total(from_account)
+                if today_total + amount > from_account.daily_limit:
+                    Transaction.objects.create(
+                        transaction_type="TRANSFER",
+                        from_account=from_account,
+                        to_account=to_account,
+                        amount=amount,
+                        mode_of_transaction=request.POST.get("mode_of_transaction", "NETBANKING"),
+                        status="PENDING",
+                        performed_by=request.user,
+                        remarks=f"Exceeds daily limit ({from_account.daily_limit}); awaiting approval",
+                    )
+                    messages.error(request, f"This transfer exceeds your account's daily limit of {from_account.daily_limit}. Sent for approval.")
                     return redirect("customer_transfer")
 
                 if from_account.balance < amount:
@@ -362,11 +454,6 @@ def customer_search_transactions(request):
         "account_no": account_no,
     })
 
-@login_required
-@user_passes_test(is_employee)
-def my_transactions(request):
-    txns = Transaction.objects.filter(performed_by=request.user).order_by("-timestamp")
-    return render(request, "transactions/my_transactions.html", {"transactions": txns})
 
 @login_required
 @user_passes_test(is_employee)
@@ -389,3 +476,129 @@ def employee_search_customer_transactions(request):
         "transactions": txns,
         "account_no": account_no,
     })
+
+
+@login_required
+@user_passes_test(is_admin_or_employee)
+def pending_transactions(request):
+    account_no = request.GET.get("account_no", "").strip()
+
+    txns = Transaction.objects.filter(status="PENDING").select_related(
+        "from_account__customer__user", "to_account__customer__user", "performed_by"
+    ).order_by("-timestamp")
+
+    if account_no:
+        txns = txns.filter(
+            Q(from_account__account_no__icontains=account_no) |
+            Q(to_account__account_no__icontains=account_no)
+        )
+
+    return render(request, "transactions/pending_transactions.html", {
+        "transactions": txns,
+        "account_no": account_no,
+    })
+
+
+@login_required
+@user_passes_test(is_admin_or_employee)
+def approve_transaction(request, txn_id):
+    if request.method == "POST":
+        action = request.POST.get("action")
+
+        with db_transaction.atomic():
+            txn = get_object_or_404(Transaction.objects.select_for_update(), id=txn_id, status="PENDING")
+
+            if action == "approve":
+                if txn.transaction_type == "DEPOSIT":
+                    account = Account.objects.select_for_update().get(id=txn.to_account_id)
+                    if account.status != "ACTIVE":
+                        txn.status = "FAILED"
+                        txn.remarks = f"{txn.remarks} | Rejected - account no longer active"
+                        txn.save()
+                        messages.error(request, "Cannot approve - account is no longer active.")
+                    else:
+                        account.balance += txn.amount
+                        account.save()
+                        txn.status = "SUCCESS"
+                        txn.remarks = f"{txn.remarks} | Approved by {request.user.username}"
+                        txn.save()
+                        messages.success(request, f"Deposit of {txn.amount} approved.")
+
+                elif txn.transaction_type == "WITHDRAW":
+                    account = Account.objects.select_for_update().get(id=txn.from_account_id)
+                    if account.status != "ACTIVE":
+                        txn.status = "FAILED"
+                        txn.remarks = f"{txn.remarks} | Rejected - account no longer active"
+                        txn.save()
+                        messages.error(request, "Cannot approve - account is no longer active.")
+                    elif account.balance < txn.amount:
+                        txn.status = "FAILED"
+                        txn.remarks = f"{txn.remarks} | Rejected - insufficient balance at approval time"
+                        txn.save()
+                        messages.error(request, "Cannot approve - account no longer has sufficient balance.")
+                    else:
+                        account.balance -= txn.amount
+                        account.save()
+                        txn.status = "SUCCESS"
+                        txn.remarks = f"{txn.remarks} | Approved by {request.user.username}"
+                        txn.save()
+                        messages.success(request, f"Withdrawal of {txn.amount} approved.")
+
+                elif txn.transaction_type == "TRANSFER":
+                    from_account = Account.objects.select_for_update().get(id=txn.from_account_id)
+                    to_account = Account.objects.select_for_update().get(id=txn.to_account_id)
+                    if from_account.status != "ACTIVE" or to_account.status != "ACTIVE":
+                        txn.status = "FAILED"
+                        txn.remarks = f"{txn.remarks} | Rejected - one or both accounts no longer active"
+                        txn.save()
+                        messages.error(request, "Cannot approve - one or both accounts are no longer active.")
+                    elif from_account.balance < txn.amount:
+                        txn.status = "FAILED"
+                        txn.remarks = f"{txn.remarks} | Rejected - insufficient balance at approval time"
+                        txn.save()
+                        messages.error(request, "Cannot approve - source account no longer has sufficient balance.")
+                    else:
+                        from_account.balance -= txn.amount
+                        to_account.balance += txn.amount
+                        from_account.save()
+                        to_account.save()
+                        txn.status = "SUCCESS"
+                        txn.remarks = f"{txn.remarks} | Approved by {request.user.username}"
+                        txn.save()
+                        messages.success(request, f"Transfer of {txn.amount} approved.")
+
+            elif action == "reject":
+                txn.status = "FAILED"
+                txn.remarks = f"{txn.remarks} | Rejected by {request.user.username}"
+                txn.save()
+                messages.success(request, "Transaction rejected.")
+
+        return redirect("pending_transactions")
+
+    return redirect("pending_transactions")
+
+
+@login_required
+@user_passes_test(is_employee)
+def branch_report(request):
+    employee = request.user.employee
+    if employee.branch is None:
+        messages.error(request, "You are not assigned to a branch yet.")
+        return redirect("employee_dashboard")
+
+    branch = employee.branch
+    accounts = Account.objects.filter(branch=branch)
+    total_balance = accounts.aggregate(total=Sum("balance"))["total"] or 0
+    branch_txn_filter = Q(from_account__branch=branch) | Q(to_account__branch=branch)
+    recent_txns = Transaction.objects.filter(branch_txn_filter).order_by("-timestamp")[:50]
+    total_transactions = Transaction.objects.filter(branch_txn_filter).count()
+
+    context = {
+        "branch": branch,
+        "total_accounts": accounts.count(),
+        "total_balance": total_balance,
+        "total_transactions": total_transactions,
+        "accounts": accounts,
+        "recent_transactions": recent_txns,
+    }
+    return render(request, "transactions/branch_report.html", context)
