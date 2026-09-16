@@ -4,6 +4,21 @@
 
 <p>Welcome, {{ user.username }}.</p>
 
+{% if due_reminders %}
+<div style="border:1px solid orange; padding:10px; background:#fff8e1;">
+    <strong>EMI Reminders:</strong>
+    <ul>
+        {% for r in due_reminders %}
+        <li>
+            Loan #{{ r.loan.id }} ({{ r.loan.get_loan_type_display }}) - Installment {{ r.installment_number }}, {{
+            r.emi_amount }} due {{ r.due_date }} {% if r.get_dpd_days > 0 %}<strong style="color:red;">(OVERDUE by {{
+                r.get_dpd_days }} days)</strong>{% endif %} - <a href="{% url 'loan_detail' r.loan.id %}">Pay Now</a>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
 <h3>Your Profile</h3>
 <table border="1" cellpadding="8">
     <tr>
@@ -63,4 +78,10 @@
 
 <h3>Search Transactions</h3>
 <p><a href="{% url 'customer_search_transactions' %}">Search by Account Number</a></p>
+
+<h3>Loans</h3>
+<ul>
+    <li><a href="{% url 'apply_loan' %}">Apply for a Loan</a></li>
+    <li><a href="{% url 'my_loans' %}">My Loans</a></li>
+</ul>
 {% endblock %}

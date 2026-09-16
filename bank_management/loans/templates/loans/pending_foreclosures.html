@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Pending Foreclosure Requests</h2>
+<table border="1" cellpadding="6">
+    <tr>
+        <th>Customer</th>
+        <th>Loan Type</th>
+        <th>Amount</th>
+        <th>Requested</th>
+        <th>Action</th>
+    </tr>
+    {% for loan in loans %}
+    <tr>
+        <td>{{ loan.customer.user.username }}</td>
+        <td>{{ loan.get_loan_type_display }}</td>
+        <td>{{ loan.amount }}</td>
+        <td>{{ loan.foreclosure_requested_date }}</td>
+        <td><a href="{% url 'process_foreclosure' loan.id %}">Review</a></td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="5">No pending foreclosure requests.</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

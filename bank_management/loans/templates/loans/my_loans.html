@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>My Loans</h2>
+<a href="{% url 'apply_loan' %}">+ Apply for a Loan</a>
+<table border="1" cellpadding="6">
+    <tr>
+        <th>Type</th>
+        <th>Amount</th>
+        <th>Tenure</th>
+        <th>Interest Rate</th>
+        <th>EMI</th>
+        <th>Status</th>
+        <th>Foreclosure</th>
+        <th>Applied</th>
+        <th>Actions</th>
+    </tr>
+    {% for loan in loans %}
+    <tr>
+        <td>{{ loan.get_loan_type_display }}</td>
+        <td>{{ loan.amount }}</td>
+        <td>{{ loan.tenure_months }} months</td>
+        <td>{{ loan.interest_rate|default:"-" }}</td>
+        <td>{{ loan.emi_amount|default:"-" }}</td>
+        <td>{{ loan.get_status_display }}</td>
+        <td>{{ loan.get_foreclosure_status_display }}</td>
+        <td>{{ loan.applied_date }}</td>
+        <td><a href="{% url 'loan_detail' loan.id %}">View</a></td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="9">No loans applied yet.</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

@@ -40,6 +40,7 @@ class Transaction(models.Model):
     )
     remarks = models.CharField(max_length=255, blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
+    is_loan_related = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.transaction_type} - {self.amount} ({self.status})"

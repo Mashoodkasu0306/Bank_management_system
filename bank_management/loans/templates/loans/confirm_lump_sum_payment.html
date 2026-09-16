@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Confirm Payment</h2>
+<p>Loan #{{ loan.id }} - {{ loan.get_loan_type_display }}</p>
+<p><strong>Amount:</strong> {{ amount }}</p>
+<p><strong>From Account:</strong> {{ account.account_no }} (Balance: {{ account.balance }})</p>
+<p><strong>Mode:</strong> {{ mode }}</p>
+{% if mode == "UPI" %}
+<p><strong>UPI ID:</strong> {{ upi_id }}</p>
+{% endif %}
+
+<form method="post" action="{% url 'confirm_pay_lump_sum' loan.id %}">
+    {% csrf_token %}
+    <input type="hidden" name="amount" value="{{ amount }}">
+    <input type="hidden" name="account" value="{{ account.id }}">
+    <input type="hidden" name="mode_of_transaction" value="{{ mode }}">
+    <input type="hidden" name="upi_id" value="{{ upi_id }}">
+    <button type="submit">Confirm & Pay</button>
+</form>
+<a href="{% url 'loan_detail' loan.id %}">Cancel</a>
+{% endblock %}

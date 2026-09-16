@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Review Loan Application</h2>
+{% if messages %}
+{% for message in messages %}
+<p style="color:{% if message.tags == 'error' %}red{% else %}green{% endif %};">{{ message }}</p>
+{% endfor %}
+{% endif %}
+<p><strong>Customer:</strong> {{ loan.customer.user.username }}</p>
+<p><strong>Type:</strong> {{ loan.get_loan_type_display }}</p>
+<p><strong>Amount:</strong> {{ loan.amount }}</p>
+<p><strong>Tenure:</strong> {{ loan.tenure_months }} months</p>
+<p><strong>Disbursement Account:</strong> {{ loan.account.account_no }}</p>
+
+<h3>Approve</h3>
+<form method="post">
+    {% csrf_token %}
+    <label>Interest Rate (% annual):</label>
+    <input type="number" step="0.01" name="interest_rate">
+    <button type="submit" name="action" value="approve">Approve & Disburse</button>
+</form>
+
+<h3>Reject</h3>
+<form method="post">
+    {% csrf_token %}
+    <label>Reason:</label>
+    <input type="text" name="remarks">
+    <button type="submit" name="action" value="reject">Reject</button>
+</form>
+{% endblock %}

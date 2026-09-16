@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Renew Loan #{{ loan.id }}</h2>
+{% if messages %}
+{% for message in messages %}
+<p style="color:{% if message.tags == 'error' %}red{% else %}green{% endif %};">{{ message }}</p>
+{% endfor %}
+{% endif %}
+
+<p><strong>Customer:</strong> {{ loan.customer.user.username }}</p>
+<p><strong>Original Loan Type:</strong> {{ loan.get_loan_type_display }}</p>
+<p><strong>Original Amount:</strong> {{ loan.amount }}</p>
+<p><strong>Status:</strong> {{ loan.get_status_display }}</p>
+
+<h3>Renewal Calculation</h3>
+<p><strong>Remaining Amount Owed:</strong> {{ remaining_amount }}</p>
+<p><strong>Renewal Fee (2%):</strong> {{ fee }}</p>
+<p><strong>Total New Loan Amount:</strong> {{ total_new_amount }}</p>
+
+<form method="post">
+    {% csrf_token %}
+    <label>New Tenure (months):</label>
+    <input type="number" name="tenure_months" required><br><br>
+    <button type="submit">Create Renewal Loan</button>
+</form>
+{% endblock %}

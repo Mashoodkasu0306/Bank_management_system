@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Process Foreclosure - Loan #{{ loan.id }}</h2>
+{% if messages %}
+{% for message in messages %}
+<p style="color:{% if message.tags == 'error' %}red{% else %}green{% endif %};">{{ message }}</p>
+{% endfor %}
+{% endif %}
+<p><strong>Customer:</strong> {{ loan.customer.user.username }}</p>
+<p><strong>Account:</strong> {{ loan.account.account_no }} (Balance: {{ loan.account.balance }})</p>
+<p><strong>Outstanding Principal:</strong> {{ outstanding_principal }}</p>
+<p><strong>Accrued Interest:</strong> {{ accrued_interest }}</p>
+<p><strong>Total Payoff Amount:</strong> {{ total }}</p>
+
+<form method="post">
+    {% csrf_token %}
+    <button type="submit" name="action" value="approve">Approve Foreclosure</button>
+    <button type="submit" name="action" value="reject">Reject</button>
+</form>
+{% endblock %}

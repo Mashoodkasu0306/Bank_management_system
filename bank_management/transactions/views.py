@@ -50,13 +50,16 @@ def get_today_transacted_amount(account, transaction_type):
 
 
 def get_today_debit_total(account):
-    """Combines withdrawals and outgoing transfers - both are debits against the account's daily limit."""
+    """Combines withdrawals and outgoing transfers - both are debits against the account's
+    daily limit. Loan-related transactions (disbursements, EMI, lump sum, foreclosure) are
+    excluded, since they're bank-approved events, not ordinary teller/self-service activity."""
     today = timezone.localdate()
     qs = Transaction.objects.filter(
         from_account=account,
         transaction_type__in=["WITHDRAW", "TRANSFER"],
         status="SUCCESS",
         timestamp__date=today,
+        is_loan_related=False,
     )
     return qs.aggregate(total=Sum("amount"))["total"] or Decimal("0")
 

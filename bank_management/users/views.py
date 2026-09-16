@@ -4,6 +4,8 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.db.models import Sum
+from django.utils import timezone
+from datetime import timedelta
 
 from .models import Customer, Employee
 from bank.views import is_admin, is_admin_or_employee
@@ -13,9 +15,6 @@ from transactions.models import Transaction
 
 
 def user_login(request):
-    if request.method == "GET" and request.user.is_authenticated:
-        logout(request)
-
     if request.method == "POST":
         username = request.POST.get("username")
         password = request.POST.get("password")
@@ -43,12 +42,34 @@ def user_logout(request):
     return redirect("login")
 
 
+def home_redirect(request):
+    if request.user.is_authenticated:
+        if Customer.objects.filter(user=request.user).exists():
+            return redirect("customer_dashboard")
+        elif Employee.objects.filter(user=request.user).exists():
+            return redirect("employee_dashboard")
+        else:
+            return redirect("admin_dashboard")
+    return redirect("login")
+
+
 @login_required
 def customer_dashboard(request):
     if not hasattr(request.user, 'customer'):
         return redirect("login")
 
-    return render(request, "users/customer_dashboard.html")
+    from loans.models import LoanRepayment  # local import avoids circular import
+
+    today = timezone.localdate()
+    upcoming_cutoff = today + timedelta(days=7)
+
+    due_reminders = LoanRepayment.objects.filter(
+        loan__customer=request.user.customer,
+        status="PENDING",
+        due_date__lte=upcoming_cutoff,
+    ).select_related("loan").order_by("due_date")
+
+    return render(request, "users/customer_dashboard.html", {"due_reminders": due_reminders})
 
 
 @login_required

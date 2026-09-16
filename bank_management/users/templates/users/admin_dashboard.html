@@ -64,6 +64,13 @@
     <li><a href="{% url 'all_transactions' %}">All Transactions (with Employee/Customer filter)</a></li>
     <li><a href="{% url 'pending_transactions' %}">Pending Approvals</a></li>
 </ul>
+<h3>Loans</h3>
+<ul>
+    <li><a href="{% url 'pending_loans' %}">Pending Loan Applications</a></li>
+    <li><a href="{% url 'all_loans' %}">All Loans</a></li>
+    <li><a href="{% url 'pending_foreclosures' %}">Pending Foreclosure Requests</a></li>
+</ul>
+
 <h3>Django Admin Panel</h3>
 <ul>
     <li><a href="{% url 'admin:index' %}">Open Django Admin Panel</a></li>

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>All Loans</h2>
+<p>
+    <a href="{% url 'all_loans' %}">All</a> |
+    <a href="{% url 'all_loans' %}?status=pending">Pending</a> |
+    <a href="{% url 'all_loans' %}?status=approved">Approved</a> |
+    <a href="{% url 'all_loans' %}?status=rejected">Rejected</a> |
+    <a href="{% url 'all_loans' %}?status=closed">Closed</a> |
+    <a href="{% url 'all_loans' %}?status=defaulted">Defaulted</a> |
+    <a href="{% url 'all_loans' %}?status=renewed">Renewed</a>
+</p>
+<table border="1" cellpadding="6">
+    <tr>
+        <th>Customer</th>
+        <th>Type</th>
+        <th>Repayment Type</th>
+        <th>Amount</th>
+        <th>EMI / Lump Sum Payable</th>
+        <th>Status</th>
+        <th>Applied</th>
+        <th>Actions</th>
+    </tr>
+    {% for loan in loans %}
+    <tr>
+        <td>{{ loan.customer.user.username }}</td>
+        <td>{{ loan.get_loan_type_display }}</td>
+        <td>{{ loan.get_repayment_type_display }}</td>
+        <td>{{ loan.amount }}</td>
+        <td>
+            {% if loan.repayment_type == "EMI" %}
+            {{ loan.emi_amount|default:"-" }}
+            {% else %}
+            {{ loan.lump_sum_total_payable|default:"-" }}
+            {% endif %}
+        </td>
+        <td>{{ loan.get_status_display }}</td>
+        <td>{{ loan.applied_date }}</td>
+        <td>
+            <a href="{% url 'loan_detail' loan.id %}">View</a>
+            {% if loan.status == "DEFAULTED" %}
+            | <a href="{% url 'renew_loan' loan.id %}">Renew</a>
+            {% endif %}
+        </td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="8">No loans found.</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

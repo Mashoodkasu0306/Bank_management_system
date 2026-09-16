@@ -62,6 +62,7 @@ class Account(models.Model):
             transaction_type__in=["WITHDRAW", "TRANSFER"],
             status="SUCCESS",
             timestamp__date=today,
+            is_loan_related=False,
         ).aggregate(total=Sum("amount"))["total"] or 0
 
         remaining = self.daily_limit - debited_today
