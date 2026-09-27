@@ -10,6 +10,8 @@ from accounts.models import Account
 from .models import Transaction
 from users.models import Employee, Customer
 from bank.views import is_admin_or_employee
+from services.helpers import require_verified_kyc
+from notifications.helpers import notify
 
 
 def is_employee(user):
@@ -111,6 +113,14 @@ def deposit_view(request):
                     performed_by=request.user,
                     remarks=f"Deposit to {account.account_no}",
                 )
+
+            notify(
+                account.customer.user, "TRANSACTION",
+                "Deposit received",
+                f"{amount} was deposited to your account {account.account_no}. New balance: {account.balance}",
+                link=f"/transactions/history/{account.id}/"
+            )
+
             messages.success(request, f"Deposited {amount} to {account_no}. New balance: {account.balance}")
             return redirect("deposit")
         except Account.DoesNotExist:
@@ -180,6 +190,14 @@ def withdraw_view(request):
                     performed_by=request.user,
                     remarks=f"Withdrawal from {account.account_no}",
                 )
+
+            notify(
+                account.customer.user, "TRANSACTION",
+                "Withdrawal made",
+                f"{amount} was withdrawn from your account {account.account_no}. New balance: {account.balance}",
+                link=f"/transactions/history/{account.id}/"
+            )
+
             messages.success(request, f"Withdrew {amount} from {account_no}. New balance: {account.balance}")
             return redirect("withdraw")
         except Account.DoesNotExist:
@@ -269,6 +287,20 @@ def transfer_view(request):
                     performed_by=request.user,
                     remarks=f"Transfer {from_no} -> {to_no}",
                 )
+
+            notify(
+                from_account.customer.user, "TRANSACTION",
+                "Transfer sent",
+                f"{amount} was transferred from your account {from_no} to {to_no}.",
+                link=f"/transactions/history/{from_account.id}/"
+            )
+            notify(
+                to_account.customer.user, "TRANSACTION",
+                "Money received",
+                f"{amount} was credited to your account {to_no} from {from_no}.",
+                link=f"/transactions/history/{to_account.id}/"
+            )
+
             messages.success(request, f"Transferred {amount} from {from_no} to {to_no}.")
             return redirect("transfer")
         except Account.DoesNotExist:
@@ -323,6 +355,7 @@ def my_transactions(request):
 
 
 @login_required
+@require_verified_kyc
 def customer_transfer_view(request):
     if not hasattr(request.user, "customer"):
         messages.error(request, "Only customers can access self-service transfers.")
@@ -423,6 +456,20 @@ def customer_transfer_view(request):
                     performed_by=request.user,
                     remarks=f"Self-service transfer {from_no} -> {to_no}",
                 )
+
+            notify(
+                from_account.customer.user, "TRANSACTION",
+                "Transfer sent",
+                f"{amount} was transferred from your account {from_no} to {to_no}.",
+                link=f"/transactions/history/{from_account.id}/"
+            )
+            notify(
+                to_account.customer.user, "TRANSACTION",
+                "Money received",
+                f"{amount} was credited to your account {to_no} from {from_no}.",
+                link=f"/transactions/history/{to_account.id}/"
+            )
+
             messages.success(request, f"Transferred {amount} from {from_no} to {to_no}.")
             return redirect("customer_transfer")
         except Account.DoesNotExist:

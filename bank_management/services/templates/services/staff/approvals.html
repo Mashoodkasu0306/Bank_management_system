@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+{% block content %}
+{% if atm_request %}
+<h2>Approve ATM Card Request</h2>
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Customer</th>
+        <td>{{ atm_request.account.customer.user.username }}</td>
+    </tr>
+    <tr>
+        <th>Account</th>
+        <td>{{ atm_request.account.account_no }}</td>
+    </tr>
+    <tr>
+        <th>Card Type</th>
+        <td>{{ atm_request.card_type }}</td>
+    </tr>
+    <tr>
+        <th>Delivery Address</th>
+        <td>{{ atm_request.delivery_address }}</td>
+    </tr>
+    <tr>
+        <th>Requested At</th>
+        <td>{{ atm_request.requested_at }}</td>
+    </tr>
+</table>
+<form method="post" id="atm-approval-form">
+    {% csrf_token %}
+    <p>
+        <label><input type="radio" name="approval_status" value="APPROVED" onchange="toggleDecisionFields('atm')"
+                checked> Approve</label><br>
+        <label><input type="radio" name="approval_status" value="REJECTED" onchange="toggleDecisionFields('atm')">
+            Reject</label>
+    </p>
+    <div id="atm-rejection-fields" style="display:none;">
+        <p>
+            <label>Rejection Reason:</label><br>
+            <textarea name="rejection_reason" rows="3" cols="40"></textarea>
+        </p>
+    </div>
+    <button type="submit">Submit Decision</button>
+</form>
+<p><a href="{% url 'pending_atm_card_requests' %}">Back to Pending ATM Card Requests</a></p>
+<script>
+    function toggleDecisionFields(prefix) {
+        var approved = document.querySelector('input[name="approval_status"][value="APPROVED"]').checked;
+        document.getElementById(prefix + '-rejection-fields').style.display = approved ? 'none' : 'block';
+    }
+    toggleDecisionFields('atm');
+</script>
+
+{% elif cheque_request %}
+<h2>Approve Cheque Book Request</h2>
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Customer</th>
+        <td>{{ cheque_request.account.customer.user.username }}</td>
+    </tr>
+    <tr>
+        <th>Account</th>
+        <td>{{ cheque_request.account.account_no }}</td>
+    </tr>
+    <tr>
+        <th>Leaf Count</th>
+        <td>{{ cheque_request.leaf_count }}</td>
+    </tr>
+    <tr>
+        <th>Account Balance</th>
+        <td>{{ cheque_request.account.balance }}</td>
+    </tr>
+    <tr>
+        <th>Delivery Address</th>
+        <td>{{ cheque_request.delivery_address }}</td>
+    </tr>
+    <tr>
+        <th>Requested At</th>
+        <td>{{ cheque_request.requested_at }}</td>
+    </tr>
+</table>
+<form method="post" id="cheque-approval-form">
+    {% csrf_token %}
+    <p>
+        <label><input type="radio" name="approval_status" value="APPROVED" onchange="toggleChequeFields()" checked>
+            Approve</label><br>
+        <label><input type="radio" name="approval_status" value="REJECTED" onchange="toggleChequeFields()">
+            Reject</label>
+    </p>
+    <div id="cheque-approve-fields">
+        <p>
+            <label>Cheque Book Fee:</label>
+            <input type="number" name="cheque_book_fee" step="0.01" min="0" value="0.00">
+        </p>
+    </div>
+    <div id="cheque-reject-fields" style="display:none;">
+        <p>
+            <label>Rejection Reason:</label><br>
+            <textarea name="rejection_reason" rows="3" cols="40"></textarea>
+        </p>
+    </div>
+    <button type="submit">Submit Decision</button>
+</form>
+<p><a href="{% url 'pending_cheque_book_requests' %}">Back to Pending Cheque Book Requests</a></p>
+<script>
+    function toggleChequeFields() {
+        var approved = document.querySelector('input[name="approval_status"][value="APPROVED"]').checked;
+        document.getElementById('cheque-approve-fields').style.display = approved ? 'block' : 'none';
+        document.getElementById('cheque-reject-fields').style.display = approved ? 'none' : 'block';
+    }
+    toggleChequeFields();
+</script>
+
+{% elif cheque_request %}
+<h2>Approve Cheque Book Request</h2>
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Customer</th>
+        <td>{{ cheque_request.account.customer.user.username }}</td>
+    </tr>
+    <tr>
+        <th>Account</th>
+        <td>{{ cheque_request.account.account_no }}</td>
+    </tr>
+    <tr>
+        <th>Leaf Count</th>
+        <td>{{ cheque_request.leaf_count }}</td>
+    </tr>
+    <tr>
+        <th>Account Balance</th>
+        <td>{{ cheque_request.account.balance }}</td>
+    </tr>
+    <tr>
+        <th>Delivery Address</th>
+        <td>{{ cheque_request.delivery_address }}</td>
+    </tr>
+    <tr>
+        <th>Requested At</th>
+        <td>{{ cheque_request.requested_at }}</td>
+    </tr>
+</table>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Submit Decision</button>
+</form>
+<p><a href="{% url 'pending_cheque_book_requests' %}">Back to Pending Cheque Book Requests</a></p>
+
+{% elif atm_card_request %}
+<h2>Pending ATM Card Requests</h2>
+{% if requests %}
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Customer</th>
+        <th>Account</th>
+        <th>Requested At</th>
+        <th>Action</th>
+    </tr>
+    {% for req in requests %}
+    <tr>
+        <td>{{ req.account.customer.user.username }}</td>
+        <td>{{ req.account.account_no }}</td>
+        <td>{{ req.requested_at }}</td>
+        <td><a href="{% url 'approve_atm_card_request' req.id %}">Review</a></td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<p>No pending ATM card requests.</p>
+{% endif %}
+<p><a href="{% url 'services_dashboard' %}">Back to Services Dashboard</a></p>
+
+{% else %}
+<h2>Pending Cheque Book Requests</h2>
+{% if requests %}
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Customer</th>
+        <th>Account</th>
+        <th>Leaf Count</th>
+        <th>Requested At</th>
+        <th>Action</th>
+    </tr>
+    {% for req in requests %}
+    <tr>
+        <td>{{ req.account.customer.user.username }}</td>
+        <td>{{ req.account.account_no }}</td>
+        <td>{{ req.leaf_count }}</td>
+        <td>{{ req.requested_at }}</td>
+        <td><a href="{% url 'approve_cheque_book_request' req.id %}">Review</a></td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<p>No pending cheque book requests.</p>
+{% endif %}
+<p><a href="{% url 'services_dashboard' %}">Back to Services Dashboard</a></p>
+{% endif %}
+{% endblock %}

@@ -40,4 +40,11 @@
     <li><a href="{% url 'all_loans' %}">All Loans</a></li>
     <li><a href="{% url 'pending_foreclosures' %}">Pending Foreclosure Requests</a></li>
 </ul>
+<h3>Banking Services</h3>
+<ul>
+    <li><a href="{% url 'services_dashboard' %}">Services Dashboard</a></li>
+    <li><a href="{% url 'pending_kyc_documents' %}">Pending KYC Documents</a></li>
+    <li><a href="{% url 'pending_atm_card_requests' %}">Pending ATM Card Requests</a></li>
+    <li><a href="{% url 'pending_cheque_book_requests' %}">Pending Cheque Book Requests</a></li>
+</ul>
 {% endblock %}

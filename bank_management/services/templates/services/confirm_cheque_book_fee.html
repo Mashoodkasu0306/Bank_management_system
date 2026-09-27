@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Confirm Fee Payment</h2>
+
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Cheque Book Request</th>
+        <td>{{ cheque_request.leaf_count }} leaves - {{ cheque_request.account.account_no }}</td>
+    </tr>
+    <tr>
+        <th>Fee Amount</th>
+        <td>{{ cheque_request.cheque_book_fee }}</td>
+    </tr>
+    <tr>
+        <th>Pay From</th>
+        <td>{{ account.account_no }} (Balance: {{ account.balance }})</td>
+    </tr>
+    <tr>
+        <th>Mode</th>
+        <td>{{ mode }}</td>
+    </tr>
+    {% if upi_id %}<tr>
+        <th>UPI ID</th>
+        <td>{{ upi_id }}</td>
+    </tr>{% endif %}
+    {% if card_number %}<tr>
+        <th>Card</th>
+        <td>XXXX-XXXX-XXXX-{{ card_number|slice:"-4:" }}</td>
+    </tr>{% endif %}
+</table>
+
+<form method="post" action="{% url 'confirm_pay_cheque_book_fee' cheque_request.id %}">
+    {% csrf_token %}
+    <input type="hidden" name="account" value="{{ account.id }}">
+    <input type="hidden" name="mode_of_transaction" value="{{ mode }}">
+    <input type="hidden" name="upi_id" value="{{ upi_id }}">
+    <button type="submit">Confirm and Pay {{ cheque_request.cheque_book_fee }}</button>
+</form>
+
+<p><a href="{% url 'cheque_book_status' cheque_request.id %}">Cancel</a></p>
+{% endblock %}

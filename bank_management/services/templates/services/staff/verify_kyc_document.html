@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Review KYC Document</h2>
+
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Customer</th>
+        <td>{{ document.kyc_verification.customer.user.username }}</td>
+    </tr>
+    <tr>
+        <th>Document Type</th>
+        <td>{{ document.get_document_type_display }}</td>
+    </tr>
+    <tr>
+        <th>Uploaded At</th>
+        <td>{{ document.uploaded_at }}</td>
+    </tr>
+    <tr>
+        <th>File</th>
+        <td><a href="{{ document.file.url }}" target="_blank">View Document</a></td>
+    </tr>
+</table>
+
+<form method="post">
+    {% csrf_token %}
+    <p>
+        <label><input type="radio" name="verification_status" value="VERIFIED" onchange="toggleKycFields()" checked>
+            Approve</label><br>
+        <label><input type="radio" name="verification_status" value="REJECTED" onchange="toggleKycFields()">
+            Reject</label>
+    </p>
+    <p>
+        <label>Reviewer Notes (optional):</label><br>
+        <textarea name="reviewer_notes" rows="2" cols="40"></textarea>
+    </p>
+    <div id="kyc-reject-fields" style="display:none;">
+        <p>
+            <label>Rejection Reason:</label><br>
+            <textarea name="rejection_reason" rows="3" cols="40"></textarea>
+        </p>
+    </div>
+    <button type="submit">Submit Review</button>
+</form>
+<script>
+    function toggleKycFields() {
+        var approved = document.querySelector('input[name="verification_status"][value="VERIFIED"]').checked;
+        document.getElementById('kyc-reject-fields').style.display = approved ? 'none' : 'block';
+    }
+    toggleKycFields();
+</script>
+
+<p><a href="{% url 'pending_kyc_documents' %}">Back to Pending KYC Documents</a></p>
+{% endblock %}

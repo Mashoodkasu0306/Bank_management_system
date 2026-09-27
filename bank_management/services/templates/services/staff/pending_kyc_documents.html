@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Pending KYC Reviews</h2>
+
+{% if customers_summary %}
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Customer</th>
+        <th>Pending Documents</th>
+        <th>First Uploaded</th>
+        <th>Action</th>
+    </tr>
+    {% for item in customers_summary %}
+    <tr>
+        <td>{{ item.customer.user.username }}</td>
+        <td>{{ item.count }}</td>
+        <td>{{ item.earliest_upload }}</td>
+        <td><a href="{% url 'review_customer_kyc' item.customer.id %}">Review All</a></td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+    <p>No pending KYC documents to review.</p>
+{% endif %}
+
+<p><a href="{% url 'services_dashboard' %}">Back to Services Dashboard</a></p>
+{% endblock %}

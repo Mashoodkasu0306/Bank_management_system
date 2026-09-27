@@ -1,0 +1,20 @@
+@'
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Django
+db.sqlite3
+media/
+
+# Virtual environment
+B_env/
+
+# IDE
+.vscode/
+.idea/
+'@ | Set-Content -Path .\.gitignore -Encoding utf8
+
+$content = Get-Content .\.gitignore -Raw
+[System.IO.File]::WriteAllText("$pwd\.gitignore", $content, [System.Text.UTF8Encoding]::new($false))

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>KYC Review: {{ customer.user.username }}</h2>
+
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Document Type</th>
+        <th>Uploaded At</th>
+        <th>File</th>
+        <th>Status</th>
+        <th>Action</th>
+    </tr>
+    {% for doc in documents %}
+    <tr>
+        <td>{{ doc.get_document_type_display }}</td>
+        <td>{{ doc.uploaded_at }}</td>
+        <td><a href="{{ doc.file.url }}" target="_blank">View Document</a></td>
+        <td>
+            {% if doc.verification_status == 'PENDING' %}Pending
+            {% elif doc.verification_status == 'VERIFIED' %}Verified
+            {% else %}Rejected{% endif %}
+        </td>
+        <td>
+            {% if doc.verification_status == 'PENDING' %}
+            <a href="{% url 'verify_kyc_document' doc.id %}">Review</a>
+            {% else %}
+            -
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+<p><a href="{% url 'pending_kyc_documents' %}">Back to Pending KYC Reviews</a></p>
+{% endblock %}

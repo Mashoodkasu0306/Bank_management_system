@@ -1,30 +1,44 @@
 {% extends "base.html" %}
 {% block content %}
 <h2>Review Loan Application</h2>
-{% if messages %}
-{% for message in messages %}
-<p style="color:{% if message.tags == 'error' %}red{% else %}green{% endif %};">{{ message }}</p>
-{% endfor %}
-{% endif %}
+
 <p><strong>Customer:</strong> {{ loan.customer.user.username }}</p>
 <p><strong>Type:</strong> {{ loan.get_loan_type_display }}</p>
 <p><strong>Amount:</strong> {{ loan.amount }}</p>
 <p><strong>Tenure:</strong> {{ loan.tenure_months }} months</p>
 <p><strong>Disbursement Account:</strong> {{ loan.account.account_no }}</p>
 
-<h3>Approve</h3>
-<form method="post">
+<form method="post" id="loan-approval-form">
     {% csrf_token %}
-    <label>Interest Rate (% annual):</label>
-    <input type="number" step="0.01" name="interest_rate">
-    <button type="submit" name="action" value="approve">Approve & Disburse</button>
+    <p>
+        <label><input type="radio" name="action" value="approve" onchange="toggleLoanFields()" checked>
+            Approve</label><br>
+        <label><input type="radio" name="action" value="reject" onchange="toggleLoanFields()"> Reject</label>
+    </p>
+
+    <div id="loan-approve-fields">
+        <p>
+            <label>Interest Rate (% annual):</label>
+            <input type="number" step="0.01" name="interest_rate">
+        </p>
+    </div>
+
+    <div id="loan-reject-fields" style="display:none;">
+        <p>
+            <label>Reason:</label>
+            <input type="text" name="remarks">
+        </p>
+    </div>
+
+    <button type="submit">Submit Decision</button>
 </form>
 
-<h3>Reject</h3>
-<form method="post">
-    {% csrf_token %}
-    <label>Reason:</label>
-    <input type="text" name="remarks">
-    <button type="submit" name="action" value="reject">Reject</button>
-</form>
+<script>
+    function toggleLoanFields() {
+        var approved = document.querySelector('input[name="action"][value="approve"]').checked;
+        document.getElementById('loan-approve-fields').style.display = approved ? 'block' : 'none';
+        document.getElementById('loan-reject-fields').style.display = approved ? 'none' : 'block';
+    }
+    toggleLoanFields();
+</script>
 {% endblock %}

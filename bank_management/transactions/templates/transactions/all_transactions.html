@@ -1,16 +1,15 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
+{% block toolbar %}
+<p style="background:#fff; padding:8px 15px; margin:0;">
+    <a href="{% url 'all_transactions' %}"><strong>{% if filter_type == "all" %}[All]{% else %}All{% endif %}</strong></a>
+    |
+    <a href="{% url 'all_transactions' %}?filter=employee"><strong>{% if filter_type == "employee" %}[By Employees]{% else %}By Employees{% endif %}</strong></a>
+    |
+    <a href="{% url 'all_transactions' %}?filter=customer"><strong>{% if filter_type == "customer" %}[By Customers]{% else %}By Customers{% endif %}</strong></a>
+</p>
+{% endblock %}
 {% block content %}
 <h2>All Transactions</h2>
-<p>
-    <a href="{% url 'all_transactions' %}"><strong>{% if filter_type == "all" %}[All]{% else %}All{% endif
-            %}</strong></a>
-    |
-    <a href="{% url 'all_transactions' %}?filter=employee"><strong>{% if filter_type == "employee" %}[By Employees]{%
-            else %}By Employees{% endif %}</strong></a>
-    |
-    <a href="{% url 'all_transactions' %}?filter=customer"><strong>{% if filter_type == "customer" %}[By Customers]{%
-            else %}By Customers{% endif %}</strong></a>
-</p>
 <table border="1" cellpadding="6">
     <tr>
         <th>Date</th>

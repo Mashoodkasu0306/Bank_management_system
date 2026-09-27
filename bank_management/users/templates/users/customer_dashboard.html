@@ -4,6 +4,14 @@
 
 <p>Welcome, {{ user.username }}.</p>
 
+{% if not user.customer.kyc_verification.is_fully_verified %}
+<div style="border:1px solid red; padding:10px; background:#ffe8e8; margin-bottom:15px;">
+    <strong>Action Required:</strong> Please complete your KYC verification to unlock
+    online payments, loan applications, ATM card requests, and cheque book requests.
+    <a href="{% url 'kyc_dashboard' %}">Complete KYC Now</a>
+</div>
+{% endif %}
+
 {% if due_reminders %}
 <div style="border:1px solid orange; padding:10px; background:#fff8e1;">
     <strong>EMI Reminders:</strong>
@@ -64,7 +72,10 @@
         <td>{{ account.daily_limit }}</td>
         <td>{{ account.get_remaining_daily_limit }}</td>
         <td>{{ account.get_status_display }}</td>
-        <td><a href="{% url 'transaction_history' account.id %}">View History</a></td>
+        <td>
+            <a href="{% url 'transaction_history' account.id %}">View History</a>
+            | <a href="{% url 'download_account_statement' account.id %}">Download Statement</a>
+        </td>
     </tr>
     {% empty %}
     <tr>
@@ -83,5 +94,14 @@
 <ul>
     <li><a href="{% url 'apply_loan' %}">Apply for a Loan</a></li>
     <li><a href="{% url 'my_loans' %}">My Loans</a></li>
+</ul>
+
+<h3>Banking Services</h3>
+<ul>
+    <li><a href="{% url 'kyc_dashboard' %}">KYC Verification</a></li>
+    <li><a href="{% url 'request_atm_card' %}">Request ATM Card</a></li>
+    <li><a href="{% url 'my_atm_cards' %}">My ATM Cards</a></li>
+    <li><a href="{% url 'request_cheque_book' %}">Request Cheque Book</a></li>
+    <li><a href="{% url 'my_cheque_books' %}">My Cheque Book Requests</a></li>
 </ul>
 {% endblock %}

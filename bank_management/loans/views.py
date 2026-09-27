@@ -12,7 +12,8 @@ from users.models import Employee
 from bank.views import is_admin_or_employee
 from .models import Loan, LoanRepayment, LoanDocument, validate_document_extension, validate_document_size
 from .utils import generate_amortization_schedule, check_eligibility
-
+from services.helpers import require_verified_kyc, check_income_proof_for_loan
+from notifications.helpers import notify, notify_staff
 
 def is_employee(user):
     return user.is_authenticated and Employee.objects.filter(user=user).exists()
@@ -23,6 +24,7 @@ def _owns_loan(user, loan):
 
 
 @login_required
+@require_verified_kyc
 def apply_loan(request):
     if not hasattr(request.user, "customer"):
         messages.error(request, "Only customers can apply for loans.")
@@ -30,6 +32,11 @@ def apply_loan(request):
 
     customer = request.user.customer
     accounts = Account.objects.filter(customer=customer, status="ACTIVE")
+
+    has_income_proof, income_reason = check_income_proof_for_loan(customer.kyc_verification)
+    if not has_income_proof:
+        messages.error(request, income_reason)
+        return redirect("kyc_dashboard")
 
     if request.method == "POST":
         loan_type = request.POST.get("loan_type")
@@ -86,6 +93,13 @@ def apply_loan(request):
             )
             if uploaded_file:
                 LoanDocument.objects.create(loan=loan, document_type=document_type, file=uploaded_file)
+
+        notify_staff(
+            "LOAN",
+            "New loan application",
+            f"{request.user.username} applied for a {loan.get_loan_type_display()} of {amount} ({tenure_months} months).",
+            link="/loans/pending/"
+        )
 
         messages.success(request, "Loan application submitted. Awaiting approval.")
         return redirect("loan_detail", loan_id=loan.id)
@@ -222,6 +236,14 @@ def approve_loan(request, loan_id):
             loan.approved_by = request.user
             loan.approved_date = timezone.now()
             loan.save()
+
+            notify(
+                loan.customer.user, "LOAN",
+                "Loan application rejected",
+                f"Your {loan.get_loan_type_display()} application for {loan.amount} was rejected. Reason: {loan.remarks}",
+                link=f"/loans/{loan.id}/"
+            )
+
             messages.success(request, "Loan rejected.")
             return redirect("pending_loans")
 
@@ -284,6 +306,13 @@ def approve_loan(request, loan_id):
                         Decimal("0.01")
                     )
                     loan.save()
+
+            notify(
+                loan.customer.user, "LOAN",
+                "Loan approved",
+                f"Your {loan.get_loan_type_display()} of {loan.amount} was approved at {interest_rate}% interest.",
+                link=f"/loans/{loan.id}/"
+            )
 
             if not is_renewal:
                 messages.success(request, f"Loan approved and disbursed to {account.account_no}.")

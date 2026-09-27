@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block content %}
+{% if atm_request %}
+<h2>ATM Card Request Status</h2>
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Account</th>
+        <td>{{ atm_request.account.account_no }}</td>
+    </tr>
+    <tr>
+        <th>Card Type</th>
+        <td>{{ atm_request.card_type }}</td>
+    </tr>
+    <tr>
+        <th>Status</th>
+        <td>{{ atm_request.get_status_display }}</td>
+    </tr>
+    <tr>
+        <th>Delivery Address</th>
+        <td>{{ atm_request.delivery_address }}</td>
+    </tr>
+    <tr>
+        <th>Requested At</th>
+        <td>{{ atm_request.requested_at }}</td>
+    </tr>
+    {% if atm_request.status == 'APPROVED' %}
+    <tr>
+        <th>Masked Card Number</th>
+        <td>{{ atm_request.masked_card_number }}</td>
+    </tr>
+    <tr>
+        <th>Approved At</th>
+        <td>{{ atm_request.approved_at }}</td>
+    </tr>
+    {% endif %}
+    {% if atm_request.status == 'REJECTED' %}
+    <tr>
+        <th>Rejection Reason</th>
+        <td>{{ atm_request.rejection_reason }}</td>
+    </tr>
+    {% endif %}
+</table>
+<p><a href="{% url 'my_atm_cards' %}">View All My ATM Card Requests</a></p>
+{% else %}
+<h2>My ATM Card Requests</h2>
+{% if atm_requests %}
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Account</th>
+        <th>Status</th>
+        <th>Requested At</th>
+        <th>Details</th>
+    </tr>
+    {% for req in atm_requests %}
+    <tr>
+        <td>{{ req.account.account_no }}</td>
+        <td>{{ req.get_status_display }}</td>
+        <td>{{ req.requested_at }}</td>
+        <td><a href="{% url 'atm_card_status' req.id %}">View</a></td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<p>You have no ATM card requests yet.</p>
+{% endif %}
+<p><a href="{% url 'request_atm_card' %}">Request New ATM Card</a></p>
+{% endif %}
+
+<p><a href="{% url 'customer_dashboard' %}">Back to Dashboard</a></p>
+{% endblock %}

@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% load services_extras %}
+{% block content %}
+<h2>KYC Verification</h2>
+
+<p><strong>Overall Status:</strong> {{ kyc_verification.get_status_display }}</p>
+
+{% if is_fully_verified %}
+<p style="color: green;"><strong>Your KYC is fully verified.</strong></p>
+{% else %}
+<p style="color: orange;">Your KYC is not fully verified yet. Please upload and get all mandatory documents verified.
+</p>
+{% endif %}
+
+{% if is_missing_income %}
+<p><em>Note: Income proof is not yet verified. This is only required if/when you apply for a loan.</em></p>
+{% endif %}
+
+<h3>Mandatory Documents</h3>
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Document Type</th>
+        <th>Status</th>
+        <th>Uploaded At</th>
+        <th>Action</th>
+    </tr>
+    {% for doc_type in mandatory_types %}
+    {% with status=doc_status|dict_lookup:doc_type %}
+    <tr>
+        <td>{{ doc_type }}</td>
+        <td>
+            {% if status.status == 'MISSING' %}
+            <span style="color: red;">Missing</span>
+            {% elif status.status == 'PENDING' %}
+            <span style="color: orange;">Pending Review</span>
+            {% elif status.status == 'VERIFIED' %}
+            <span style="color: green;">Verified</span>
+            {% elif status.status == 'REJECTED' %}
+            <span style="color: red;">Rejected</span>
+            {% endif %}
+        </td>
+        <td>{{ status.uploaded_at|default:"-" }}</td>
+        <td>
+            {% if status.latest_doc.rejection_reason %}
+            <em>Reason: {{ status.latest_doc.rejection_reason }}</em><br>
+            {% endif %}
+            <a href="{% url 'upload_kyc_document' %}?field={{ doc_type|to_form_field }}">Upload {% if status.status != 'MISSING' %}New{% endif %}
+                Document</a>
+        </td>
+    </tr>
+    {% endwith %}
+    {% endfor %}
+</table>
+
+<h3>Optional Documents (required only for loan applications)</h3>
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Document Type</th>
+        <th>Status</th>
+        <th>Uploaded At</th>
+        <th>Action</th>
+    </tr>
+    {% for doc_type in optional_types %}
+    {% with status=doc_status|dict_lookup:doc_type %}
+    <tr>
+        <td>{{ doc_type }}</td>
+        <td>
+            {% if status.status == 'MISSING' %}
+            <span style="color: gray;">Not Uploaded</span>
+            {% elif status.status == 'PENDING' %}
+            <span style="color: orange;">Pending Review</span>
+            {% elif status.status == 'VERIFIED' %}
+            <span style="color: green;">Verified</span>
+            {% elif status.status == 'REJECTED' %}
+            <span style="color: red;">Rejected</span>
+            {% endif %}
+        </td>
+        <td>{{ status.uploaded_at|default:"-" }}</td>
+        <td>
+            <a href="{% url 'upload_kyc_document' %}?field={{ doc_type|to_form_field }}">Upload Document</a>
+        </td>
+    </tr>
+    {% endwith %}
+    {% endfor %}
+</table>
+
+<p><a href="{% url 'customer_dashboard' %}">Back to Dashboard</a></p>
+{% endblock %}

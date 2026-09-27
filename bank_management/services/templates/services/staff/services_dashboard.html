@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Banking Services Dashboard</h2>
+
+<h3>Pending Actions</h3>
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Pending KYC Documents</th>
+        <td>{{ pending_kyc }}</td>
+        <td><a href="{% url 'pending_kyc_documents' %}">Review</a></td>
+    </tr>
+    <tr>
+        <th>Pending ATM Card Requests</th>
+        <td>{{ pending_atm }}</td>
+        <td><a href="{% url 'pending_atm_card_requests' %}">Review</a></td>
+    </tr>
+    <tr>
+        <th>Pending Cheque Book Requests</th>
+        <td>{{ pending_cheque }}</td>
+        <td><a href="{% url 'pending_cheque_book_requests' %}">Review</a></td>
+    </tr>
+</table>
+
+<h3>Totals</h3>
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Total KYC Verified</th>
+        <td>{{ total_kyc_verified }}</td>
+    </tr>
+    <tr>
+        <th>Total ATM Cards Approved</th>
+        <td>{{ total_atm_approved }}</td>
+    </tr>
+    <tr>
+        <th>Total Cheque Books Approved</th>
+        <td>{{ total_cheque_approved }}</td>
+    </tr>
+</table>
+
+{% if viewer_is_employee %}
+<p><a href="{% url 'employee_dashboard' %}">Back to Dashboard</a></p>
+{% else %}
+<p><a href="{% url 'admin_dashboard' %}">Back to Admin Dashboard</a></p>
+{% endif %}
+{% endblock %}
