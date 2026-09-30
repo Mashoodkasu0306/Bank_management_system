@@ -11,7 +11,8 @@ DEFAULT_PRIORITY = {
 }
 
 
-def notify(recipient_user, category, title, message, link="", priority=None):
+def notify(recipient_user, category, title, message, link="", priority=None,
+           related_type="", related_id=None):
     from .models import Notification
     Notification.objects.create(
         recipient=recipient_user,
@@ -20,10 +21,13 @@ def notify(recipient_user, category, title, message, link="", priority=None):
         title=title,
         message=message,
         link=link,
+        related_type=related_type,
+        related_id=related_id,
     )
 
 
-def notify_staff(category, title, message, link="", priority=None):
+def notify_staff(category, title, message, link="", priority=None,
+                 related_type="", related_id=None):
     from .models import Notification
     employee_user_ids = Employee.objects.values_list("user_id", flat=True)
     admin_users = User.objects.filter(is_superuser=True)
@@ -35,6 +39,7 @@ def notify_staff(category, title, message, link="", priority=None):
             recipient_id=uid, category=category,
             priority=priority or DEFAULT_PRIORITY.get(category, "MEDIUM"),
             title=title, message=message, link=link,
+            related_type=related_type, related_id=related_id,
         )
         for uid in recipients
     ])

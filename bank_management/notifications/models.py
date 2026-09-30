@@ -38,6 +38,11 @@ class Notification(models.Model):
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    # A "name tag" saying exactly which record this notification is about
+    # (for example related_type="KYC", related_id=7). Old notifications have no tag.
+    related_type = models.CharField(max_length=30, blank=True, default="")
+    related_id = models.PositiveIntegerField(null=True, blank=True)
+
     class Meta:
         ordering = ["-created_at"]
 
