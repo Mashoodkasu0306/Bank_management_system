@@ -140,7 +140,9 @@ def upload_kyc_document(request):
                 "KYC",
                 "KYC documents submitted for review",
                 f"{request.user.username} submitted {len(result_docs)} document(s): {summary}.",
-                link="/services/staff/kyc/pending/"
+                link="/services/staff/kyc/pending/",
+                related_type="KYC",
+                related_id=kyc_verification.id,
             )
 
             messages.success(request, f"{len(result_docs)} document(s) submitted. Awaiting verification.")
@@ -586,14 +588,20 @@ def verify_kyc_document(request, document_id):
                     verification_status='PENDING'
                 ).exists()
                 if not still_pending:
+                    kyc_id = document.kyc_verification_id
                     customer_username = document.kyc_verification.customer.user.username
+                    from django.db.models import Q
                     from notifications.models import Notification
                     Notification.objects.filter(
                         category='KYC',
                         is_read=False,
-                        message__icontains=customer_username,
+                        title__in=['New KYC document uploaded', 'KYC documents submitted for review'],
                     ).filter(
-                        title__in=['New KYC document uploaded', 'KYC documents submitted for review']
+                        # New notifications carry a label naming the exact KYC record.
+                        Q(related_type='KYC', related_id=kyc_id) |
+                        # Old notifications have no label: match the START of the message,
+                        # so "ali " can never match "alina submitted ...".
+                        Q(related_type='', message__startswith=f"{customer_username} ")
                     ).update(is_read=True)
 
             status_text = "verified" if status == 'VERIFIED' else "rejected"
