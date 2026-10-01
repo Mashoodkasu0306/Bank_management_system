@@ -26,6 +26,8 @@ from .helpers import (
     generate_card_number, generate_cvv, generate_expiry_date, mask_card_number
 )
 from notifications.helpers import notify, notify_staff
+from audit.helpers import log_action
+from audit.models import Actions
 
 
 def is_employee(user):
@@ -604,6 +606,14 @@ def verify_kyc_document(request, document_id):
                         Q(related_type='', message__startswith=f"{customer_username} ")
                     ).update(is_read=True)
 
+            log_action(
+                Actions.KYC_VERIFIED if status == "VERIFIED" else Actions.KYC_REJECTED,
+                request=request, target_type="KYC_DOCUMENT", target_id=document.id,
+                details=(
+                    f"{document.get_document_type_display()} for {document.kyc_verification.customer.user.username}"
+                    + (f" - reason: {rejection_reason}" if status == "REJECTED" else "")
+                ),
+            )
             status_text = "verified" if status == 'VERIFIED' else "rejected"
 
             customer_user = document.kyc_verification.customer.user
@@ -702,6 +712,14 @@ def approve_atm_card_request(request, request_id):
 
                     messages.success(request, "ATM card request rejected.")
 
+            log_action(
+                Actions.ATM_APPROVED if status == "APPROVED" else Actions.ATM_REJECTED,
+                request=request, target_type="ATM_CARD_REQUEST", target_id=atm_request.id,
+                details=(
+                    f"Account {atm_request.account.account_no} ({atm_request.account.customer.user.username})"
+                    + (f" - reason: {atm_request.rejection_reason}" if status != "APPROVED" else "")
+                ),
+            )
             return redirect('pending_atm_card_requests')
     else:
         form = ATMCardApprovalForm()
@@ -788,6 +806,15 @@ def approve_cheque_book_request(request, request_id):
                     link=f"/services/cheque-book/{cheque_request.id}/status/"
                 )
                 messages.success(request, "Cheque book request rejected.")
+            log_action(
+                Actions.CHEQUE_APPROVED if status == "APPROVED" else Actions.CHEQUE_REJECTED,
+                request=request, target_type="CHEQUE_BOOK_REQUEST", target_id=cheque_request.id,
+                details=(
+                    f"Account {cheque_request.account.account_no}, {cheque_request.leaf_count} leaves, fee {cheque_request.cheque_book_fee}"
+                    if status == "APPROVED"
+                    else f"Account {cheque_request.account.account_no} - reason: {cheque_request.rejection_reason}"
+                ),
+            )
             return redirect('pending_cheque_book_requests')
     else:
         form = ChequebookApprovalForm()

@@ -12,6 +12,8 @@ from users.models import Employee, Customer
 from bank.views import is_admin_or_employee
 from services.helpers import require_verified_kyc
 from notifications.helpers import notify
+from audit.helpers import log_action
+from audit.models import Actions
 
 
 def is_employee(user):
@@ -622,6 +624,19 @@ def approve_transaction(request, txn_id):
                 txn.remarks = f"{txn.remarks} | Rejected by {request.user.username}"
                 txn.save()
                 messages.success(request, "Transaction rejected.")
+
+            if txn.status == "SUCCESS":
+                log_action(
+                    Actions.TXN_APPROVED, request=request,
+                    target_type="TRANSACTION", target_id=txn.id,
+                    details=f"{txn.get_transaction_type_display()} of {txn.amount} approved",
+                )
+            elif txn.status == "FAILED":
+                log_action(
+                    Actions.TXN_REJECTED, request=request,
+                    target_type="TRANSACTION", target_id=txn.id,
+                    details=f"{txn.get_transaction_type_display()} of {txn.amount} - {txn.remarks}",
+                )
 
         return redirect("pending_transactions")
 
