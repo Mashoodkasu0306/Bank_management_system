@@ -147,6 +147,11 @@ def upload_kyc_document(request):
                 related_id=kyc_verification.id,
             )
 
+            log_action(
+                Actions.KYC_UPLOADED, request=request,
+                target_type="KYC", target_id=kyc_verification.id,
+                details=f"Submitted {len(result_docs)} document(s): {summary}",
+            )
             messages.success(request, f"{len(result_docs)} document(s) submitted. Awaiting verification.")
             return redirect('kyc_dashboard')
     else:
@@ -195,6 +200,11 @@ def request_atm_card(request):
                 link="/services/staff/atm-card/pending/"
             )
 
+            log_action(
+                Actions.ATM_REQUESTED, request=request,
+                target_type="ATM_CARD_REQUEST", target_id=atm_request.id,
+                details=f"Account {account.account_no}",
+            )
             messages.success(request, "ATM card request submitted. Awaiting approval.")
             return redirect('atm_card_status', request_id=atm_request.id)
     else:
@@ -270,6 +280,11 @@ def request_cheque_book(request):
                 link="/services/staff/cheque-book/pending/"
             )
 
+            log_action(
+                Actions.CHEQUE_REQUESTED, request=request,
+                target_type="CHEQUE_BOOK_REQUEST", target_id=cheque_request.id,
+                details=f"Account {account.account_no}, {cheque_request.leaf_count} leaves",
+            )
             messages.success(request, "Cheque book request submitted. Awaiting approval.")
             return redirect('cheque_book_status', request_id=cheque_request.id)
     else:
@@ -438,6 +453,11 @@ def confirm_pay_cheque_book_fee(request, request_id):
         link=f"/services/cheque-book/{cheque_request.id}/status/"
     )
 
+    log_action(
+        Actions.CHEQUE_FEE_PAID, request=request,
+        target_type="CHEQUE_BOOK_REQUEST", target_id=cheque_request.id,
+        details=f"Paid {fee} from account {account.account_no} via {mode}",
+    )
     messages.success(request, f"Fee of {fee} paid successfully. Your cheque book order is now being processed.")
     return redirect('cheque_book_status', request_id=cheque_request.id)
 
@@ -493,6 +513,11 @@ def download_account_statement(request, account_id):
                 closing_balance=closing_balance,
             )
 
+            log_action(
+                Actions.STATEMENT_DOWNLOADED, request=request,
+                target_type="ACCOUNT", target_id=account.id,
+                details=f"Account {account.account_no}, {start_date} to {end_date}",
+            )
             response = HttpResponse(pdf_buffer, content_type='application/pdf')
             response['Content-Disposition'] = f'attachment; filename="statement_{account.account_no}_{start_date}_to_{end_date}.pdf"'
             return response

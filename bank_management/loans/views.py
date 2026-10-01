@@ -14,6 +14,8 @@ from .models import Loan, LoanRepayment, LoanDocument, validate_document_extensi
 from .utils import generate_amortization_schedule, check_eligibility
 from services.helpers import require_verified_kyc, check_income_proof_for_loan
 from notifications.helpers import notify, notify_staff
+from audit.helpers import log_action
+from audit.models import Actions
 
 def is_employee(user):
     return user.is_authenticated and Employee.objects.filter(user=user).exists()
@@ -101,6 +103,11 @@ def apply_loan(request):
             link="/loans/pending/"
         )
 
+        log_action(
+            Actions.LOAN_APPLIED, request=request,
+            target_type="LOAN", target_id=loan.id,
+            details=f"{loan.get_loan_type_display()} of {amount} for {tenure_months} months ({loan.get_repayment_type_display()})",
+        )
         messages.success(request, "Loan application submitted. Awaiting approval.")
         return redirect("loan_detail", loan_id=loan.id)
 
@@ -244,6 +251,12 @@ def approve_loan(request, loan_id):
                 link=f"/loans/{loan.id}/"
             )
 
+            log_action(
+                Actions.LOAN_REJECTED, request=request,
+                target_type="LOAN", target_id=loan.id,
+                details=f"{loan.get_loan_type_display()} of {loan.amount} for {loan.customer.user.username} - reason: {loan.remarks}",
+            )
+
             messages.success(request, "Loan rejected.")
             return redirect("pending_loans")
 
@@ -314,6 +327,15 @@ def approve_loan(request, loan_id):
                 link=f"/loans/{loan.id}/"
             )
 
+            log_action(
+                Actions.LOAN_APPROVED, request=request,
+                target_type="LOAN", target_id=loan.id,
+                details=(
+                    f"{loan.get_loan_type_display()} of {loan.amount} for {loan.customer.user.username} at {interest_rate}%"
+                    + (" (renewal)" if is_renewal else "")
+                ),
+            )
+
             if not is_renewal:
                 messages.success(request, f"Loan approved and disbursed to {account.account_no}.")
             else:
@@ -362,6 +384,11 @@ def pay_emi(request, repayment_id):
                 loan.status = "CLOSED"
                 loan.save()
 
+        log_action(
+            Actions.EMI_PAID, request=request,
+            target_type="LOAN", target_id=loan.id,
+            details=f"Installment {repayment.installment_number} of {repayment.emi_amount} paid",
+        )
         messages.success(request, f"EMI of {repayment.emi_amount} paid successfully.")
     return redirect("loan_detail", loan_id=loan.id)
 
@@ -494,6 +521,11 @@ def confirm_pay_lump_sum(request, loan_id):
         if loan.lump_sum_paid >= loan.lump_sum_total_payable:
             loan.status = "CLOSED"
         loan.save()
+        log_action(
+            Actions.LUMP_SUM_PAID, request=request,
+            target_type="LOAN", target_id=loan.id,
+            details=f"Paid {amount} from account {account.account_no} via {mode}",
+        )
         messages.success(request, f"Payment of {amount} successful. Remaining balance: {loan.get_lump_sum_remaining()}")
     return redirect("loan_detail", loan_id=loan.id)
 
@@ -515,6 +547,11 @@ def request_foreclosure(request, loan_id):
         loan.foreclosure_status = "REQUESTED"
         loan.foreclosure_requested_date = timezone.now()
         loan.save()
+        log_action(
+            Actions.FORECLOSURE_REQUESTED, request=request,
+            target_type="LOAN", target_id=loan.id,
+            details=f"Foreclosure requested for loan #{loan.id}",
+        )
         messages.success(request, "Foreclosure request submitted. Awaiting bank approval.")
 
     return redirect("loan_detail", loan_id=loan.id)
@@ -538,6 +575,17 @@ def process_foreclosure(request, loan_id):
         if action == "reject":
             loan.foreclosure_status = "REJECTED"
             loan.save()
+            notify(
+                loan.customer.user, "LOAN",
+                "Foreclosure request rejected",
+                f"Your foreclosure request for loan #{loan.id} was rejected.",
+                link=f"/loans/{loan.id}/"
+            )
+            log_action(
+                Actions.FORECLOSURE_REJECTED, request=request,
+                target_type="LOAN", target_id=loan.id,
+                details=f"Foreclosure request for {loan.customer.user.username} rejected",
+            )
             messages.success(request, "Foreclosure request rejected.")
             return redirect("pending_foreclosures")
 
@@ -571,6 +619,17 @@ def process_foreclosure(request, loan_id):
                 loan.foreclosure_status = "APPROVED"
                 loan.save()
 
+            notify(
+                loan.customer.user, "LOAN",
+                "Foreclosure approved",
+                f"Your loan #{loan.id} was foreclosed. {total_due} was debited from account {account.account_no}.",
+                link=f"/loans/{loan.id}/"
+            )
+            log_action(
+                Actions.FORECLOSURE_APPROVED, request=request,
+                target_type="LOAN", target_id=loan.id,
+                details=f"Loan for {loan.customer.user.username} foreclosed, {total_due} debited from {account.account_no}",
+            )
             messages.success(request, f"Loan #{loan.id} foreclosed. {total_due} debited from {account.account_no}.")
             return redirect("pending_foreclosures")
 
@@ -618,6 +677,11 @@ def renew_loan(request, loan_id):
             original.status = "RENEWED"
             original.save()
 
+        log_action(
+            Actions.LOAN_RENEWED, request=request,
+            target_type="LOAN", target_id=original.id,
+            details=f"Renewed as loan #{new_loan.id} for {total_new_amount} (fee {fee}), customer {original.customer.user.username}",
+        )
         messages.success(request, f"Renewal loan #{new_loan.id} created for {total_new_amount} (includes {fee} renewal fee). Proceed to approve it.")
         return redirect("approve_loan", loan_id=new_loan.id)
 

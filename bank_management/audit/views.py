@@ -10,8 +10,19 @@ from .models import AuditLog, Actions
 MAX_ROWS = 200
 
 # What each kind of person can do. The Action dropdown follows the User type.
-STAFF_ACTIONS = Actions.ALL
-CUSTOMER_ACTIONS = (Actions.LOGIN_SUCCESS, Actions.LOGIN_FAILED, Actions.LOGOUT)
+# Things only a customer can do. Staff never see these in their own list.
+CUSTOMER_ONLY_ACTIONS = (
+    Actions.KYC_UPLOADED, Actions.ATM_REQUESTED, Actions.CHEQUE_REQUESTED,
+    Actions.CHEQUE_FEE_PAID, Actions.LOAN_APPLIED, Actions.EMI_PAID,
+    Actions.LUMP_SUM_PAID, Actions.FORECLOSURE_REQUESTED, Actions.TRANSFER_SENT,
+)
+STAFF_ACTIONS = tuple(a for a in Actions.ALL if a not in CUSTOMER_ONLY_ACTIONS)
+# A statement can be downloaded by a customer or by staff, so it is in both lists.
+CUSTOMER_ACTIONS = (
+    (Actions.LOGIN_SUCCESS, Actions.LOGIN_FAILED, Actions.LOGOUT)
+    + CUSTOMER_ONLY_ACTIONS
+    + (Actions.STATEMENT_DOWNLOADED,)
+)
 
 USER_TYPES = (
     ("EMPLOYEE", "Employee (includes admin)"),

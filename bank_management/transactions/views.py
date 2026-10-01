@@ -472,6 +472,11 @@ def customer_transfer_view(request):
                 link=f"/transactions/history/{to_account.id}/"
             )
 
+            log_action(
+                Actions.TRANSFER_SENT, request=request,
+                target_type="ACCOUNT", target_id=from_account.id,
+                details=f"{amount} from {from_no} to {to_no}",
+            )
             messages.success(request, f"Transferred {amount} from {from_no} to {to_no}.")
             return redirect("customer_transfer")
         except Account.DoesNotExist:
