@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.db.models import Sum
+from django.db import transaction as db_transaction
 from django.utils import timezone
 from datetime import timedelta
 
@@ -114,17 +115,54 @@ def register_customer(request):
             messages.error(request, "Username already exists.")
             return render(request, "users/register_customer.html")
 
-        new_user = User.objects.create_user(username=username, password=password)
+        # Which branch gets the new account: staff use their own branch;
+        # an admin (who has no branch) can choose one with a "branch" form field.
+        employee = Employee.objects.filter(user=request.user).select_related("branch").first()
+        branch = None
+        if employee is not None:
+            branch = employee.branch
+        else:
+            branch_id = request.POST.get("branch", "").strip()
+            if branch_id.isdigit():
+                branch = Branch.objects.filter(id=int(branch_id)).first()
 
-        Customer.objects.create(
-            user=new_user,
-            customer_type=request.POST["customer_type"],
-            dob=request.POST["dob"],
-            gender=request.POST["gender"],
-            address=request.POST["address"],
-            kyc_status="PENDING",
-        )
-        messages.success(request, f"Customer {username} registered successfully.")
+        account_type = request.POST.get("account_type", "SAVINGS")
+        if account_type not in ("SAVINGS", "CURRENT"):
+            account_type = "SAVINGS"
+
+        # All-or-nothing: the login, the customer and the account are
+        # created together, or none of them are.
+        with db_transaction.atomic():
+            new_user = User.objects.create_user(username=username, password=password)
+
+            customer = Customer.objects.create(
+                user=new_user,
+                customer_type=request.POST["customer_type"],
+                dob=request.POST["dob"],
+                gender=request.POST["gender"],
+                address=request.POST["address"],
+                kyc_status="PENDING",
+            )
+
+            account = None
+            if branch is not None:
+                account = Account.objects.create(
+                    customer=customer, branch=branch,
+                    account_type=account_type, status="ACTIVE",
+                )
+
+        if account is not None:
+            messages.success(
+                request,
+                f"Customer {username} registered. {account.get_account_type_display()} "
+                f"account {account.account_no} opened."
+            )
+        else:
+            messages.warning(
+                request,
+                f"Customer {username} registered, but no account was opened because "
+                f"no branch was available. Please open an account for them separately."
+            )
         return redirect("customer_list")
 
     return render(request, "users/register_customer.html")
