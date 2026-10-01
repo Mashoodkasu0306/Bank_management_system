@@ -12,6 +12,7 @@ urlpatterns = [
     path("loans/", include("loans.urls")),
     path("services/", include("services.urls")),
     path("notifications/", include("notifications.urls")),
+    path("audit/", include("audit.urls")),
 
 ]
 

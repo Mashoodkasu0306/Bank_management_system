@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Audit Log{% endblock %}
+{% block content %}
+<h2>Audit Log</h2>
+<p>A record of who did what, and when. Entries cannot be changed or deleted.</p>
+
+<form method="get">
+    <label>Action:
+        <select name="action">
+            <option value="">All actions</option>
+            {% for a in actions %}
+            <option value="{{ a }}" {% if a == selected_action %}selected{% endif %}>{{ a }}</option>
+            {% endfor %}
+        </select>
+    </label>
+    <label>User: <input type="text" name="username" value="{{ username }}"></label>
+    <button type="submit">Filter</button>
+    <a href="{% url 'audit_log' %}">Clear</a>
+</form>
+
+<p>Showing {{ entries|length }} of {{ total }} matching entries (newest first, up to {{ max_rows }}).</p>
+
+<table border="1" cellpadding="6" cellspacing="0">
+    <thead>
+        <tr>
+            <th>When</th>
+            <th>Who</th>
+            <th>Action</th>
+            <th>Record</th>
+            <th>Details</th>
+            <th>IP address</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for e in entries %}
+        <tr>
+            <td>{{ e.created_at|date:"Y-m-d H:i:s" }}</td>
+            <td>{{ e.actor_username|default:"-" }}</td>
+            <td>{{ e.action }}</td>
+            <td>{% if e.target_type %}{{ e.target_type }} #{{ e.target_id }}{% else %}-{% endif %}</td>
+            <td>{{ e.details|default:"-" }}</td>
+            <td>{{ e.ip_address|default:"-" }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="6">No entries found.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
