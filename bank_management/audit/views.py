@@ -1,23 +1,74 @@
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.models import User
+from django.db.models import Q
 from django.shortcuts import render
 
 from bank.views import is_admin
+from users.models import Customer
 from .models import AuditLog, Actions
 
 MAX_ROWS = 200
+
+# What each kind of person can do. The Action dropdown follows the User type.
+STAFF_ACTIONS = Actions.ALL
+CUSTOMER_ACTIONS = (Actions.LOGIN_SUCCESS, Actions.LOGIN_FAILED, Actions.LOGOUT)
+
+USER_TYPES = (
+    ("EMPLOYEE", "Employee (includes admin)"),
+    ("CUSTOMER", "Customer"),
+)
+
+
+def _customer_q():
+    """Entries made by a customer. A failed login has no signed-in user, so
+    for those we match the typed username against the customers' usernames."""
+    customer_usernames = Customer.objects.values_list("user__username", flat=True)
+    return (
+        Q(actor__customer__isnull=False)
+        | Q(actor__isnull=True, actor_username__in=customer_usernames)
+    )
+
+
+def _staff_q():
+    """Entries made by an employee or admin (anyone who is not a customer)."""
+    staff_usernames = User.objects.filter(customer__isnull=True).values_list("username", flat=True)
+    return (
+        Q(actor__isnull=False, actor__customer__isnull=True)
+        | Q(actor__isnull=True, actor_username__in=staff_usernames)
+    )
 
 
 @login_required
 @user_passes_test(is_admin)
 def audit_log_list(request):
+    selected_type = request.GET.get("user_type", "").strip()
+    if selected_type not in ("EMPLOYEE", "CUSTOMER"):
+        selected_type = ""
     selected_action = request.GET.get("action", "").strip()
     username = request.GET.get("username", "").strip()
 
+    action_map = {
+        "": list(Actions.ALL),
+        "EMPLOYEE": list(STAFF_ACTIONS),
+        "CUSTOMER": list(CUSTOMER_ACTIONS),
+    }
+    allowed_actions = action_map[selected_type]
+    if selected_action not in allowed_actions:
+        selected_action = ""
+
     entries = AuditLog.objects.all()
-    if selected_action in Actions.ALL:
+    if selected_type == "CUSTOMER":
+        entries = entries.filter(_customer_q())
+    elif selected_type == "EMPLOYEE":
+        entries = entries.filter(_staff_q())
+    if selected_action:
         entries = entries.filter(action=selected_action)
     if username:
-        entries = entries.filter(actor_username__icontains=username)
+        # Matches the person who did it, OR a name mentioned in the details
+        # (for example the customer a KYC document belonged to).
+        entries = entries.filter(
+            Q(actor_username__icontains=username) | Q(details__icontains=username)
+        )
 
     total = entries.count()
     entries = entries[:MAX_ROWS]
@@ -26,7 +77,10 @@ def audit_log_list(request):
         "entries": entries,
         "total": total,
         "max_rows": MAX_ROWS,
-        "actions": Actions.ALL,
+        "user_types": USER_TYPES,
+        "selected_user_type": selected_type,
+        "actions": allowed_actions,
+        "action_map": action_map,
         "selected_action": selected_action,
         "username": username,
     })

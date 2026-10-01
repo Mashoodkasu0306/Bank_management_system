@@ -5,15 +5,23 @@
 <p>A record of who did what, and when. Entries cannot be changed or deleted.</p>
 
 <form method="get">
+    <label>User type:
+        <select name="user_type" id="user-type">
+            <option value="">All users</option>
+            {% for value, label in user_types %}
+            <option value="{{ value }}" {% if value == selected_user_type %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+    </label>
     <label>Action:
-        <select name="action">
+        <select name="action" id="action-select">
             <option value="">All actions</option>
             {% for a in actions %}
             <option value="{{ a }}" {% if a == selected_action %}selected{% endif %}>{{ a }}</option>
             {% endfor %}
         </select>
     </label>
-    <label>User: <input type="text" name="username" value="{{ username }}"></label>
+    <label>Name (optional): <input type="text" name="username" value="{{ username }}"></label>
     <button type="submit">Filter</button>
     <a href="{% url 'audit_log' %}">Clear</a>
 </form>
@@ -48,4 +56,35 @@
         {% endfor %}
     </tbody>
 </table>
+
+{{ action_map|json_script:"action-map" }}
+<script>
+(function () {
+    var map = JSON.parse(document.getElementById("action-map").textContent);
+    var typeSelect = document.getElementById("user-type");
+    var actionSelect = document.getElementById("action-select");
+
+    // When the user type changes, swap the Action list to match it.
+    typeSelect.addEventListener("change", function () {
+        var list = map[typeSelect.value] || map[""];
+        var keep = actionSelect.value;
+        actionSelect.innerHTML = "";
+
+        var all = document.createElement("option");
+        all.value = "";
+        all.textContent = "All actions";
+        actionSelect.appendChild(all);
+
+        list.forEach(function (a) {
+            var opt = document.createElement("option");
+            opt.value = a;
+            opt.textContent = a;
+            if (a === keep) {
+                opt.selected = true;
+            }
+            actionSelect.appendChild(opt);
+        });
+    });
+})();
+</script>
 {% endblock %}
