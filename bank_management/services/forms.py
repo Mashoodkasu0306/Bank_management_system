@@ -1,7 +1,46 @@
+import os
+
 from django import forms
 from django.core.exceptions import ValidationError
 
 from .models import KYCDocument, ATMCardRequest, ChequebookRequest
+
+
+# ============================================================================
+# DOCUMENT FILE CHECK
+# ============================================================================
+
+# Allowed file types, and what each one must really contain.
+ALLOWED_DOCUMENT_TYPES = {
+    ".pdf": "PDF",
+    ".jpg": "JPEG",
+    ".jpeg": "JPEG",
+    ".png": "PNG",
+}
+
+
+def detect_file_kind(file):
+    """Look at the first bytes of the file to see what it really is."""
+    file.seek(0)
+    head = file.read(1024)
+    file.seek(0)
+    if head.startswith(b"\xff\xd8\xff"):
+        return "JPEG"
+    if head.startswith(b"\x89PNG\r\n\x1a\n"):
+        return "PNG"
+    if b"%PDF-" in head:
+        return "PDF"
+    return None
+
+
+def check_document_file(file):
+    """Raises ValidationError unless the file is really a PDF, JPG or PNG."""
+    extension = os.path.splitext(file.name)[1].lower()
+    expected_kind = ALLOWED_DOCUMENT_TYPES.get(extension)
+    if expected_kind is None:
+        raise ValidationError("Unsupported file type. Allowed: PDF, JPG, JPEG, PNG.")
+    if detect_file_kind(file) != expected_kind:
+        raise ValidationError("The file contents do not match its type. Please upload a real PDF, JPG or PNG.")
 
 
 # ============================================================================
@@ -64,8 +103,15 @@ class KYCDocumentUploadForm(forms.Form):
 
         for field in self.fields:
             file = cleaned_data.get(field)
-            if file and file.size > 5 * 1024 * 1024:
-                raise ValidationError(f"{self.fields[field].label}: file size must not exceed 5MB.")
+            if not file:
+                continue
+            label = self.fields[field].label
+            if file.size > 5 * 1024 * 1024:
+                raise ValidationError(f"{label}: file size must not exceed 5MB.")
+            try:
+                check_document_file(file)
+            except ValidationError as error:
+                raise ValidationError(f"{label}: {error.messages[0]}")
 
         return cleaned_data
 
