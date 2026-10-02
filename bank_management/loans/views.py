@@ -13,6 +13,7 @@ from bank.views import is_admin_or_employee
 from .models import Loan, LoanRepayment, LoanDocument, validate_document_extension, validate_document_size
 from .utils import generate_amortization_schedule, check_eligibility
 from services.helpers import require_verified_kyc, check_income_proof_for_loan
+from services.forms import check_document_file
 from notifications.helpers import notify, notify_staff
 from audit.helpers import log_action
 from audit.models import Actions
@@ -73,6 +74,7 @@ def apply_loan(request):
             try:
                 validate_document_extension(uploaded_file)
                 validate_document_size(uploaded_file)
+                check_document_file(uploaded_file)
             except ValidationError as e:
                 messages.error(request, "; ".join(e.messages))
                 return redirect("apply_loan")
@@ -137,6 +139,7 @@ def upload_loan_document(request, loan_id):
         try:
             validate_document_extension(uploaded_file)
             validate_document_size(uploaded_file)
+            check_document_file(uploaded_file)
         except ValidationError as e:
             messages.error(request, "; ".join(e.messages))
             return redirect("loan_detail", loan_id=loan.id)
