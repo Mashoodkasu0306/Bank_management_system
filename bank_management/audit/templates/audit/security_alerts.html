@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Security Alerts{% endblock %}
+{% block content %}
+<h2>Security Alerts</h2>
+<p>Warnings raised automatically when something looks unusual. Mark an alert as reviewed once you have looked into it.</p>
+
+<p>
+    <a href="?status=open">Open ({{ open_count }})</a> |
+    <a href="?status=reviewed">Reviewed</a> |
+    <a href="?status=all">All</a>
+    &nbsp;- showing: <strong>{{ status }}</strong>
+</p>
+
+<table border="1" cellpadding="6" cellspacing="0">
+    <thead>
+        <tr>
+            <th>When</th>
+            <th>Type</th>
+            <th>About</th>
+            <th>What happened</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for a in alerts %}
+        <tr>
+            <td>{{ a.created_at|date:"Y-m-d H:i:s" }}</td>
+            <td>{{ a.get_alert_type_display }}</td>
+            <td>{{ a.subject }}</td>
+            <td>{{ a.message }}</td>
+            <td>{% if a.is_reviewed %}Reviewed by {{ a.reviewed_by.username|default:"-" }} on {{ a.reviewed_at|date:"Y-m-d H:i" }}{% else %}Open{% endif %}</td>
+            <td>
+                {% if not a.is_reviewed %}
+                <form method="post" action="{% url 'review_alert' a.id %}">
+                    {% csrf_token %}
+                    <button type="submit">Mark reviewed</button>
+                </form>
+                {% else %}-{% endif %}
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="6">No alerts here.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

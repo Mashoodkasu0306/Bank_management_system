@@ -1,6 +1,7 @@
 from django.contrib.auth.signals import user_logged_in, user_logged_out, user_login_failed
 from django.dispatch import receiver
 
+from .alerts import check_failed_logins
 from .helpers import log_action
 from .models import Actions
 
@@ -21,4 +22,5 @@ def record_failed_login(sender, credentials, request=None, **kwargs):
     # Only the username is kept. The password in `credentials` is never stored.
     attempted = str(credentials.get("username", ""))[:150]
     log_action(Actions.LOGIN_FAILED, request=request, username=attempted)
-    
+    # Too many failures in a short time? Raise an alert.
+    check_failed_logins(attempted)

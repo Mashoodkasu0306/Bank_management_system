@@ -41,6 +41,9 @@ class Actions:
     FORECLOSURE_REQUESTED = "FORECLOSURE_REQUESTED"
     TRANSFER_SENT = "TRANSFER_SENT"
 
+    # An admin looked at a security alert
+    ALERT_REVIEWED = "ALERT_REVIEWED"
+
     ALL = (
         LOGIN_SUCCESS, LOGIN_FAILED, LOGOUT,
         KYC_VERIFIED, KYC_REJECTED, ATM_APPROVED, ATM_REJECTED,
@@ -52,6 +55,7 @@ class Actions:
         KYC_UPLOADED, ATM_REQUESTED, CHEQUE_REQUESTED, CHEQUE_FEE_PAID,
         STATEMENT_DOWNLOADED, LOAN_APPLIED, EMI_PAID, LUMP_SUM_PAID,
         FORECLOSURE_REQUESTED, TRANSFER_SENT,
+        ALERT_REVIEWED,
     )
 
 
@@ -87,3 +91,35 @@ class AuditLog(models.Model):
 
     def delete(self, *args, **kwargs):
         raise PermissionError("Audit log entries cannot be deleted.")
+
+
+class SecurityAlert(models.Model):
+    """A warning raised automatically when something looks unusual.
+    An admin reviews it and marks it as reviewed."""
+
+    FAILED_LOGINS = "FAILED_LOGINS"
+    LARGE_TRANSFER = "LARGE_TRANSFER"
+    TYPE_CHOICES = [
+        (FAILED_LOGINS, "Many failed logins"),
+        (LARGE_TRANSFER, "Unusually large transfer"),
+    ]
+
+    alert_type = models.CharField(max_length=30, choices=TYPE_CHOICES, db_index=True)
+    subject = models.CharField(max_length=150)  # a username, or an account number
+    message = models.CharField(max_length=500)
+    target_type = models.CharField(max_length=30, blank=True)
+    target_id = models.PositiveIntegerField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    is_reviewed = models.BooleanField(default=False)
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name="reviewed_alerts",
+    )
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-created_at", "-id"]
+
+    def __str__(self):
+        return f"{self.get_alert_type_display()} - {self.subject}"

@@ -14,6 +14,7 @@ from services.helpers import require_verified_kyc
 from notifications.helpers import notify
 from audit.helpers import log_action
 from audit.models import Actions
+from audit.alerts import check_large_transfer
 
 
 def is_employee(user):
@@ -477,6 +478,8 @@ def customer_transfer_view(request):
                 target_type="ACCOUNT", target_id=from_account.id,
                 details=f"{amount} from {from_no} to {to_no}",
             )
+            check_large_transfer(from_account, amount)
+
             messages.success(request, f"Transferred {amount} from {from_no} to {to_no}.")
             return redirect("customer_transfer")
         except Account.DoesNotExist:

@@ -81,7 +81,7 @@
             <nav>
                 {% if user.is_authenticated %}
                 Logged in as {{ user.username }} |
-                {% if not user.customer and not user.employee %}<a href="{% url 'audit_log' %}">Audit Log</a> |{% endif %}
+                {% if not user.customer and not user.employee %}<a href="{% url 'audit_log' %}">Audit Log</a> | <a href="{% url 'security_alerts' %}">Security Alerts</a> |{% endif %}
                 <a href="{% url 'logout' %}">Logout</a>
                 {% elif request.path != "/login/" %}
                 <a href="{% url 'login' %}">Login</a>

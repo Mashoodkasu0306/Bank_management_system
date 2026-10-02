@@ -1,15 +1,18 @@
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
 from django.db.models import Q
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
+from django.views.decorators.http import require_POST
 
 from bank.views import is_admin
 from users.models import Customer
-from .models import AuditLog, Actions
+from .helpers import log_action
+from .models import AuditLog, Actions, SecurityAlert
 
 MAX_ROWS = 200
 
-# What each kind of person can do. The Action dropdown follows the User type.
 # Things only a customer can do. Staff never see these in their own list.
 CUSTOMER_ONLY_ACTIONS = (
     Actions.KYC_UPLOADED, Actions.ATM_REQUESTED, Actions.CHEQUE_REQUESTED,
@@ -95,3 +98,46 @@ def audit_log_list(request):
         "selected_action": selected_action,
         "username": username,
     })
+
+
+@login_required
+@user_passes_test(is_admin)
+def security_alerts(request):
+    status = request.GET.get("status", "open").strip()
+    if status not in ("open", "reviewed", "all"):
+        status = "open"
+
+    alerts = SecurityAlert.objects.select_related("reviewed_by")
+    if status == "open":
+        alerts = alerts.filter(is_reviewed=False)
+    elif status == "reviewed":
+        alerts = alerts.filter(is_reviewed=True)
+
+    return render(request, "audit/security_alerts.html", {
+        "alerts": alerts[:MAX_ROWS],
+        "status": status,
+        "open_count": SecurityAlert.objects.filter(is_reviewed=False).count(),
+    })
+
+
+@login_required
+@user_passes_test(is_admin)
+@require_POST
+def review_alert(request, alert_id):
+    alert = get_object_or_404(SecurityAlert, id=alert_id)
+
+    if not alert.is_reviewed:
+        alert.is_reviewed = True
+        alert.reviewed_by = request.user
+        alert.reviewed_at = timezone.now()
+        alert.save()
+        log_action(
+            Actions.ALERT_REVIEWED, request=request,
+            target_type="SECURITY_ALERT", target_id=alert.id,
+            details=f"{alert.get_alert_type_display()}: {alert.subject}",
+        )
+        messages.success(request, "Alert marked as reviewed.")
+    else:
+        messages.error(request, "This alert was already reviewed.")
+
+    return redirect("security_alerts")
