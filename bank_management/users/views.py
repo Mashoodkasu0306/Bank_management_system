@@ -13,6 +13,8 @@ from bank.views import is_admin, is_admin_or_employee
 from bank.models import Bank, Branch
 from accounts.models import Account
 from transactions.models import Transaction
+from audit.helpers import log_action
+from audit.models import Actions
 
 
 def user_login(request):
@@ -151,6 +153,15 @@ def register_customer(request):
                     account_type=account_type, status="ACTIVE",
                 )
 
+        log_action(
+            Actions.CUSTOMER_REGISTERED, request=request,
+            target_type="CUSTOMER", target_id=customer.id,
+            details=(
+                f"{username} registered"
+                + (f" with account {account.account_no}" if account is not None else " (no account opened)")
+            ),
+        )
+
         if account is not None:
             messages.success(
                 request,
@@ -187,6 +198,11 @@ def update_customer(request, customer_id):
         customer.address = request.POST["address"]
         customer.kyc_status = request.POST["kyc_status"]
         customer.save()
+        log_action(
+            Actions.CUSTOMER_UPDATED, request=request,
+            target_type="CUSTOMER", target_id=customer.id,
+            details=f"{customer.user.username} updated (KYC status: {customer.kyc_status})",
+        )
         messages.success(request, "Customer updated successfully.")
         return redirect("customer_list")
 
@@ -199,6 +215,11 @@ def deactivate_customer(request, customer_id):
     customer = get_object_or_404(Customer, id=customer_id)
     customer.user.is_active = False
     customer.user.save()
+    log_action(
+        Actions.CUSTOMER_DEACTIVATED, request=request,
+        target_type="CUSTOMER", target_id=customer.id,
+        details=f"{customer.user.username} deactivated",
+    )
     messages.success(request, f"{customer.user.username} has been deactivated.")
     return redirect("customer_list")
 
@@ -209,5 +230,10 @@ def activate_customer(request, customer_id):
     customer = get_object_or_404(Customer, id=customer_id)
     customer.user.is_active = True
     customer.user.save()
+    log_action(
+        Actions.CUSTOMER_ACTIVATED, request=request,
+        target_type="CUSTOMER", target_id=customer.id,
+        details=f"{customer.user.username} reactivated",
+    )
     messages.success(request, f"{customer.user.username} has been reactivated.")
     return redirect("customer_list")
