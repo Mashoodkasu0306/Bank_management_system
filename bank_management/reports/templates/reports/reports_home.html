@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+{% block title %}Reports{% endblock %}
+{% block content %}
+<h2>Reports</h2>
+
+<form method="get">
+    Start: <input type="date" name="start" value="{{ start|date:'Y-m-d' }}">
+    End: <input type="date" name="end" value="{{ end|date:'Y-m-d' }}">
+    {% if role == "admin" %}
+    Branch:
+    <select name="branch">
+        <option value="">All branches</option>
+        {% for b in branches %}
+        <option value="{{ b.id }}" {% if selected_branch and selected_branch.id == b.id %}selected{% endif %}>{{ b.name }} ({{ b.branch_code }})</option>
+        {% endfor %}
+    </select>
+    {% else %}
+    Branch: <strong>{{ branch_label }}</strong>
+    {% endif %}
+    <button type="submit">Show report</button>
+</form>
+
+<p>Showing <strong>{{ branch_label }}</strong> from {{ start|date:"d M Y" }} to {{ end|date:"d M Y" }}.</p>
+<p><a href="?{{ qs }}&amp;export=pdf">Download full report (PDF)</a></p>
+
+<h3>Transactions by day and type</h3>
+<p>
+    Only successful deposits, withdrawals and transfers are counted. Loan payouts and loan repayments are left out here.
+    A deposit counts for the receiving account's branch; a withdrawal or transfer counts for the sending account's branch.
+</p>
+<p><a href="?start={{ start|date:'Y-m-d' }}&amp;end={{ end|date:'Y-m-d' }}{% if selected_branch and role == 'admin' %}&amp;branch={{ selected_branch.id }}{% endif %}&amp;export=totals">Download CSV</a></p>
+<table border="1" cellpadding="6">
+    <tr>
+        <th rowspan="2">Date</th>
+        <th colspan="2">Deposits</th>
+        <th colspan="2">Withdrawals</th>
+        <th colspan="2">Transfers</th>
+    </tr>
+    <tr>
+        <th>Count</th><th>Amount</th>
+        <th>Count</th><th>Amount</th>
+        <th>Count</th><th>Amount</th>
+    </tr>
+    {% for d in days %}
+    <tr>
+        <td>{{ d.day|date:"d M Y" }}</td>
+        <td>{{ d.deposit_count }}</td><td>{{ d.deposit_total|floatformat:2 }}</td>
+        <td>{{ d.withdraw_count }}</td><td>{{ d.withdraw_total|floatformat:2 }}</td>
+        <td>{{ d.transfer_count }}</td><td>{{ d.transfer_total|floatformat:2 }}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="7">No successful transactions in this period.</td></tr>
+    {% endfor %}
+    <tr>
+        <th>Total</th>
+        <th>{{ grand.deposit_count }}</th><th>{{ grand.deposit_total|floatformat:2 }}</th>
+        <th>{{ grand.withdraw_count }}</th><th>{{ grand.withdraw_total|floatformat:2 }}</th>
+        <th>{{ grand.transfer_count }}</th><th>{{ grand.transfer_total|floatformat:2 }}</th>
+    </tr>
+</table>
+
+<h3>Failed transactions</h3>
+<p>{{ failed_total }} failed transaction{{ failed_total|pluralize }} in this period.
+    {% if failed_total > failed_limit %}Showing the latest {{ failed_limit }}; the CSV has all of them.{% endif %}</p>
+{% if failed_total %}
+<p><a href="?start={{ start|date:'Y-m-d' }}&amp;end={{ end|date:'Y-m-d' }}{% if selected_branch and role == 'admin' %}&amp;branch={{ selected_branch.id }}{% endif %}&amp;export=failed">Download CSV</a></p>
+<table border="1" cellpadding="6">
+    <tr>
+        <th>Date</th><th>Type</th><th>From</th><th>To</th><th>Amount</th><th>Performed by</th><th>Remarks</th>
+    </tr>
+    {% for t in failed_rows %}
+    <tr>
+        <td>{{ t.timestamp }}</td>
+        <td>{{ t.get_transaction_type_display }}</td>
+        <td>{{ t.from_account.account_no|default:"-" }}</td>
+        <td>{{ t.to_account.account_no|default:"-" }}</td>
+        <td>{{ t.amount }}</td>
+        <td>{{ t.performed_by.username|default:"-" }}</td>
+        <td>{{ t.remarks }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endif %}
+
+<h3>New customers and accounts</h3>
+<p>
+    {{ new_customers_count }} new customer{{ new_customers_count|pluralize }} and
+    {{ new_accounts_count }} new account{{ new_accounts_count|pluralize }} in this period.
+    {% if selected_branch %}A customer is counted here if they have an account in this branch.{% endif %}
+</p>
+<p>
+    <a href="?{{ qs }}&amp;export=customers">Download customers CSV</a> |
+    <a href="?{{ qs }}&amp;export=accounts">Download accounts CSV</a>
+</p>
+{% if new_accounts_count %}
+{% if new_accounts_count > rows_limit %}<p>Showing the latest {{ rows_limit }}; the CSV has all of them.</p>{% endif %}
+<table border="1" cellpadding="6">
+    <tr><th>Account no</th><th>Customer</th><th>Type</th><th>Branch</th><th>Opened on</th></tr>
+    {% for a in new_accounts_rows %}
+    <tr>
+        <td>{{ a.account_no }}</td>
+        <td>{{ a.customer.user.username }}</td>
+        <td>{{ a.get_account_type_display }}</td>
+        <td>{{ a.branch.name }}</td>
+        <td>{{ a.open_date }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endif %}
+
+<h3>Loans</h3>
+<p>
+    Loan counts, balances and overdue figures are as of today, whatever dates are chosen above.
+    Only the "Loans paid out and repaid in this period" table follows the dates.
+</p>
+<p><a href="?{{ qs }}&amp;export=loans">Download loan summary CSV</a></p>
+
+<h4>Loans by status</h4>
+<table border="1" cellpadding="6">
+    <tr><th>Status</th><th>Loans</th></tr>
+    {% for r in loan_status_rows %}
+    <tr><td>{{ r.label }}</td><td>{{ r.count }}</td></tr>
+    {% endfor %}
+    <tr><th>Total</th><th>{{ loan_total }}</th></tr>
+</table>
+<p>A loan changes to Defaulted only when someone opens its page, so a few overdue loans may still show as Approved.</p>
+
+<h4>Money still owed on active loans (Approved or Defaulted)</h4>
+<table border="1" cellpadding="6">
+    <tr><th></th><th>Loans</th><th>Amount</th></tr>
+    <tr>
+        <td>Outstanding principal on EMI loans</td>
+        <td>{{ loan_outstanding.emi_loans }}</td>
+        <td>{{ loan_outstanding.outstanding_principal|floatformat:2 }}</td>
+    </tr>
+    <tr>
+        <td>Interest still to come on those loans (from the repayment schedule)</td>
+        <td>{{ loan_outstanding.emi_loans }}</td>
+        <td>{{ loan_outstanding.scheduled_interest|floatformat:2 }}</td>
+    </tr>
+    <tr>
+        <td>Remaining on lump-sum loans (principal and interest together)</td>
+        <td>{{ loan_outstanding.lump_loans }}</td>
+        <td>{{ loan_outstanding.lump_remaining|floatformat:2 }}</td>
+    </tr>
+</table>
+
+<h4>Loans paid out and repaid in this period</h4>
+<table border="1" cellpadding="6">
+    <tr><th></th><th>Transactions</th><th>Amount</th></tr>
+    <tr><td>Loans paid out</td><td>{{ loan_money.payouts.count }}</td><td>{{ loan_money.payouts.total|floatformat:2 }}</td></tr>
+    <tr><td>EMI payments collected</td><td>{{ loan_money.emi.count }}</td><td>{{ loan_money.emi.total|floatformat:2 }}</td></tr>
+    <tr><td>Foreclosure payments collected</td><td>{{ loan_money.foreclosure.count }}</td><td>{{ loan_money.foreclosure.total|floatformat:2 }}</td></tr>
+    <tr><td>Lump-sum and other loan payments collected</td><td>{{ loan_money.other.count }}</td><td>{{ loan_money.other.total|floatformat:2 }}</td></tr>
+    <tr><th>Total repayments collected</th><th>{{ loan_money.repayments.count }}</th><th>{{ loan_money.repayments.total|floatformat:2 }}</th></tr>
+</table>
+
+<h4>Overdue installments by age</h4>
+<p>
+    Unpaid installments past their due date on active EMI loans. Age is the number of days since the due date.
+    Lump-sum loans have no installments, so they are not in this table.
+</p>
+<p>
+    <a href="?{{ qs }}&amp;export=overdue">Download summary CSV</a> |
+    <a href="?{{ qs }}&amp;export=overdue_detail">Download detailed list CSV</a>
+</p>
+<table border="1" cellpadding="6">
+    <tr><th>Age</th><th>Installments</th><th>Loans</th><th>Amount overdue</th></tr>
+    {% for r in overdue_rows %}
+    <tr><td>{{ r.label }}</td><td>{{ r.installments }}</td><td>{{ r.loans }}</td><td>{{ r.amount|floatformat:2 }}</td></tr>
+    {% endfor %}
+    <tr>
+        <th>{{ overdue_total.label }}</th><th>{{ overdue_total.installments }}</th>
+        <th>{{ overdue_total.loans }}</th><th>{{ overdue_total.amount|floatformat:2 }}</th>
+    </tr>
+</table>
+
+{% if role == "admin" %}
+<h3>Branch-wise summary</h3>
+<p>All branches, whatever branch is chosen above. Same rules as the transaction table: successful, ordinary transactions only.</p>
+<p><a href="?{{ qs }}&amp;export=branches">Download CSV</a></p>
+<table border="1" cellpadding="6">
+    <tr>
+        <th>Branch</th><th>Transactions</th><th>Deposits</th><th>Withdrawals</th>
+        <th>Transfers</th><th>New accounts</th><th>New customers</th><th>Active loans</th><th>Overdue amount</th>
+    </tr>
+    {% for r in branch_rows %}
+    <tr>
+        <td>{{ r.branch.name }} ({{ r.branch.branch_code }})</td>
+        <td>{{ r.txn_count }}</td>
+        <td>{{ r.deposit_total|floatformat:2 }}</td>
+        <td>{{ r.withdraw_total|floatformat:2 }}</td>
+        <td>{{ r.transfer_total|floatformat:2 }}</td>
+        <td>{{ r.new_accounts }}</td>
+        <td>{{ r.new_customers }}</td>
+        <td>{{ r.active_loans }}</td>
+        <td>{{ r.overdue_amount|floatformat:2 }}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="9">No branches yet.</td></tr>
+    {% endfor %}
+</table>
+{% endif %}
+{% endblock %}
