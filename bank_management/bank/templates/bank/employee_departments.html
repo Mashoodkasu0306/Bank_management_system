@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Employee Departments</h2>
+<p>Each employee works in one department. Notifications for a department go only to the employees in it. Admins receive all notifications. An employee with no department receives none.</p>
+
+{% if messages %}
+  {% for message in messages %}
+    <p style="color:{% if message.tags == 'error' %}red{% else %}green{% endif %};">{{ message }}</p>
+  {% endfor %}
+{% endif %}
+
+<table border="1" cellpadding="6" cellspacing="0">
+  <tr>
+    <th>Employee</th><th>Branch</th><th>Role</th><th>Current department</th><th>Change to</th>
+  </tr>
+  {% for emp in employees %}
+  <tr>
+    <td>{{ emp.user.username }}</td>
+    <td>{% if emp.branch %}{{ emp.branch.name }}{% else %}-{% endif %}</td>
+    <td>{{ emp.role }}</td>
+    <td>{% if emp.department %}{{ emp.get_department_display }}{% else %}None{% endif %}</td>
+    <td>
+      <form method="POST" style="margin:0;">
+        {% csrf_token %}
+        <input type="hidden" name="employee" value="{{ emp.id }}">
+        <select name="department">
+          <option value="" {% if not emp.department %}selected{% endif %}>-- No department --</option>
+          {% for value, label in departments %}
+          <option value="{{ value }}" {% if emp.department == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+        <button type="submit">Save</button>
+      </form>
+    </td>
+  </tr>
+  {% empty %}
+  <tr><td colspan="5">No employees yet.</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}

@@ -11,7 +11,7 @@ from .models import Transaction
 from users.models import Employee, Customer
 from bank.views import is_admin_or_employee
 from services.helpers import require_verified_kyc
-from notifications.helpers import notify
+from notifications.helpers import notify, notify_pending_transaction
 from audit.helpers import log_action
 from audit.models import Actions
 from audit.alerts import check_large_transfer
@@ -92,7 +92,7 @@ def deposit_view(request):
 
                 today_total = get_today_transacted_amount(account, "DEPOSIT")
                 if today_total + amount > account.daily_limit:
-                    Transaction.objects.create(
+                    pending_txn = Transaction.objects.create(
                         transaction_type="DEPOSIT",
                         to_account=account,
                         amount=amount,
@@ -101,6 +101,7 @@ def deposit_view(request):
                         performed_by=request.user,
                         remarks=f"Exceeds daily limit ({account.daily_limit}); awaiting approval",
                     )
+                    notify_pending_transaction(pending_txn)
                     messages.error(request, f"This deposit exceeds the account's daily limit of {account.daily_limit}. Sent for approval.")
                     return redirect("deposit")
 
@@ -156,7 +157,7 @@ def withdraw_view(request):
 
                 today_total = get_today_debit_total(account)
                 if today_total + amount > account.daily_limit:
-                    Transaction.objects.create(
+                    pending_txn = Transaction.objects.create(
                         transaction_type="WITHDRAW",
                         from_account=account,
                         amount=amount,
@@ -165,6 +166,7 @@ def withdraw_view(request):
                         performed_by=request.user,
                         remarks=f"Exceeds daily limit ({account.daily_limit}); awaiting approval",
                     )
+                    notify_pending_transaction(pending_txn)
                     messages.error(request, f"This withdrawal exceeds the account's daily limit of {account.daily_limit}. Sent for approval.")
                     return redirect("withdraw")
 
@@ -248,7 +250,7 @@ def transfer_view(request):
 
                 today_total = get_today_debit_total(from_account)
                 if today_total + amount > from_account.daily_limit:
-                    Transaction.objects.create(
+                    pending_txn = Transaction.objects.create(
                         transaction_type="TRANSFER",
                         from_account=from_account,
                         to_account=to_account,
@@ -258,6 +260,7 @@ def transfer_view(request):
                         performed_by=request.user,
                         remarks=f"Exceeds daily limit ({from_account.daily_limit}); awaiting approval",
                     )
+                    notify_pending_transaction(pending_txn)
                     messages.error(request, f"This transfer exceeds the source account's daily limit of {from_account.daily_limit}. Sent for approval.")
                     return redirect("transfer")
 
@@ -417,7 +420,7 @@ def customer_transfer_view(request):
 
                 today_total = get_today_debit_total(from_account)
                 if today_total + amount > from_account.daily_limit:
-                    Transaction.objects.create(
+                    pending_txn = Transaction.objects.create(
                         transaction_type="TRANSFER",
                         from_account=from_account,
                         to_account=to_account,
@@ -427,6 +430,7 @@ def customer_transfer_view(request):
                         performed_by=request.user,
                         remarks=f"Exceeds daily limit ({from_account.daily_limit}); awaiting approval",
                     )
+                    notify_pending_transaction(pending_txn)
                     messages.error(request, f"This transfer exceeds your account's daily limit of {from_account.daily_limit}. Sent for approval.")
                     return redirect("customer_transfer")
 
@@ -645,6 +649,14 @@ def approve_transaction(request, txn_id):
                     target_type="TRANSACTION", target_id=txn.id,
                     details=f"{txn.get_transaction_type_display()} of {txn.amount} - {txn.remarks}",
                 )
+
+            # This transaction has been decided, so the staff alerts about it are done.
+            if txn.status in ("SUCCESS", "FAILED"):
+                from notifications.models import Notification
+                Notification.objects.filter(
+                    category="TRANSACTION", is_read=False,
+                    related_type="TRANSACTION", related_id=txn.id,
+                ).update(is_read=True)
 
         return redirect("pending_transactions")
 

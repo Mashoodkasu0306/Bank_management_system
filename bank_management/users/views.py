@@ -80,7 +80,13 @@ def employee_dashboard(request):
     if not hasattr(request.user, 'employee'):
         return redirect("login")
 
-    return render(request, "users/employee_dashboard.html")
+    from .dashboard import dashboard_sections
+
+    employee = request.user.employee
+    return render(request, "users/employee_dashboard.html", {
+        "sections": dashboard_sections(employee.department),
+        "department_label": employee.get_department_display() if employee.department else "",
+    })
 
 
 def is_employee(user):

@@ -15,7 +15,7 @@ class KYCNotificationClearingTestCase(TestCase):
         self.bank, self.branch = make_bank_branch()
         self.ali_user, self.ali = make_customer(username="ali")
         self.alina_user, self.alina = make_customer(username="alina")
-        self.emp_user, self.employee = make_employee(self.branch)
+        self.emp_user, self.employee = make_employee(self.branch, department="KYC")
 
         self.ali_kyc = KYCVerification.objects.create(customer=self.ali)
         self.alina_kyc = KYCVerification.objects.create(customer=self.alina)

@@ -1,7 +1,10 @@
 {% extends "base.html" %}
 {% block content %}
 <h2>Employee Dashboard</h2>
-<p>Welcome, {{ user.username }}.</p>
+<p>Welcome, {{ user.username }}.{% if department_label %} Department: <strong>{{ department_label }}</strong>.{% endif %}</p>
+{% if not department_label %}
+<p><em>No department assigned yet. Ask an admin to assign one. Until then you will not receive department notifications.</em></p>
+{% endif %}
 {% if messages %}
 <ul>
     {% for message in messages %}
@@ -9,42 +12,12 @@
     {% endfor %}
 </ul>
 {% endif %}
-<h3>Bank Structure</h3>
+{% for section in sections %}
+<h3>{{ section.title }}{% if section.mine %} <small>(your department)</small>{% endif %}</h3>
 <ul>
-    <li><a href="{% url 'bank_list' %}">View Banks</a></li>
-    <li><a href="{% url 'branch_list' %}">View Branches</a></li>
+    {% for link in section.links %}
+    <li><a href="{{ link.url }}">{{ link.label }}</a></li>
+    {% endfor %}
 </ul>
-<h3>Customer Management</h3>
-<ul>
-    <li><a href="{% url 'register_customer' %}">Register New Customer</a></li>
-    <li><a href="{% url 'customer_list' %}">View All Customers</a></li>
-</ul>
-<h3>Accounts</h3>
-<ul>
-    <li><a href="{% url 'create_account' %}">Open New Account</a></li>
-    <li><a href="{% url 'account_list' %}">View All Accounts</a></li>
-</ul>
-<h3>Transactions</h3>
-<ul>
-    <li><a href="{% url 'deposit' %}">Deposit</a></li>
-    <li><a href="{% url 'withdraw' %}">Withdraw</a></li>
-    <li><a href="{% url 'transfer' %}">Transfer</a></li>
-    <li><a href="{% url 'my_transactions' %}">My Transactions</a></li>
-    <li><a href="{% url 'employee_search_customer_transactions' %}">Search Customer Transactions</a></li>
-    <li><a href="{% url 'pending_transactions' %}">Pending Approvals</a></li>
-    <li><a href="{% url 'branch_report' %}">My Branch Report</a></li>
-</ul>
-<h3>Loans</h3>
-<ul>
-    <li><a href="{% url 'pending_loans' %}">Pending Loan Applications</a></li>
-    <li><a href="{% url 'all_loans' %}">All Loans</a></li>
-    <li><a href="{% url 'pending_foreclosures' %}">Pending Foreclosure Requests</a></li>
-</ul>
-<h3>Banking Services</h3>
-<ul>
-    <li><a href="{% url 'services_dashboard' %}">Services Dashboard</a></li>
-    <li><a href="{% url 'pending_kyc_documents' %}">Pending KYC Documents</a></li>
-    <li><a href="{% url 'pending_atm_card_requests' %}">Pending ATM Card Requests</a></li>
-    <li><a href="{% url 'pending_cheque_book_requests' %}">Pending Cheque Book Requests</a></li>
-</ul>
+{% endfor %}
 {% endblock %}

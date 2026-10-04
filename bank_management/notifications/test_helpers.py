@@ -10,7 +10,7 @@ class NotificationLabelTestCase(TestCase):
     def setUp(self):
         self.bank, self.branch = make_bank_branch()
         self.user, self.customer = make_customer(username="ali")
-        self.emp_user, self.employee = make_employee(self.branch)
+        self.emp_user, self.employee = make_employee(self.branch, department="KYC")
 
     def test_notify_saves_the_label(self):
         notify(self.user, "KYC", "Title", "Message", related_type="KYC", related_id=7)
@@ -26,7 +26,7 @@ class NotificationLabelTestCase(TestCase):
 
     def test_notify_staff_saves_the_label_for_every_staff_member(self):
         User.objects.create_superuser(username="boss", password="x", email="boss@test.com")
-        notify_staff("STAFF_REQUEST", "Title", "Message", related_type="KYC", related_id=3)
+        notify_staff("STAFF_REQUEST", "Title", "Message", department="KYC", related_type="KYC", related_id=3)
         notes = Notification.objects.all()
         self.assertEqual(notes.count(), 2)  # one employee + one superuser
         for n in notes:
@@ -35,9 +35,9 @@ class NotificationLabelTestCase(TestCase):
 
     def test_label_tells_similar_usernames_apart_but_text_search_cannot(self):
         make_customer(username="alina")
-        notify_staff("STAFF_REQUEST", "KYC pending", "Documents pending for ali",
+        notify_staff("STAFF_REQUEST", "KYC pending", "Documents pending for ali", department="KYC",
                      related_type="KYC", related_id=1)
-        notify_staff("STAFF_REQUEST", "KYC pending", "Documents pending for alina",
+        notify_staff("STAFF_REQUEST", "KYC pending", "Documents pending for alina", department="KYC",
                      related_type="KYC", related_id=2)
 
         # The old way: searching the text for "ali" wrongly finds BOTH.

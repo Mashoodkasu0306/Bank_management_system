@@ -11,6 +11,17 @@ DEFAULT_PRIORITY = {
 }
 
 
+# Which department handles each kind of request.
+# STAFF_REQUEST is left out on purpose: unless a department is named, only admins get it.
+DEPARTMENT_FOR_CATEGORY = {
+    "TRANSACTION": "TRANSACTIONS",
+    "LOAN": "LOANS",
+    "KYC": "KYC",
+    "ATM_CARD": "CARDS_SERVICES",
+    "CHEQUE_BOOK": "CARDS_SERVICES",
+}
+
+
 def notify(recipient_user, category, title, message, link="", priority=None,
            related_type="", related_id=None):
     from .models import Notification
@@ -26,10 +37,16 @@ def notify(recipient_user, category, title, message, link="", priority=None,
     )
 
 
-def notify_staff(category, title, message, link="", priority=None,
+def notify_staff(category, title, message, link="", priority=None, department=None,
                  related_type="", related_id=None):
     from .models import Notification
-    employee_user_ids = Employee.objects.values_list("user_id", flat=True)
+    # Each category goes only to the department that handles it.
+    # A department can also be named directly. Admins always get it.
+    dept = department or DEPARTMENT_FOR_CATEGORY.get(category)
+    if dept:
+        employee_user_ids = Employee.objects.filter(department=dept).values_list("user_id", flat=True)
+    else:
+        employee_user_ids = []
     admin_users = User.objects.filter(is_superuser=True)
 
     recipients = set(employee_user_ids) | set(admin_users.values_list("id", flat=True))
@@ -43,3 +60,22 @@ def notify_staff(category, title, message, link="", priority=None,
         )
         for uid in recipients
     ])
+
+
+def notify_pending_transaction(txn):
+    """Tell the Transactions department that a transaction is waiting for approval."""
+    from django.urls import reverse
+    account = txn.from_account or txn.to_account
+    account_no = account.account_no if account else "-"
+    message = (
+        f"{txn.transaction_type.title()} of {txn.amount} on account {account_no} "
+        f"needs approval. {txn.remarks}"
+    )
+    notify_staff(
+        "TRANSACTION",
+        "Transaction awaiting approval",
+        message[:500],
+        link=reverse("pending_transactions"),
+        related_type="TRANSACTION",
+        related_id=txn.id,
+    )

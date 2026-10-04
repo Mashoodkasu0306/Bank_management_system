@@ -39,10 +39,10 @@ def make_customer(username="cust1", password="testpass123"):
     return user, customer
 
 
-def make_employee(branch, username="emp1", password="testpass123"):
+def make_employee(branch, username="emp1", password="testpass123", department=""):
     user = User.objects.create_user(username=username, password=password)
     employee = Employee.objects.create(
-        user=user, branch=branch, role="Clerk", department="Operations",
+        user=user, branch=branch, role="Clerk", department=department,
         salary=Decimal("30000.00"), date_of_joining="2020-01-01"
     )
     return user, employee

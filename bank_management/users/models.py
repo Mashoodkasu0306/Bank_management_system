@@ -27,7 +27,18 @@ class Employee(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     branch = models.ForeignKey(Branch, on_delete=models.SET_NULL, null=True, blank=True)
     role = models.CharField(max_length=50)
-    department = models.CharField(max_length=50)
+    DEPARTMENT_CHOICES = [
+        ("TRANSACTIONS", "Transactions"),
+        ("LOANS", "Loans"),
+        ("KYC", "KYC"),
+        ("ACCOUNT_OPENING", "Account Opening"),
+        ("CARDS_SERVICES", "Cards and Services"),
+        ("SUPPORT", "Customer Support"),
+    ]
+
+    department = models.CharField(
+        max_length=50, choices=DEPARTMENT_CHOICES, blank=True, default=""
+    )
     salary = models.DecimalField(max_digits=10, decimal_places=2)
     date_of_joining = models.DateField()
 
