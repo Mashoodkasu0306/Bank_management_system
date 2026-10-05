@@ -3,6 +3,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
 from django.contrib import messages
+from django.views.decorators.cache import never_cache
 from django.db.models import Sum
 from django.db import transaction as db_transaction
 from django.utils import timezone
@@ -17,7 +18,16 @@ from audit.helpers import log_action
 from audit.models import Actions
 
 
+@never_cache
 def user_login(request):
+    if request.method != "POST" and request.user.is_authenticated:
+        messages.info(
+            request,
+            f"You are already logged in as {request.user.username}. "
+            "Log out first to sign in as someone else.",
+        )
+        return redirect("home")
+
     if request.method == "POST":
         username = request.POST.get("username")
         password = request.POST.get("password")
@@ -40,6 +50,7 @@ def user_login(request):
     return render(request, "users/login.html")
 
 
+@never_cache
 def user_logout(request):
     logout(request)
     return redirect("login")

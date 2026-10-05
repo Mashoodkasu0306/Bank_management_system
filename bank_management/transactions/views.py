@@ -363,6 +363,10 @@ def my_transactions(request):
 @login_required
 @require_verified_kyc
 def customer_transfer_view(request):
+    from services.freeze import frozen_block_response
+    frozen = frozen_block_response(request, "online transfers")
+    if frozen:
+        return frozen
     if not hasattr(request.user, "customer"):
         messages.error(request, "Only customers can access self-service transfers.")
         return redirect("customer_dashboard")

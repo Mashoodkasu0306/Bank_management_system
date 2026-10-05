@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Emergency Freezes</h2>
+<p>These customers pressed the emergency button. Their cards are frozen and their online transfers are blocked.
+    Lift a freeze only after you have confirmed who the customer is, and write down how.</p>
+
+<h3>Active freezes</h3>
+{% if active %}
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Customer</th>
+        <th>Started</th>
+        <th>Cards frozen</th>
+        <th>Lift</th>
+    </tr>
+    {% for f in active %}
+    <tr>
+        <td>{{ f.customer.user.username }}</td>
+        <td>{{ f.started_at }}</td>
+        <td>{{ f.cards_frozen }}</td>
+        <td>
+            <form method="POST" action="{% url 'lift_freeze' f.id %}"
+                onsubmit="return confirm('Lift this freeze? Only do this after confirming who the customer is.');">
+                {% csrf_token %}
+                <input type="text" name="note" placeholder="How was identity confirmed?" required size="40"
+                    maxlength="300">
+                <button type="submit">Lift freeze</button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<p>No active freezes.</p>
+{% endif %}
+
+<h3>Recently lifted</h3>
+{% if lifted %}
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Customer</th>
+        <th>Started</th>
+        <th>Lifted</th>
+        <th>By</th>
+        <th>Note</th>
+    </tr>
+    {% for f in lifted %}
+    <tr>
+        <td>{{ f.customer.user.username }}</td>
+        <td>{{ f.started_at }}</td>
+        <td>{{ f.lifted_at }}</td>
+        <td>{% if f.lifted_by %}{{ f.lifted_by.username }}{% else %}-{% endif %}</td>
+        <td>{{ f.lift_note }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<p>Nothing lifted yet.</p>
+{% endif %}
+
+{% if user.employee %}
+<p><a href="{% url 'employee_dashboard' %}">Back to Dashboard</a></p>
+{% else %}
+<p><a href="{% url 'admin_dashboard' %}">Back to Admin Dashboard</a></p>
+{% endif %}
+{% endblock %}

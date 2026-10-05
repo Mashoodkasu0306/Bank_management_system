@@ -167,6 +167,17 @@ class ATMCardRequest(models.Model):
     delivered_at = models.DateTimeField(null=True, blank=True)
     rejection_reason = models.TextField(blank=True)
 
+    # Card controls. "" = active, "CUSTOMER" = the customer froze it,
+    # "EMERGENCY" = frozen by the emergency button (only staff can lift that).
+    freeze_state = models.CharField(
+        max_length=10, blank=True, default="", editable=False,
+        choices=[("", "Active"), ("CUSTOMER", "Frozen by customer"), ("EMERGENCY", "Frozen (emergency)")],
+    )
+    # Optional daily limit set by the customer. Saved for the card; nothing spends from cards yet.
+    card_daily_limit = models.DecimalField(
+        max_digits=12, decimal_places=2, null=True, blank=True, editable=False
+    )
+
     def __str__(self):
         return f"ATM Card - {self.account.account_no} ({self.status})"
 
@@ -243,3 +254,31 @@ class AccountStatement(models.Model):
 
     def __str__(self):
         return f"Statement {self.account.account_no} ({self.start_date} to {self.end_date})"
+
+
+# ============================================================================
+# EMERGENCY FREEZE
+# ============================================================================
+
+class EmergencyFreeze(models.Model):
+    """A customer pressed the emergency button. While lifted_at is empty, the freeze is active."""
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name="emergency_freezes")
+    started_at = models.DateTimeField(auto_now_add=True)
+    lifted_at = models.DateTimeField(null=True, blank=True)
+    lifted_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="lifted_freezes"
+    )
+    lift_note = models.CharField(max_length=300, blank=True, help_text="How the customer was verified")
+
+    class Meta:
+        ordering = ["-started_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["customer"], condition=models.Q(lifted_at__isnull=True),
+                name="one_active_freeze_per_customer",
+            ),
+        ]
+
+    def __str__(self):
+        state = "active" if self.lifted_at is None else "lifted"
+        return f"Emergency freeze {self.customer.user.username} ({state})"

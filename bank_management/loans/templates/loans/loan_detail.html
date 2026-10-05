@@ -73,8 +73,7 @@
 <h3>Documents</h3>
 <ul>
     {% for doc in documents %}
-    <li>{{ doc.get_document_type_display }} - <a href="{{ doc.file.url }}" target="_blank">View</a> ({{ doc.uploaded_at
-        }})</li>
+    <li>{{ doc.get_document_type_display }} - <a href="{{ doc.file.url }}" target="_blank">View</a> ({{ doc.uploaded_at }})</li>
     {% empty %}
     <li>No documents uploaded.</li>
     {% endfor %}

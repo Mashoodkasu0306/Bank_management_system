@@ -36,6 +36,10 @@ SECTIONS = {
         ("pending_atm_card_requests", "Pending ATM Card Requests"),
         ("pending_cheque_book_requests", "Pending Cheque Book Requests"),
     ]),
+    # Shown only to the Customer Support department (it is not in DEFAULT_ORDER).
+    "support": ("Customer Support", [
+        ("frozen_customers", "Emergency Freezes"),
+    ]),
 }
 
 DEFAULT_ORDER = ["bank", "customers", "accounts", "transactions", "loans", "kyc", "cards"]
@@ -47,7 +51,7 @@ FIRST_FOR_DEPARTMENT = {
     "KYC": ["kyc"],
     "ACCOUNT_OPENING": ["customers", "accounts"],
     "CARDS_SERVICES": ["cards"],
-    "SUPPORT": [],
+    "SUPPORT": ["support"],
 }
 
 

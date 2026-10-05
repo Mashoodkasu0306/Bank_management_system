@@ -13,17 +13,28 @@
 {% endif %}
 
 {% if due_reminders %}
-<div style="border:1px solid orange; padding:10px; background:#fff8e1;">
-    <strong>EMI Reminders:</strong>
-    <ul>
+<div style="border:1px solid orange; padding:10px; background:#fff8e1; margin-bottom:15px;">
+    <strong>EMI Reminders</strong>
+    <table border="1" cellpadding="6" cellspacing="0" style="margin-top:8px; background:#ffffff;">
+        <tr>
+            <th>Loan</th>
+            <th>Installment</th>
+            <th>Amount</th>
+            <th>Due date</th>
+            <th>Status</th>
+            <th></th>
+        </tr>
         {% for r in due_reminders %}
-        <li>
-            Loan #{{ r.loan.id }} ({{ r.loan.get_loan_type_display }}) - Installment {{ r.installment_number }}, {{
-            r.emi_amount }} due {{ r.due_date }} {% if r.get_dpd_days > 0 %}<strong style="color:red;">(OVERDUE by {{
-                r.get_dpd_days }} days)</strong>{% endif %} - <a href="{% url 'loan_detail' r.loan.id %}">Pay Now</a>
-        </li>
+        <tr>
+            <td>#{{ r.loan.id }} ({{ r.loan.get_loan_type_display }})</td>
+            <td>{{ r.installment_number }}</td>
+            <td>{{ r.emi_amount }}</td>
+            <td>{{ r.due_date }}</td>
+            <td>{% if r.get_dpd_days > 0 %}<strong style="color:red;">Overdue by {{ r.get_dpd_days }} days</strong>{% else %}Upcoming{% endif %}</td>
+            <td><a href="{% url 'loan_detail' r.loan.id %}">Pay Now</a></td>
+        </tr>
         {% endfor %}
-    </ul>
+    </table>
 </div>
 {% endif %}
 
@@ -101,6 +112,7 @@
     <li><a href="{% url 'kyc_dashboard' %}">KYC Verification</a></li>
     <li><a href="{% url 'request_atm_card' %}">Request ATM Card</a></li>
     <li><a href="{% url 'my_atm_cards' %}">My ATM Cards</a></li>
+    <li><a href="{% url 'card_controls' %}">Card Controls and Emergency Freeze</a></li>
     <li><a href="{% url 'request_cheque_book' %}">Request Cheque Book</a></li>
     <li><a href="{% url 'my_cheque_books' %}">My Cheque Book Requests</a></li>
 </ul>

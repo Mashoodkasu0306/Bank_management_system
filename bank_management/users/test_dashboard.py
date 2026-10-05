@@ -12,7 +12,7 @@ def keys(department):
 class DashboardOrderTestCase(TestCase):
     def test_every_block_is_always_present(self):
         for dept in ["", "TRANSACTIONS", "LOANS", "KYC", "ACCOUNT_OPENING",
-                     "CARDS_SERVICES", "SUPPORT", "something-old"]:
+                     "CARDS_SERVICES", "something-old"]:
             self.assertCountEqual(keys(dept), DEFAULT_ORDER)
 
     def test_no_department_keeps_the_default_order(self):

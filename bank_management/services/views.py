@@ -316,6 +316,10 @@ def cheque_book_status(request, request_id):
 
 @login_required
 def pay_cheque_book_fee(request, request_id):
+    from .freeze import frozen_block_response
+    frozen = frozen_block_response(request, "cheque book fee payments")
+    if frozen:
+        return frozen
     """Step 1: collect account/mode - then show confirmation before actual debit."""
     cheque_request = get_object_or_404(ChequebookRequest, id=request_id, status='APPROVED')
 
@@ -386,6 +390,10 @@ def pay_cheque_book_fee(request, request_id):
 
 @login_required
 def confirm_pay_cheque_book_fee(request, request_id):
+    from .freeze import frozen_block_response
+    frozen = frozen_block_response(request, "cheque book fee payments")
+    if frozen:
+        return frozen
     """Step 2: the actual debit happens only here, after explicit confirmation."""
     cheque_request = get_object_or_404(ChequebookRequest, id=request_id, status='APPROVED')
 

@@ -1,5 +1,5 @@
 from django.urls import path
-from . import views
+from . import views, card_views, freeze_views
 
 urlpatterns = [
     # ------------------------------------------------------------------
@@ -30,6 +30,14 @@ urlpatterns = [
     path("statement/<int:account_id>/download/", views.download_account_statement, name="download_account_statement"),
 
     # ------------------------------------------------------------------
+    # CARD CONTROLS - CUSTOMER
+    # ------------------------------------------------------------------
+    path("cards/controls/", card_views.card_controls, name="card_controls"),
+    path("cards/<int:card_id>/freeze/", card_views.card_freeze_toggle, name="card_freeze_toggle"),
+    path("cards/<int:card_id>/limit/", card_views.card_set_limit, name="card_set_limit"),
+    path("cards/emergency-freeze/", card_views.emergency_freeze_start, name="emergency_freeze_start"),
+
+    # ------------------------------------------------------------------
     # STAFF: KYC APPROVAL
     # ------------------------------------------------------------------
     path("staff/kyc/pending/", views.pending_kyc_documents, name="pending_kyc_documents"),
@@ -52,4 +60,10 @@ urlpatterns = [
     # STAFF: SERVICES DASHBOARD
     # ------------------------------------------------------------------
     path("staff/dashboard/", views.services_dashboard, name="services_dashboard"),
+
+    # ------------------------------------------------------------------
+    # STAFF: EMERGENCY FREEZES
+    # ------------------------------------------------------------------
+    path("staff/frozen-customers/", freeze_views.frozen_customers, name="frozen_customers"),
+    path("staff/frozen-customers/<int:freeze_id>/lift/", freeze_views.lift_freeze, name="lift_freeze"),
 ]
