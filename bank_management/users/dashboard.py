@@ -39,6 +39,7 @@ SECTIONS = {
     # Shown only to the Customer Support department (it is not in DEFAULT_ORDER).
     "support": ("Customer Support", [
         ("frozen_customers", "Emergency Freezes"),
+        ("support_staff_cases", "Support Cases (disputes and complaints)"),
     ]),
 }
 

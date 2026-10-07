@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Support Cases</h2>
+<p>Disputes and complaints from customers. No money moves from here: staff accept or reject each case with a written answer.</p>
+<p>
+    Open cases: {{ open_cases|length }}{% if overdue_count %} | <strong style="color:#c0392b;">Past due: {{ overdue_count }}</strong>{% endif %}
+    |
+    {% if only_mine %}<a href="{% url 'support_staff_cases' %}">Show all open cases</a>{% else %}<a href="{% url 'support_staff_cases' %}?mine=1">Show only my cases</a>{% endif %}
+</p>
+
+<h3>Open cases (earliest due date first)</h3>
+{% if open_cases %}
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Case</th>
+        <th>Type</th>
+        <th>Customer</th>
+        <th>Subject</th>
+        <th>Status</th>
+        <th>Handled by</th>
+        <th>Answer due by</th>
+        <th></th>
+    </tr>
+    {% for c in open_cases %}
+    <tr>
+        <td>{{ c.reference }}</td>
+        <td>{{ c.get_case_type_display }}</td>
+        <td>{{ c.customer.user.username }}</td>
+        <td>{{ c.subject }}</td>
+        <td>{{ c.get_status_display }}</td>
+        <td>{% if c.assigned_to %}{{ c.assigned_to.username }}{% else %}-{% endif %}</td>
+        <td>{{ c.due_at }}{% if c.is_overdue %} <strong style="color:#c0392b;">(past due)</strong>{% endif %}</td>
+        <td><a href="{% url 'support_staff_case' c.id %}">Open</a></td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<p>No open cases.</p>
+{% endif %}
+
+<h3>Recently decided</h3>
+{% if decided_cases %}
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Case</th>
+        <th>Type</th>
+        <th>Customer</th>
+        <th>Subject</th>
+        <th>Decision</th>
+        <th>Decided by</th>
+        <th>Decided on</th>
+        <th></th>
+    </tr>
+    {% for c in decided_cases %}
+    <tr>
+        <td>{{ c.reference }}</td>
+        <td>{{ c.get_case_type_display }}</td>
+        <td>{{ c.customer.user.username }}</td>
+        <td>{{ c.subject }}</td>
+        <td>{{ c.get_status_display }}</td>
+        <td>{% if c.decided_by %}{{ c.decided_by.username }}{% else %}-{% endif %}</td>
+        <td>{{ c.decided_at }}</td>
+        <td><a href="{% url 'support_staff_case' c.id %}">View</a></td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<p>Nothing decided yet.</p>
+{% endif %}
+
+{% if user.employee %}
+<p><a href="{% url 'employee_dashboard' %}">Back to Dashboard</a></p>
+{% else %}
+<p><a href="{% url 'admin_dashboard' %}">Back to Admin Dashboard</a></p>
+{% endif %}
+{% endblock %}

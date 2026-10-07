@@ -10,6 +10,7 @@ class Notification(models.Model):
         ("CHEQUE_BOOK", "Cheque Book"),
         ("LOAN", "Loan"),
         ("STAFF_REQUEST", "Staff - Pending Request"),
+        ("SUPPORT_CASE", "Support Case"),
     ]
 
     PRIORITY_CHOICES = [
@@ -27,6 +28,7 @@ class Notification(models.Model):
         "ATM_CARD": "SECURITY",
         "CHEQUE_BOOK": "SECURITY",
         "STAFF_REQUEST": "STAFF",
+        "SUPPORT_CASE": "SUPPORT",
     }
 
     recipient = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="notifications")

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Raise a Case</h2>
+<p>A <strong>dispute</strong> is about one transaction, for example a charge you do not recognise.
+    A <strong>complaint</strong> is about our service.</p>
+<p>The bank answers disputes within {{ deadlines.DISPUTE }} days and complaints within {{ deadlines.COMPLAINT }} days.
+    This page does not move any money. If a dispute is accepted, the bank arranges any refund separately.</p>
+
+<form method="POST" action="{% url 'support_raise_case' %}">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Submit case</button>
+</form>
+
+<p><a href="{% url 'support_my_cases' %}">Back to My Cases</a></p>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>My Security Activity</h2>
+<p>The important things that happened on your account recently, newest first.
+    If you see something you do not recognise, <a href="{% url 'card_controls' %}">freeze your cards</a>
+    and contact the bank.</p>
+
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Previous sign-in</th>
+        <td>
+            {% if previous_login %}
+            {{ previous_login.created_at }} from {% if previous_login.ip_address %}{{ previous_login.ip_address }}{% else %}an unknown address{% endif %}
+            {% else %}
+            This is your first recorded sign-in.
+            {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <th>Failed sign-ins in the last 7 days</th>
+        <td>{{ failed_week }}{% if failed_week %} <strong style="color:red;">If this was not you, contact the bank.</strong>{% endif %}</td>
+    </tr>
+    <tr>
+        <th>Emergency freeze</th>
+        <td>{% if freeze %}ON since {{ freeze.started_at }}{% else %}Off{% endif %}</td>
+    </tr>
+</table>
+
+<h3>Recent activity</h3>
+{% if rows %}
+<table border="1" cellpadding="8">
+    <tr>
+        <th>When</th>
+        <th>What happened</th>
+        <th>Details</th>
+        <th>From (IP address)</th>
+    </tr>
+    {% for row in rows %}
+    <tr>
+        <td>{{ row.when }}</td>
+        <td>{% if row.warn %}<strong style="color:red;">{{ row.label }}</strong>{% else %}{{ row.label }}{% endif %}</td>
+        <td>{{ row.details }}</td>
+        <td>{% if row.ip %}{{ row.ip }}{% else %}-{% endif %}</td>
+    </tr>
+    {% endfor %}
+</table>
+<p><small>Up to 100 recent entries are shown. This list cannot be changed.</small></p>
+{% else %}
+<p>Nothing recorded yet.</p>
+{% endif %}
+
+<p><a href="{% url 'customer_dashboard' %}">Back to Dashboard</a></p>
+{% endblock %}

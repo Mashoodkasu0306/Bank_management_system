@@ -5,13 +5,6 @@
 {% if not department_label %}
 <p><em>No department assigned yet. Ask an admin to assign one. Until then you will not receive department notifications.</em></p>
 {% endif %}
-{% if messages %}
-<ul>
-    {% for message in messages %}
-    <li style="color: {% if message.tags == 'error' %}red{% else %}green{% endif %};">{{ message }}</li>
-    {% endfor %}
-</ul>
-{% endif %}
 {% for section in sections %}
 <h3>{{ section.title }}{% if section.mine %} <small>(your department)</small>{% endif %}</h3>
 <ul>

@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>{{ case.reference }}: {{ case.subject }}</h2>
+
+<table border="1" cellpadding="8">
+    <tr><th>Type</th><td>{{ case.get_case_type_display }}</td></tr>
+    <tr><th>About</th><td>{{ case.get_category_display }}</td></tr>
+    <tr><th>Status</th><td>{{ case.get_status_display }}</td></tr>
+    <tr><th>Raised on</th><td>{{ case.created_at }}</td></tr>
+    {% if case.is_open %}<tr><th>Answer due by</th><td>{{ case.due_at }}</td></tr>{% endif %}
+    {% if case.account %}<tr><th>Account</th><td>{{ case.account.account_no }}</td></tr>{% endif %}
+    {% if case.transaction %}<tr><th>Transaction</th><td>{{ case.transaction.timestamp }}: {{ case.transaction.get_transaction_type_display }} {{ case.transaction.amount }}</td></tr>{% endif %}
+</table>
+
+<h3>What you wrote</h3>
+<p>{{ case.description|linebreaksbr }}</p>
+
+{% if not case.is_open %}
+<div style="border:1px solid #888; padding:10px; margin:15px 0;">
+    <strong>The bank's decision: {{ case.get_status_display }}</strong> on {{ case.decided_at }}<br>
+    {{ case.decision_note|linebreaksbr }}
+</div>
+{% endif %}
+
+<h3>Messages</h3>
+{% if thread %}
+<table border="1" cellpadding="8">
+    <tr>
+        <th>From</th>
+        <th>When</th>
+        <th>Message</th>
+    </tr>
+    {% for m in thread %}
+    <tr>
+        <td>{% if m.from_staff %}The bank{% else %}You{% endif %}</td>
+        <td>{{ m.created_at }}</td>
+        <td>{{ m.body|linebreaksbr }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<p>No messages yet.</p>
+{% endif %}
+
+{% if case.is_open %}
+<h3>Add a reply</h3>
+<form method="POST" action="{% url 'support_case_reply' case.id %}">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Send reply</button>
+</form>
+{% else %}
+<p>This case is closed, so replies are turned off. If something is still wrong, please raise a new case.</p>
+{% endif %}
+
+<p><a href="{% url 'support_my_cases' %}">Back to My Cases</a></p>
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>{{ case.reference }}: {{ case.subject }}</h2>
+
+<table border="1" cellpadding="8">
+    <tr><th>Customer</th><td>{{ case.customer.user.username }}</td></tr>
+    <tr><th>Type</th><td>{{ case.get_case_type_display }}</td></tr>
+    <tr><th>About</th><td>{{ case.get_category_display }}</td></tr>
+    <tr><th>Status</th><td>{{ case.get_status_display }}</td></tr>
+    <tr><th>Raised on</th><td>{{ case.created_at }}</td></tr>
+    <tr><th>Answer due by</th><td>{{ case.due_at }}{% if case.is_overdue %} <strong style="color:#c0392b;">(past due)</strong>{% endif %}</td></tr>
+    <tr><th>Handled by</th><td>{% if case.assigned_to %}{{ case.assigned_to.username }}{% else %}Nobody yet{% endif %}</td></tr>
+    {% if case.account %}<tr><th>Account</th><td>{{ case.account.account_no }}</td></tr>{% endif %}
+    {% if case.transaction %}<tr><th>Transaction</th><td>{{ case.transaction.timestamp }}: {{ case.transaction.get_transaction_type_display }} {{ case.transaction.amount }} ({{ case.transaction.get_status_display }}) {{ case.transaction.remarks }}</td></tr>{% endif %}
+</table>
+
+<h3>What the customer wrote</h3>
+<p>{{ case.description|linebreaksbr }}</p>
+
+{% if not case.is_open %}
+<div style="border:1px solid #888; padding:10px; margin:15px 0;">
+    <strong>Decision: {{ case.get_status_display }}</strong> by {% if case.decided_by %}{{ case.decided_by.username }}{% else %}-{% endif %} on {{ case.decided_at }}<br>
+    {{ case.decision_note|linebreaksbr }}
+</div>
+{% endif %}
+
+<h3>Messages</h3>
+{% if thread %}
+<table border="1" cellpadding="8">
+    <tr>
+        <th>From</th>
+        <th>When</th>
+        <th>Message</th>
+    </tr>
+    {% for m in thread %}
+    <tr>
+        <td>{% if m.from_staff %}{{ m.author.username }} (bank){% else %}Customer{% endif %}</td>
+        <td>{{ m.created_at }}</td>
+        <td>{{ m.body|linebreaksbr }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<p>No messages yet.</p>
+{% endif %}
+
+{% if case.is_open %}
+{% if case.assigned_to_id != user.id %}
+<form method="POST" action="{% url 'support_staff_pick_up' case.id %}" style="margin:15px 0;">
+    {% csrf_token %}
+    <button type="submit">Pick up this case</button>
+</form>
+{% endif %}
+
+<h3>Reply to the customer</h3>
+<form method="POST" action="{% url 'support_staff_reply' case.id %}">
+    {% csrf_token %}
+    {{ reply_form.as_p }}
+    <button type="submit">Send reply</button>
+</form>
+
+<h3>Decide this case</h3>
+<p>Accepting or rejecting closes the case. The customer sees your written answer. No refund is made from here.</p>
+<form method="POST" action="{% url 'support_staff_decide' case.id %}"
+    onsubmit="return confirm('Save this decision? The customer will see your answer and it cannot be changed.');">
+    {% csrf_token %}
+    {{ decision_form.as_p }}
+    <button type="submit">Save decision</button>
+</form>
+{% else %}
+<p>This case is closed, so replies and decisions are turned off.</p>
+{% endif %}
+
+<p><a href="{% url 'support_staff_cases' %}">Back to Support Cases</a></p>
+{% endblock %}

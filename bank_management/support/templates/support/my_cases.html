@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>My Cases</h2>
+<p>Raise a dispute about a transaction, or a complaint about our service. The bank answers every case in writing.</p>
+<p>
+    <a href="{% url 'support_raise_case' %}?type=DISPUTE">Raise a dispute</a>
+    |
+    <a href="{% url 'support_raise_case' %}?type=COMPLAINT">Raise a complaint</a>
+</p>
+
+<h3>Open cases</h3>
+{% if open_cases %}
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Case</th>
+        <th>Type</th>
+        <th>Subject</th>
+        <th>Status</th>
+        <th>Answer due by</th>
+        <th></th>
+    </tr>
+    {% for c in open_cases %}
+    <tr>
+        <td>{{ c.reference }}</td>
+        <td>{{ c.get_case_type_display }}</td>
+        <td>{{ c.subject }}</td>
+        <td>{{ c.get_status_display }}</td>
+        <td>{{ c.due_at }}{% if c.is_overdue %} <strong style="color:#c0392b;">(past due)</strong>{% endif %}</td>
+        <td><a href="{% url 'support_case_detail' c.id %}">View</a></td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<p>You have no open cases.</p>
+{% endif %}
+
+<h3>Answered cases</h3>
+{% if decided_cases %}
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Case</th>
+        <th>Type</th>
+        <th>Subject</th>
+        <th>Decision</th>
+        <th>Decided on</th>
+        <th></th>
+    </tr>
+    {% for c in decided_cases %}
+    <tr>
+        <td>{{ c.reference }}</td>
+        <td>{{ c.get_case_type_display }}</td>
+        <td>{{ c.subject }}</td>
+        <td>{{ c.get_status_display }}</td>
+        <td>{{ c.decided_at }}</td>
+        <td><a href="{% url 'support_case_detail' c.id %}">View</a></td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<p>No answered cases yet.</p>
+{% endif %}
+
+<p><a href="{% url 'customer_dashboard' %}">Back to Dashboard</a></p>
+{% endblock %}

@@ -13,6 +13,9 @@
     |
     <a href="?tab=BILLS_LOANS"><strong>{% if active_tab == "BILLS_LOANS" %}[Bills & Loans]{% else %}Bills & Loans{% endif %}</strong></a>
     {% if unread_by_group.BILLS_LOANS %}({{ unread_by_group.BILLS_LOANS }}){% endif %}
+    |
+    <a href="?tab=SUPPORT"><strong>{% if active_tab == "SUPPORT" %}[Support]{% else %}Support{% endif %}</strong></a>
+    {% if unread_by_group.SUPPORT %}({{ unread_by_group.SUPPORT }}){% endif %}
 </p>
 
 {% if notifications %}

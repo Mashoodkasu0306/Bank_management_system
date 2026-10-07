@@ -1,11 +1,12 @@
 from django.urls import path
-from . import views
+from . import views, security_feed
 
 urlpatterns = [
     path("", views.home_redirect, name="home"),
     path("login/", views.user_login, name="login"),
     path("logout/", views.user_logout, name="logout"),
     path("customer/dashboard/", views.customer_dashboard, name="customer_dashboard"),
+    path("customer/security/", security_feed.my_security_activity, name="my_security_activity"),
     path("employee/dashboard/", views.employee_dashboard, name="employee_dashboard"),
     path("dashboard/admin/", views.admin_dashboard, name="admin_dashboard"),
     path("customers/register/", views.register_customer, name="register_customer"),
