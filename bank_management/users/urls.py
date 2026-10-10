@@ -1,5 +1,5 @@
 from django.urls import path
-from . import views, security_feed
+from . import views, security_feed, customer360_views
 
 urlpatterns = [
     path("", views.home_redirect, name="home"),
@@ -11,6 +11,7 @@ urlpatterns = [
     path("dashboard/admin/", views.admin_dashboard, name="admin_dashboard"),
     path("customers/register/", views.register_customer, name="register_customer"),
     path("customers/", views.customer_list, name="customer_list"),
+    path("customers/<int:customer_id>/360/", customer360_views.customer_360, name="customer_360"),
     path("customers/<int:customer_id>/update/", views.update_customer, name="update_customer"),
     path("customers/<int:customer_id>/deactivate/", views.deactivate_customer, name="deactivate_customer"),
     path("customers/<int:customer_id>/activate/", views.activate_customer, name="activate_customer"),

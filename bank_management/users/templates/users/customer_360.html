@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Customer 360: {{ customer.user.username }}</h2>
+<p>A read-only summary for staff. Opening this page is recorded in the audit log.</p>
+
+{% if freeze %}
+<div style="border:1px solid red; padding:10px; background:#ffe8e8; margin-bottom:15px;">
+    <strong>Emergency freeze is ACTIVE</strong> since {{ freeze.started_at }}. Cards are frozen and online transfers are blocked.
+</div>
+{% endif %}
+
+<h3>Profile</h3>
+<table border="1" cellpadding="8">
+    <tr><th>Username</th><td>{{ customer.user.username }}</td></tr>
+    <tr><th>Type</th><td>{{ customer.get_customer_type_display }}</td></tr>
+    <tr><th>Gender</th><td>{{ customer.get_gender_display }}</td></tr>
+    <tr><th>Date of birth</th><td>{{ customer.dob }}</td></tr>
+    <tr><th>Address</th><td>{{ customer.address|linebreaksbr }}</td></tr>
+    <tr><th>KYC status (customer record)</th><td>{{ customer.get_kyc_status_display }}</td></tr>
+    <tr><th>KYC review</th><td>{% if kyc %}{{ kyc.get_status_display }}{% else %}No KYC documents yet{% endif %}</td></tr>
+    <tr><th>Login enabled</th><td>{% if customer.user.is_active %}Yes{% else %}No (deactivated){% endif %}</td></tr>
+    <tr><th>Open support cases</th><td>{{ open_case_count }}</td></tr>
+</table>
+
+<h3>Accounts</h3>
+{% if accounts %}
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Account</th>
+        <th>Type</th>
+        <th>Branch</th>
+        <th>Status</th>
+        <th>Balance</th>
+        <th>Daily limit</th>
+    </tr>
+    {% for a in accounts %}
+    <tr>
+        <td>{{ a.account_no }}</td>
+        <td>{{ a.get_account_type_display }}</td>
+        <td>{{ a.branch.name }}</td>
+        <td>{{ a.get_status_display }}</td>
+        <td>{{ a.balance }}</td>
+        <td>{{ a.daily_limit }}</td>
+    </tr>
+    {% endfor %}
+</table>
+<p>Total balance (active savings and current accounts): <strong>{{ total_balance }}</strong></p>
+{% else %}
+<p>No accounts.</p>
+{% endif %}
+
+<h3>Recent transactions</h3>
+{% if recent_transactions %}
+<table border="1" cellpadding="8">
+    <tr>
+        <th>When</th>
+        <th>Type</th>
+        <th>From</th>
+        <th>To</th>
+        <th>Amount</th>
+        <th>Mode</th>
+        <th>Status</th>
+        <th>Remarks</th>
+    </tr>
+    {% for t in recent_transactions %}
+    <tr>
+        <td>{{ t.timestamp }}</td>
+        <td>{{ t.get_transaction_type_display }}</td>
+        <td>{% if t.from_account %}{{ t.from_account.account_no }}{% else %}-{% endif %}</td>
+        <td>{% if t.to_account %}{{ t.to_account.account_no }}{% else %}-{% endif %}</td>
+        <td>{{ t.amount }}</td>
+        <td>{{ t.get_mode_of_transaction_display }}</td>
+        <td>{{ t.get_status_display }}</td>
+        <td>{{ t.remarks }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<p>No transactions.</p>
+{% endif %}
+
+<h3>Loans</h3>
+{% if loans %}
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Loan</th>
+        <th>Repayment</th>
+        <th>Amount</th>
+        <th>Status</th>
+        <th>Still owed</th>
+        <th>Next EMI</th>
+        <th>Overdue EMIs</th>
+    </tr>
+    {% for row in loans %}
+    <tr>
+        <td>{{ row.loan.get_loan_type_display }}</td>
+        <td>{{ row.loan.get_repayment_type_display }}</td>
+        <td>{{ row.loan.amount }}</td>
+        <td>{{ row.loan.get_status_display }}</td>
+        <td>{% if row.remaining is not None %}{{ row.remaining }}{% else %}-{% endif %}</td>
+        <td>{% if row.next_installment %}#{{ row.next_installment.installment_number }}: {{ row.next_installment.emi_amount }} due {{ row.next_installment.due_date }}{% else %}-{% endif %}</td>
+        <td>{% if row.overdue_count %}<strong style="color:#c0392b;">{{ row.overdue_count }}</strong>{% else %}0{% endif %}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<p>No loans.</p>
+{% endif %}
+
+<h3>ATM cards</h3>
+{% if cards %}
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Card</th>
+        <th>Account</th>
+        <th>Status</th>
+        <th>Frozen</th>
+        <th>Requested</th>
+    </tr>
+    {% for c in cards %}
+    <tr>
+        <td>{% if c.masked_card_number %}{{ c.masked_card_number }}{% else %}(number pending){% endif %}</td>
+        <td>{{ c.account.account_no }}</td>
+        <td>{{ c.get_status_display }}</td>
+        <td>{% if c.freeze_state == 'EMERGENCY' %}Frozen (emergency){% elif c.freeze_state == 'CUSTOMER' %}Frozen by customer{% else %}-{% endif %}</td>
+        <td>{{ c.requested_at }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<p>No ATM card requests.</p>
+{% endif %}
+
+<h3>Cheque books</h3>
+{% if cheque_books %}
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Account</th>
+        <th>Leaves</th>
+        <th>Status</th>
+        <th>Requested</th>
+    </tr>
+    {% for b in cheque_books %}
+    <tr>
+        <td>{{ b.account.account_no }}</td>
+        <td>{{ b.leaf_count }}</td>
+        <td>{{ b.get_status_display }}</td>
+        <td>{{ b.requested_at }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<p>No cheque book requests.</p>
+{% endif %}
+
+<h3>Support cases</h3>
+{% if cases %}
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Case</th>
+        <th>Type</th>
+        <th>Subject</th>
+        <th>Status</th>
+        <th>Answer due by</th>
+    </tr>
+    {% for c in cases %}
+    <tr>
+        <td>{% if can_open_cases %}<a href="{% url 'support_staff_case' c.id %}">{{ c.reference }}</a>{% else %}{{ c.reference }}{% endif %}</td>
+        <td>{{ c.get_case_type_display }}</td>
+        <td>{{ c.subject }}</td>
+        <td>{{ c.get_status_display }}</td>
+        <td>{{ c.due_at }}{% if c.is_overdue %} <strong style="color:#c0392b;">(past due)</strong>{% endif %}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<p>No support cases.</p>
+{% endif %}
+
+<h3>Security activity</h3>
+<p>Failed sign-in attempts in the last 7 days: <strong>{{ failed_week }}</strong></p>
+{% if security_rows %}
+<table border="1" cellpadding="8">
+    <tr>
+        <th>When</th>
+        <th>What</th>
+        <th>Details</th>
+        <th>IP address</th>
+    </tr>
+    {% for r in security_rows %}
+    <tr>
+        <td>{{ r.when }}</td>
+        <td>{% if r.warn %}<span style="color:#c0392b;">{{ r.label }}</span>{% else %}{{ r.label }}{% endif %}</td>
+        <td>{{ r.details }}</td>
+        <td>{% if r.ip %}{{ r.ip }}{% else %}-{% endif %}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<p>No security activity yet.</p>
+{% endif %}
+
+<p><a href="{% url 'customer_list' %}">Back to All Customers</a></p>
+{% endblock %}
