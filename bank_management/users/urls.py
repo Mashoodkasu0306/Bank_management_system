@@ -1,5 +1,5 @@
 from django.urls import path
-from . import views, security_feed, customer360_views
+from . import views, security_feed, customer360_views, spending_views
 
 urlpatterns = [
     path("", views.home_redirect, name="home"),
@@ -7,6 +7,7 @@ urlpatterns = [
     path("logout/", views.user_logout, name="logout"),
     path("customer/dashboard/", views.customer_dashboard, name="customer_dashboard"),
     path("customer/security/", security_feed.my_security_activity, name="my_security_activity"),
+    path("customer/spending/", spending_views.my_spending_summary, name="my_spending_summary"),
     path("employee/dashboard/", views.employee_dashboard, name="employee_dashboard"),
     path("dashboard/admin/", views.admin_dashboard, name="admin_dashboard"),
     path("customers/register/", views.register_customer, name="register_customer"),
