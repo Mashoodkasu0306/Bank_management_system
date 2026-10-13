@@ -13,6 +13,7 @@
         <th>Amount</th>
         <th>Mode</th>
         <th>Status</th>
+        <th>Category</th>
     </tr>
     {% for txn in transactions %}
     <tr>
@@ -23,10 +24,27 @@
         <td>{{ txn.amount }}</td>
         <td>{{ txn.mode_of_transaction }}</td>
         <td>{{ txn.status }}</td>
+        <td>
+            {% if txn.is_loan_related %}
+            {% if txn.from_account_id %}Loan payment{% else %}Loan received{% endif %}
+            {% elif txn.can_relabel %}
+            <form method="POST" action="{% url 'relabel_transaction' txn.id %}" style="margin:0;">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <select name="category">
+                    {% for value, label in categories %}
+                    <option value="{{ value }}" {% if value == txn.category %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit">Save</button>
+            </form>
+            {% elif txn.show_category %}{{ txn.get_category_display }}
+            {% else %}-{% endif %}
+        </td>
     </tr>
     {% empty %}
     <tr>
-        <td colspan="7">No transactions yet.</td>
+        <td colspan="8">No transactions yet.</td>
     </tr>
     {% endfor %}
 </table>

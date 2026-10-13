@@ -3,6 +3,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.db import transaction as db_transaction
+from django.utils.http import url_has_allowed_host_and_scheme
+from django.views.decorators.http import require_POST
 from django.utils import timezone
 from decimal import Decimal, InvalidOperation
 
@@ -328,7 +330,28 @@ def transaction_history(request, account_id):
         Q(from_account=account) | Q(to_account=account)
     ).order_by("-timestamp")
 
-    return render(request, "transactions/transaction_history.html", {"account": account, "transactions": txns})
+    txns = list(txns)
+    if hasattr(request.user, "customer"):
+        my_ids = set(Account.objects.filter(customer=request.user.customer).values_list("id", flat=True))
+    else:
+        my_ids = None  # staff and admin: read only
+    for t in txns:
+        if my_ids is None:
+            t.show_category = t.from_account_id is not None
+            t.can_relabel = False
+        else:
+            t.show_category = t.from_account_id in my_ids
+            t.can_relabel = (
+                t.from_account_id in my_ids
+                and not t.is_loan_related
+                and t.status == "SUCCESS"
+            )
+
+    return render(request, "transactions/transaction_history.html", {
+        "account": account,
+        "transactions": txns,
+        "categories": Transaction.CATEGORY_CHOICES,
+    })
 
 
 @login_required
@@ -378,6 +401,9 @@ def customer_transfer_view(request):
         from_no = request.POST["from_account_no"]
         to_no = request.POST["to_account_no"]
         amount_raw = request.POST["amount"]
+        category = request.POST.get("category", "OTHER")
+        if category not in dict(Transaction.CATEGORY_CHOICES):
+            category = "OTHER"
 
         if not my_accounts.filter(account_no=from_no).exists():
             messages.error(request, "You can only transfer from your own account.")
@@ -431,6 +457,7 @@ def customer_transfer_view(request):
                         amount=amount,
                         mode_of_transaction=request.POST.get("mode_of_transaction", "NETBANKING"),
                         status="PENDING",
+                        category=category,
                         performed_by=request.user,
                         remarks=f"Exceeds daily limit ({from_account.daily_limit}); awaiting approval",
                     )
@@ -464,6 +491,7 @@ def customer_transfer_view(request):
                     amount=amount,
                     mode_of_transaction=request.POST.get("mode_of_transaction", "NETBANKING"),
                     status="SUCCESS",
+                    category=category,
                     performed_by=request.user,
                     remarks=f"Self-service transfer {from_no} -> {to_no}",
                 )
@@ -494,7 +522,7 @@ def customer_transfer_view(request):
             messages.error(request, "One or both accounts not found.")
             return redirect("customer_transfer")
 
-    return render(request, "transactions/customer_transfer.html", {"accounts": my_accounts})
+    return render(request, "transactions/customer_transfer.html", {"accounts": my_accounts, "categories": Transaction.CATEGORY_CHOICES})
 
 
 @login_required
@@ -691,3 +719,39 @@ def branch_report(request):
         "recent_transactions": recent_txns,
     }
     return render(request, "transactions/branch_report.html", context)
+
+
+@login_required
+@require_POST
+def relabel_transaction(request, txn_id):
+    """Customer changes only the category label of one of their own payments."""
+    if not hasattr(request.user, "customer"):
+        messages.error(request, "Only customers can change a category.")
+        return redirect("customer_dashboard")
+
+    txn = get_object_or_404(
+        Transaction, id=txn_id, from_account__customer=request.user.customer
+    )
+    category = request.POST.get("category", "")
+
+    if category not in dict(Transaction.CATEGORY_CHOICES):
+        messages.error(request, "Please pick a valid category.")
+    elif txn.is_loan_related:
+        messages.error(request, "Loan payments are labelled automatically.")
+    elif txn.status != "SUCCESS":
+        messages.error(request, "Only completed payments can be labelled.")
+    else:
+        old_category = txn.category
+        txn.category = category
+        txn.save(update_fields=["category"])
+        log_action(
+            Actions.CATEGORY_CHANGED, request=request,
+            target_type="TRANSACTION", target_id=txn.id,
+            details=f"{txn.amount}: {old_category} -> {category}",
+        )
+        messages.success(request, "Category updated.")
+
+    next_url = request.POST.get("next", "")
+    if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
+        return redirect(next_url)
+    return redirect("transaction_history", account_id=txn.from_account_id)

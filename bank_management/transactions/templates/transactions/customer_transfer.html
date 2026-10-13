@@ -4,8 +4,7 @@
 
 {% if messages %}
 {% for message in messages %}
-<p style="color:{% if message.tags == 'error' %}red{% else %}green{% endif %};">{{ message }}</p>
-{% endfor %}
+<p style="color:{% if message.tags == 'error' %}red{% else %}green{% endif %};">{{ message }}</p>{% endfor %}
 {% endif %}
 
 <form method="POST">
@@ -25,6 +24,12 @@
     <label>Amount</label><br>
     <input type="number" step="0.01" name="amount" required><br><br>
 
+    <label>Category (what is this payment for?)</label><br>
+    <select name="category">
+        {% for value, label in categories %}
+        <option value="{{ value }}" {% if value == "OTHER" %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+    </select><br><br>
 
     <label>Mode of Transaction</label><br>
     <select name="mode_of_transaction">
