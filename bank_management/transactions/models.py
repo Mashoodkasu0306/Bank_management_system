@@ -21,6 +21,20 @@ class Transaction(models.Model):
         ("PENDING", "Pending"),
     ]
 
+    # What the money was spent on. Set by the customer. Loan payments are worked
+    # out from is_loan_related, so they are not a choice here.
+    CATEGORY_CHOICES = [
+        ("FOOD", "Food"),
+        ("SHOPPING", "Shopping"),
+        ("BILLS", "Bills"),
+        ("RENT", "Rent"),
+        ("TRAVEL", "Travel"),
+        ("HEALTH", "Health"),
+        ("EDUCATION", "Education"),
+        ("ENTERTAINMENT", "Entertainment"),
+        ("SAVINGS", "Savings"),
+        ("OTHER", "Other"),
+    ]
     transaction_type = models.CharField(max_length=10, choices=TRANSACTION_TYPES)
     from_account = models.ForeignKey(
         Account, on_delete=models.CASCADE,
@@ -41,6 +55,7 @@ class Transaction(models.Model):
     remarks = models.CharField(max_length=255, blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
     is_loan_related = models.BooleanField(default=False)
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default="OTHER")
 
     def __str__(self):
         return f"{self.transaction_type} - {self.amount} ({self.status})"
