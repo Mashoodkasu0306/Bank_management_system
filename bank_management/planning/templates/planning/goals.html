@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Savings Goals</h2>
+
+<p>A goal is a target to save towards. It does not move or lock any money: progress is simply your account balance compared with the target.</p>
+
+<p><a href="{% url 'goal_create' %}">+ New goal</a></p>
+
+{% for g in goals %}
+<div style="border:1px solid #ccc; padding:12px; margin-bottom:12px; max-width:640px;">
+    <strong>{{ g.goal.name }}</strong>
+    &nbsp; <small>Account {{ g.goal.account.account_no }}</small>
+
+    <div style="background:#e5e7eb; margin:8px 0;"><div style="background:{% if g.achieved %}#16a34a{% else %}#4472C4{% endif %}; height:14px; width:{{ g.percent }}%;"></div></div>
+
+    <p>{{ g.percent }}% funded: {{ g.saved }} of {{ g.target }}{% if not g.achieved %} ({{ g.remaining }} to go){% endif %}</p>
+
+    {% if g.achieved %}<p style="color:green;"><strong>Goal reached!</strong></p>{% endif %}
+    {% if g.overdue %}<p style="color:#b45309;">Target date has passed ({{ g.goal.target_date }}).</p>{% elif g.goal.target_date and not g.achieved %}<p>{{ g.days_left }} days left (target date {{ g.goal.target_date }}).</p>{% endif %}
+    {% if not g.account_active %}<p style="color:red;">This account is closed, so this goal can no longer grow.</p>{% endif %}
+
+    <a href="{% url 'goal_edit' g.goal.id %}">Edit</a>
+    <form method="POST" action="{% url 'goal_archive' g.goal.id %}" style="display:inline; margin-left:10px;">
+        {% csrf_token %}
+        <button type="submit">Archive</button>
+    </form>
+</div>
+{% empty %}
+<p>You have no savings goals yet.</p>
+{% endfor %}
+
+<p><a href="{% url 'customer_dashboard' %}">Back to dashboard</a></p>
+{% endblock %}
