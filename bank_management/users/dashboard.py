@@ -41,13 +41,17 @@ SECTIONS = {
         ("frozen_customers", "Emergency Freezes"),
         ("support_staff_cases", "Support Cases (disputes and complaints)"),
     ]),
+    # Shown only to the Transactions department (it is not in DEFAULT_ORDER).
+    "recurring": ("Recurring Payments", [
+        ("run_recurring_page", "Run Due Recurring Payments"),
+    ]),
 }
 
 DEFAULT_ORDER = ["bank", "customers", "accounts", "transactions", "loans", "kyc", "cards"]
 
 # The blocks each department sees first. Nothing is hidden, only reordered.
 FIRST_FOR_DEPARTMENT = {
-    "TRANSACTIONS": ["transactions"],
+    "TRANSACTIONS": ["transactions", "recurring"],
     "LOANS": ["loans"],
     "KYC": ["kyc"],
     "ACCOUNT_OPENING": ["customers", "accounts"],

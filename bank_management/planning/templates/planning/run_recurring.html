@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Run Due Recurring Payments</h2>
+
+<p>Active recurring payments: {{ active_count }}. Paused: {{ paused_count }}.</p>
+
+{% if ran %}
+<h3>Run finished</h3>
+<p>{% for outcome, count in summary.items %}{{ count }} {{ outcome }}{% if not forloop.last %}, {% endif %}{% empty %}Nothing was due.{% endfor %}</p>
+{% else %}
+<h3>Due now (preview only, nothing has been changed)</h3>
+{% endif %}
+
+{% if results %}
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Payment</th>
+        <th>Customer</th>
+        <th>Amount</th>
+        <th>{% if ran %}Result{% else %}What will happen{% endif %}</th>
+        <th>Reason</th>
+    </tr>
+    {% for r in results %}
+    <tr>
+        <td>#{{ r.id }} {{ r.name }}</td>
+        <td>{{ r.customer }}</td>
+        <td align="right">{{ r.amount|default_if_none:"-" }}</td>
+        <td>{{ r.label }}</td>
+        <td>{{ r.reason|default:"-" }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% elif not ran %}
+<p>Nothing is due.</p>
+{% endif %}
+
+{% if not ran and results %}
+<form method="POST" style="margin-top:12px;">
+    {% csrf_token %}
+    <button type="submit">Run due payments now</button>
+</form>
+{% endif %}
+
+<p><a href="{% url 'home' %}">Back to home</a></p>
+{% endblock %}

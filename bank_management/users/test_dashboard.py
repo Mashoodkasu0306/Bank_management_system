@@ -11,9 +11,17 @@ def keys(department):
 
 class DashboardOrderTestCase(TestCase):
     def test_every_block_is_always_present(self):
-        for dept in ["", "TRANSACTIONS", "LOANS", "KYC", "ACCOUNT_OPENING",
+        for dept in ["", "LOANS", "KYC", "ACCOUNT_OPENING",
                      "CARDS_SERVICES", "something-old"]:
             self.assertCountEqual(keys(dept), DEFAULT_ORDER)
+
+    def test_transactions_department_also_gets_the_recurring_block(self):
+        self.assertCountEqual(keys("TRANSACTIONS"), DEFAULT_ORDER + ["recurring"])
+        self.assertEqual(keys("TRANSACTIONS")[:2], ["transactions", "recurring"])
+
+    def test_other_departments_do_not_get_the_recurring_block(self):
+        for dept in ["", "LOANS", "KYC", "ACCOUNT_OPENING", "CARDS_SERVICES", "SUPPORT", "something-old"]:
+            self.assertNotIn("recurring", keys(dept))
 
     def test_no_department_keeps_the_default_order(self):
         self.assertEqual(keys(""), DEFAULT_ORDER)
