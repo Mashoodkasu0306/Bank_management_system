@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Recurring Payments</h2>
+
+<p>A recurring payment sends money from your account to another account on a schedule. The bank processes due payments on or after the payment date. If a payment cannot be made you are told why, and after 3 failed attempts in a row it is paused.</p>
+
+<p><a href="{% url 'recurring_create' %}">+ New recurring payment</a></p>
+
+{% if payments %}
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Name</th>
+        <th>From</th>
+        <th>To</th>
+        <th>Amount</th>
+        <th>Repeats</th>
+        <th>Next payment</th>
+        <th>Ends</th>
+        <th>Status</th>
+        <th>Last result</th>
+    </tr>
+    {% for p in payments %}
+    <tr>
+        <td>{{ p.name }}</td>
+        <td>{{ p.from_account.account_no }}</td>
+        <td>{{ p.to_account.account_no }}</td>
+        <td align="right">{{ p.amount }}</td>
+        <td>{{ p.get_frequency_display }}</td>
+        <td>{% if p.status == "ACTIVE" %}{{ p.next_run_date }}{% else %}-{% endif %}</td>
+        <td>{{ p.end_date|default:"-" }}</td>
+        <td>{{ p.get_status_display }}</td>
+        <td>{{ p.last_result|default:"-" }}{% if p.consecutive_failures %}<br><small style="color:red;">{{ p.consecutive_failures }} failed in a row</small>{% endif %}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<p>You have no recurring payments yet.</p>
+{% endif %}
+
+<p><a href="{% url 'customer_dashboard' %}">Back to dashboard</a></p>
+{% endblock %}
