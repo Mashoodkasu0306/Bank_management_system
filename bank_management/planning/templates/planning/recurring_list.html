@@ -18,6 +18,7 @@
         <th>Ends</th>
         <th>Status</th>
         <th>Last result</th>
+        <th>Actions</th>
     </tr>
     {% for p in payments %}
     <tr>
@@ -30,6 +31,16 @@
         <td>{{ p.end_date|default:"-" }}</td>
         <td>{{ p.get_status_display }}</td>
         <td>{{ p.last_result|default:"-" }}{% if p.consecutive_failures %}<br><small style="color:red;">{{ p.consecutive_failures }} failed in a row</small>{% endif %}</td>
+        <td>
+            {% if p.status == "ACTIVE" %}
+            <form method="POST" action="{% url 'recurring_pause' p.id %}" style="display:inline;">{% csrf_token %}<button type="submit">Pause</button></form>
+            {% elif p.status == "PAUSED" %}
+            <form method="POST" action="{% url 'recurring_resume' p.id %}" style="display:inline;">{% csrf_token %}<button type="submit">Resume</button></form>
+            {% endif %}
+            {% if p.status == "ACTIVE" or p.status == "PAUSED" %}
+            <form method="POST" action="{% url 'recurring_cancel' p.id %}" style="display:inline;" onsubmit="return confirm('Cancel this recurring payment? This cannot be undone.');">{% csrf_token %}<button type="submit">Cancel</button></form>
+            {% else %}-{% endif %}
+        </td>
     </tr>
     {% endfor %}
 </table>

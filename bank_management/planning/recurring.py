@@ -314,3 +314,11 @@ def run_due_payments(now=None, dry_run=False, run_by=None):
 def summarize(results):
     """Counts per outcome, for example {"PAID": 2, "FAILED": 1}."""
     return dict(Counter(result["outcome"] for result in results))
+
+
+def move_to_future(payment, today):
+    """Used when a paused payment is resumed: if its saved date has already come (or is
+    today) it moves to the first scheduled date after today, so resuming never causes a
+    surprise payment today and old dates are skipped, not paid in a burst."""
+    if payment.next_run_date <= today:
+        _advance(payment, today)
