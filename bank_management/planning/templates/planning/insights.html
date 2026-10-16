@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Money Insights</h2>
+
+<p style="color:#555;">A read-only overview built from your accounts, recurring payments, loans and savings goals. Nothing on this page moves money.</p>
+
+<div style="border:1px solid #ccc; padding:12px; max-width:640px; margin-bottom:16px;">
+    <strong>Safe to spend</strong>
+    <p style="font-size:24px; margin:6px 0; color:{% if i.shortfall %}red{% else %}green{% endif %};">{{ i.safe_to_spend }}</p>
+    <p>Balance {{ i.balance_total }} minus {{ i.upcoming_total }} due in the next {{ i.window_days }} days (up to {{ i.window_end }}).</p>
+    {% if i.shortfall %}<p style="color:red;"><strong>What is due in the next {{ i.window_days }} days is more than your balance. Add money or review your recurring payments.</strong></p>{% endif %}
+</div>
+
+<h3>Accounts counted</h3>
+{% if i.accounts %}
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Account</th>
+        <th>Type</th>
+        <th>Balance</th>
+    </tr>
+    {% for a in i.accounts %}
+    <tr>
+        <td>{{ a.account_no }}</td>
+        <td>{{ a.type }}</td>
+        <td align="right">{{ a.balance }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<p>You have no active savings or current accounts.</p>
+{% endif %}
+
+<h3>Coming up in the next {{ i.window_days }} days</h3>
+{% if i.upcoming %}
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Date</th>
+        <th>What</th>
+        <th>Amount</th>
+        <th>Note</th>
+    </tr>
+    {% for item in i.upcoming %}
+    <tr>
+        <td>{{ item.date }}</td>
+        <td>{% if item.kind == "EMI" %}EMI{% else %}Recurring{% endif %}: {{ item.label }}{% if item.detail %} ({{ item.detail }}){% endif %}</td>
+        <td align="right">{{ item.amount }}</td>
+        <td>{% if item.overdue %}<span style="color:red;">Overdue</span> {% endif %}{% if not item.counted %}Between your own accounts (not subtracted){% endif %}</td>
+    </tr>
+    {% endfor %}
+</table>
+<p>Total subtracted from your balance: {{ i.upcoming_total }}. <a href="{% url 'my_recurring' %}">Manage recurring payments</a></p>
+{% else %}
+<p>Nothing is due in the next {{ i.window_days }} days. <a href="{% url 'my_recurring' %}">Recurring payments</a></p>
+{% endif %}
+
+<h3>Cash flow, last {{ i.months|length }} months</h3>
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Month</th>
+        <th>Money in</th>
+        <th>Money out</th>
+        <th>Left over</th>
+    </tr>
+    {% for m in i.months %}
+    <tr>
+        <td><a href="{% url 'my_spending_summary' %}?month={{ m.key }}">{{ m.label }}</a></td>
+        <td><div style="background:#e5e7eb; width:160px;"><div style="background:#16a34a; height:10px; width:{{ m.income_pct }}%;"></div></div>{{ m.income }}</td>
+        <td><div style="background:#e5e7eb; width:160px;"><div style="background:#4472C4; height:10px; width:{{ m.out_pct }}%;"></div></div>{{ m.out }}</td>
+        <td align="right">{{ m.net }}</td>
+    </tr>
+    {% endfor %}
+</table>
+<p style="color:#555;">Money in leaves out loan payouts. Money out includes loan payments. Transfers between your own accounts are not counted.</p>
+
+<h3>Savings goals</h3>
+{% if i.goals %}
+{% for g in i.goals %}
+<div style="border:1px solid #ccc; padding:10px; margin-bottom:10px; max-width:640px;">
+    <strong>{{ g.goal.name }}</strong>
+    <div style="background:#e5e7eb; margin:6px 0;"><div style="background:{% if g.achieved %}#16a34a{% else %}#4472C4{% endif %}; height:12px; width:{{ g.percent }}%;"></div></div>
+    {{ g.percent }}% funded: {{ g.saved }} of {{ g.target }}{% if g.achieved %} - goal reached!{% endif %}
+</div>
+{% endfor %}
+<p><a href="{% url 'my_goals' %}">Manage savings goals</a></p>
+{% else %}
+<p>You have no savings goals yet. <a href="{% url 'goal_create' %}">Set one</a></p>
+{% endif %}
+
+<h3>Loans: {{ i.debt.label }}</h3>
+{% if i.debt.rows %}
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Loan</th>
+        <th>Still to repay</th>
+        <th>EMI</th>
+        <th>Next due</th>
+        <th>Overdue</th>
+    </tr>
+    {% for r in i.debt.rows %}
+    <tr>
+        <td><a href="{% url 'loan_detail' r.id %}">{{ r.type }} #{{ r.id }}</a></td>
+        <td align="right">{{ r.outstanding }}</td>
+        <td align="right">{% if r.emi_amount %}{{ r.emi_amount }}{% else %}-{% endif %}</td>
+        <td>{{ r.next_due|default:"-" }}</td>
+        <td>{% if r.overdue_count %}<span style="color:red;">{{ r.overdue_count }} overdue ({{ r.overdue_amount }}, {{ r.days_overdue }} days)</span>{% else %}-{% endif %}</td>
+    </tr>
+    {% endfor %}
+</table>
+<p>Total still to repay: {{ i.debt.total_outstanding }}. Monthly EMIs: {{ i.debt.monthly_emi_total }}.{% if i.debt.emi_share_percent is not None %} That is {{ i.debt.emi_share_percent }}% of your average monthly income over the last 3 months.{% endif %}</p>
+<p><a href="{% url 'my_loans' %}">My loans</a></p>
+{% else %}
+<p>You have no active loans.</p>
+{% endif %}
+
+<p><a href="{% url 'customer_dashboard' %}">Back to dashboard</a></p>
+{% endblock %}

@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import recurring_actions, recurring_views, staff_views, views
+from . import insights_views, recurring_actions, recurring_views, staff_views, views
 
 urlpatterns = [
     path("goals/", views.my_goals, name="my_goals"),
@@ -13,4 +13,5 @@ urlpatterns = [
     path("recurring/<int:payment_id>/pause/", recurring_actions.recurring_pause, name="recurring_pause"),
     path("recurring/<int:payment_id>/resume/", recurring_actions.recurring_resume, name="recurring_resume"),
     path("recurring/<int:payment_id>/cancel/", recurring_actions.recurring_cancel, name="recurring_cancel"),
+    path("insights/", insights_views.my_insights, name="my_insights"),
 ]
