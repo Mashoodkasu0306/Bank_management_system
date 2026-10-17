@@ -1,35 +1,42 @@
 {% extends "base.html" %}
+{% block title %}My Loans{% endblock %}
 {% block content %}
-<h2>My Loans</h2>
-<a href="{% url 'apply_loan' %}">+ Apply for a Loan</a>
-<table border="1" cellpadding="6">
-    <tr>
-        <th>Type</th>
-        <th>Amount</th>
-        <th>Tenure</th>
-        <th>Interest Rate</th>
-        <th>EMI</th>
-        <th>Status</th>
-        <th>Foreclosure</th>
-        <th>Applied</th>
-        <th>Actions</th>
-    </tr>
-    {% for loan in loans %}
-    <tr>
-        <td>{{ loan.get_loan_type_display }}</td>
-        <td>{{ loan.amount }}</td>
-        <td>{{ loan.tenure_months }} months</td>
-        <td>{{ loan.interest_rate|default:"-" }}</td>
-        <td>{{ loan.emi_amount|default:"-" }}</td>
-        <td>{{ loan.get_status_display }}</td>
-        <td>{{ loan.get_foreclosure_status_display }}</td>
-        <td>{{ loan.applied_date }}</td>
-        <td><a href="{% url 'loan_detail' loan.id %}">View</a></td>
-    </tr>
-    {% empty %}
-    <tr>
-        <td colspan="9">No loans applied yet.</td>
-    </tr>
-    {% endfor %}
+<div class="page-head">
+    <h2>My Loans</h2>
+    <a class="btn btn-primary" href="{% url 'apply_loan' %}">+ Apply for a Loan</a>
+</div>
+<table>
+    <thead>
+        <tr>
+            <th>Type</th>
+            <th>Amount</th>
+            <th>Tenure</th>
+            <th>Interest Rate</th>
+            <th>EMI</th>
+            <th>Status</th>
+            <th>Foreclosure</th>
+            <th>Applied</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for loan in loans %}
+        <tr>
+            <td><strong>{{ loan.get_loan_type_display }}</strong></td>
+            <td>&#8377;{{ loan.amount }}</td>
+            <td>{{ loan.tenure_months }} months</td>
+            <td>{{ loan.interest_rate|default:"-" }}</td>
+            <td>{{ loan.emi_amount|default:"-" }}</td>
+            <td><span class="badge {% if loan.status == 'APPROVED' %}badge-ok{% elif loan.status == 'PENDING' %}badge-warn{% elif loan.status == 'DEFAULTED' or loan.status == 'REJECTED' %}badge-bad{% endif %}">{{ loan.get_status_display }}</span></td>
+            <td>{{ loan.get_foreclosure_status_display }}</td>
+            <td>{{ loan.applied_date }}</td>
+            <td><a class="btn btn-sm" href="{% url 'loan_detail' loan.id %}">View</a></td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="9" class="empty">No loans applied yet.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
 </table>
 {% endblock %}

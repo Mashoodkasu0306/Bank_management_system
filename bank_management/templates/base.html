@@ -1,110 +1,89 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#0f1b2d">
     <title>{% block title %}Bank Management System{% endblock %}</title>
-    <style>
-        body {
-            margin: 0;
-        }
-
-        .sticky-header-group {
-            position: sticky;
-            top: 0;
-            z-index: 999;
-            background: #ffffff;
-            border-bottom: 1px solid #ddd;
-        }
-
-        header {
-            position: relative;
-            padding: 10px 70px 10px 15px;
-        }
-
-        .notification-bell {
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            text-decoration: none;
-            font-size: 26px;
-            display: inline-block;
-        }
-
-        .notification-bell .badge {
-            position: absolute;
-            top: -6px;
-            right: -10px;
-            background-color: #e74c3c;
-            color: white;
-            border-radius: 50%;
-            padding: 2px 6px;
-            font-size: 11px;
-            font-weight: bold;
-            font-family: Arial, sans-serif;
-            line-height: 1;
-            min-width: 10px;
-            text-align: center;
-        }
-
-        main {
-            padding: 15px;
-        }
-    </style>
+    <link rel="stylesheet" href="{% static 'css/app.css' %}">
+    <script src="{% static 'js/app.js' %}" defer></script>
+    {% block extra_head %}{% endblock %}
 </head>
 
-<body>
-    <div class="sticky-header-group">
-        <header>
-            {% if user.is_authenticated %}
-            <a href="{% url 'notifications_list' %}" class="notification-bell" title="Notifications">
-                🔔
-                {% if unread_notification_count %}
-                <span class="badge">{{ unread_notification_count }}</span>
-                {% endif %}
-            </a>
+<body class="{% if user.is_authenticated %}has-shell{% else %}auth{% endif %}">
+{% if user.is_authenticated %}{% if user.customer %}{% url 'customer_dashboard' as home_url %}{% elif user.employee %}{% url 'employee_dashboard' as home_url %}{% else %}{% url 'admin_dashboard' as home_url %}{% endif %}{% url 'notifications_list' as notes_url %}{% url 'reports_home' as reports_url %}{% url 'audit_log' as audit_url %}{% url 'security_alerts' as alerts_url %}{% url 'employee_departments' as depts_url %}{% url 'frozen_customers' as freezes_url %}{% url 'support_staff_cases' as cases_url %}{% url 'my_transactions' as tx_url %}{% url 'pending_loans' as loans_url %}{% url 'pending_kyc_documents' as kyc_url %}{% url 'account_list' as accounts_url %}{% url 'customer_transfer' as send_url %}{% url 'my_loans' as myloans_url %}{% url 'my_atm_cards' as cards_url %}{% url 'my_insights' as ins_url %}{% url 'support_my_cases' as supp_url %}{% endif %}
+<div class="app{% if not user.is_authenticated %} app-anon{% endif %}">
+    {% if user.is_authenticated %}
+    <div class="scrim" data-nav-close></div>
+    <aside class="sidebar" id="sidebar">
+        <div class="brand">
+            <div class="brand-mark"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10l9-6 9 6"/><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18"/></svg></div>
+            <div>
+                <div class="brand-name">Apex Portal</div>
+                <div class="brand-sub">{% if user.customer %}Customer banking{% elif user.employee %}Staff console{% else %}Administration{% endif %}</div>
+            </div>
+        </div>
+        <nav class="nav">
+            <a href="{{ home_url }}" class="{% if request.path == home_url %}active{% endif %}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Dashboard</a>
+            <a href="{{ notes_url }}" class="{% if request.path == notes_url %}active{% endif %}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>Notifications{% if unread_notification_count %}<span class="count">{{ unread_notification_count }}</span>{% endif %}</a>
+            {% if user.employee %}
+            <a href="{{ tx_url }}" class="{% if request.path == tx_url %}active{% endif %}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h13M16 3l4 4-4 4M17 17H4M8 13l-4 4 4 4"/></svg>Transactions</a>
+            <a href="{{ loans_url }}" class="{% if request.path == loans_url %}active{% endif %}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10l9-6 9 6"/><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18"/></svg>Loan Queue</a>
+            <a href="{{ kyc_url }}" class="{% if request.path == kyc_url %}active{% endif %}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg>KYC Review</a>
+            <a href="{{ accounts_url }}" class="{% if request.path == accounts_url %}active{% endif %}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/></svg>Accounts</a>
             {% endif %}
-
-            <h1>
-                {% if user.is_authenticated %}
-                {% if user.customer %}
-                <a href="{% url 'customer_dashboard' %}">Bank Management System</a>
-                {% elif user.employee %}
-                <a href="{% url 'employee_dashboard' %}">Bank Management System</a>
-                {% else %}
-                <a href="{% url 'admin_dashboard' %}">Bank Management System</a>
-                {% endif %}
-                {% else %}
-                Bank Management System
-                {% endif %}
-            </h1>
-            <nav>
-                {% if user.is_authenticated %}
-                Logged in as {{ user.username }} |
-                {% if not user.customer %}<a href="{% url 'reports_home' %}">Reports</a> |{% endif %}
-                {% if not user.customer and not user.employee %}<a href="{% url 'audit_log' %}">Audit Log</a> | <a href="{% url 'security_alerts' %}">Security Alerts</a> | <a href="{% url 'employee_departments' %}">Employee Departments</a> | <a href="{% url 'frozen_customers' %}">Emergency Freezes</a> | <a href="{% url 'support_staff_cases' %}">Support Cases</a> |{% endif %}
-                <a href="{% url 'logout' %}">Logout</a>
-                {% elif request.path != "/login/" %}
-                <a href="{% url 'login' %}">Login</a>
-                {% endif %}
-            </nav>
+            {% if user.customer %}
+            <a href="{{ send_url }}" class="{% if request.path == send_url %}active{% endif %}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h13M16 3l4 4-4 4M17 17H4M8 13l-4 4 4 4"/></svg>Send Money</a>
+            <a href="{{ myloans_url }}" class="{% if request.path == myloans_url %}active{% endif %}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10l9-6 9 6"/><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18"/></svg>My Loans</a>
+            <a href="{{ cards_url }}" class="{% if request.path == cards_url %}active{% endif %}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/></svg>My Cards</a>
+            <a href="{{ ins_url }}" class="{% if request.path == ins_url %}active{% endif %}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Money Insights</a>
+            <a href="{{ supp_url }}" class="{% if request.path == supp_url %}active{% endif %}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.5 7.2L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>Support Cases</a>
+            {% endif %}
+            {% if not user.customer %}<a href="{{ reports_url }}" class="{% if reports_url in request.path %}active{% endif %}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Reports</a>{% endif %}
+            {% if not user.customer and not user.employee %}
+            <div class="nav-label">Administration</div>
+            <a href="{{ audit_url }}" class="{% if request.path == audit_url %}active{% endif %}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M9 13h7M9 17h7"/></svg>Audit Log</a>
+            <a href="{{ alerts_url }}" class="{% if request.path == alerts_url %}active{% endif %}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg>Security Alerts</a>
+            <a href="{{ depts_url }}" class="{% if request.path == depts_url %}active{% endif %}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6M17 11a3 3 0 1 0 0-6M21.5 20c0-2.5-1.5-4.5-4-5.3"/></svg>Employee Departments</a>
+            <a href="{{ freezes_url }}" class="{% if request.path == freezes_url %}active{% endif %}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/></svg>Emergency Freezes</a>
+            <a href="{{ cases_url }}" class="{% if request.path == cases_url %}active{% endif %}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.5 7.2L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>Support Cases</a>
+            {% endif %}
+        </nav>
+        <div class="sidebar-foot nav">
+            <a href="{% url 'logout' %}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5V3h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg>Logout</a>
+        </div>
+    </aside>
+    {% endif %}
+    <div class="main-col">
+        <header class="topbar">
+            {% if user.is_authenticated %}<button type="button" class="icon-btn menu-btn" data-nav-toggle aria-label="Open menu"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>{% endif %}
+            <span class="topbar-title">Apex Core Banking</span>
+            <span class="topbar-space"></span>
+            {% if user.is_authenticated %}
+            <a href="{{ notes_url }}" class="icon-btn" title="Notifications" aria-label="Notifications"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>{% if unread_notification_count %}<span class="badge-dot">{{ unread_notification_count }}</span>{% endif %}</a>
+            <div class="user-chip">
+                <span class="avatar">{{ user.username|slice:":2"|upper }}</span>
+                <span class="user-meta"><strong>{{ user.username }}</strong><small>{% if user.customer %}Customer{% elif user.employee %}{{ user.employee.get_department_display|default:"Employee" }}{% else %}Administrator{% endif %}</small></span>
+            </div>
+            {% endif %}
         </header>
         {% block toolbar %}{% endblock %}
+        <main class="page">
+            {% if user.is_authenticated and request.path != home_url %}<div class="backbar"><a class="back-link" href="{{ home_url }}" data-back><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Back</a><a class="back-link" href="{{ home_url }}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Dashboard</a></div>{% endif %}
+            {% if messages %}
+            <ul class="msgs">
+                {% for message in messages %}
+                <li class="msg msg-{{ message.tags }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+            {% block content %}
+            {% endblock %}
+        </main>
     </div>
-    <main>
-        {% if messages %}
-        <ul style="list-style: none; padding: 0;">
-            {% for message in messages %}
-            <li
-                style="padding: 8px 12px; margin-bottom: 8px; border-radius: 4px; color: {% if message.tags == 'error' %}#a94442{% else %}#3c763d{% endif %}; background-color: {% if message.tags == 'error' %}#f2dede{% else %}#dff0d8{% endif %}; border: 1px solid {% if message.tags == 'error' %}#ebccd1{% else %}#d6e9c6{% endif %};">
-                {{ message }}
-            </li>
-            {% endfor %}
-        </ul>
-        {% endif %}
-        {% block content %}
-        {% endblock %}
-    </main>
+</div>
 </body>
 
 </html>

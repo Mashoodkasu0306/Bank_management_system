@@ -1,49 +1,55 @@
 {% extends "base.html" %}
+{% block title %}Pending Transactions{% endblock %}
 {% block content %}
-<h2>Pending Transactions (Above Daily Limit)</h2>
+<div class="page-head">
+    <h2>Pending Transactions (Above Daily Limit)</h2>
+</div>
 
-<form method="GET">
-    <label>Search by Account Number:</label>
-    <input type="text" name="account_no" value="{{ account_no }}" placeholder="e.g. SBI001-SBI-MUM-001-000001">
-    <button type="submit">Search</button>
-    {% if account_no %}
-    <a href="{% url 'pending_transactions' %}">Clear</a>
-    {% endif %}
+<form method="GET" class="filter-bar">
+    <div class="field">
+        <label for="id_account_no">Search by Account Number:</label>
+        <input type="text" id="id_account_no" name="account_no" value="{{ account_no }}" placeholder="e.g. SBI001-SBI-MUM-001-000001">
+    </div>
+    <button type="submit" class="btn btn-primary">Search</button>
+    {% if account_no %}<a class="btn" href="{% url 'pending_transactions' %}">Clear</a>{% endif %}
 </form>
-<br>
 
-<table border="1" cellpadding="6">
-    <tr>
-        <th>Date</th>
-        <th>Type</th>
-        <th>From</th>
-        <th>To</th>
-        <th>Amount</th>
-        <th>Mode</th>
-        <th>Remarks</th>
-        <th>Action</th>
-    </tr>
-    {% for txn in transactions %}
-    <tr>
-        <td>{{ txn.timestamp }}</td>
-        <td>{{ txn.transaction_type }}</td>
-        <td>{{ txn.from_account.account_no|default:"-" }}</td>
-        <td>{{ txn.to_account.account_no|default:"-" }}</td>
-        <td>{{ txn.amount }}</td>
-        <td>{{ txn.mode_of_transaction }}</td>
-        <td>{{ txn.remarks }}</td>
-        <td>
-            <form method="post" action="{% url 'approve_transaction' txn.id %}" style="display:inline">
-                {% csrf_token %}
-                <button type="submit" name="action" value="approve">Approve</button>
-                <button type="submit" name="action" value="reject">Reject</button>
-            </form>
-        </td>
-    </tr>
-    {% empty %}
-    <tr>
-        <td colspan="8">No pending transactions{% if account_no %} matching "{{ account_no }}"{% endif %}.</td>
-    </tr>
-    {% endfor %}
+<table>
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Type</th>
+            <th>From</th>
+            <th>To</th>
+            <th>Amount</th>
+            <th>Mode</th>
+            <th>Remarks</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for txn in transactions %}
+        <tr>
+            <td>{{ txn.timestamp|date:"M j, Y, g:i a" }}</td>
+            <td>{{ txn.transaction_type }}</td>
+            <td>{{ txn.from_account.account_no|default:"-" }}</td>
+            <td>{{ txn.to_account.account_no|default:"-" }}</td>
+            <td><strong>&#8377;{{ txn.amount }}</strong></td>
+            <td>{{ txn.mode_of_transaction }}</td>
+            <td>{{ txn.remarks }}</td>
+            <td>
+                <form method="post" action="{% url 'approve_transaction' txn.id %}" class="row-actions">
+                    {% csrf_token %}
+                    <button type="submit" name="action" value="approve" class="btn btn-primary btn-sm">Approve</button>
+                    <button type="submit" name="action" value="reject" class="btn btn-danger btn-sm">Reject</button>
+                </form>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="8" class="empty">No pending transactions{% if account_no %} matching "{{ account_no }}"{% endif %}.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
 </table>
 {% endblock %}

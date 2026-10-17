@@ -92,10 +92,13 @@ def employee_dashboard(request):
         return redirect("login")
 
     from .dashboard import dashboard_sections
+    from .employee_stats import employee_kpis
 
     employee = request.user.employee
     return render(request, "users/employee_dashboard.html", {
         "sections": dashboard_sections(employee.department),
+        "department": employee.department,
+        "kpis": employee_kpis(employee.department),
         "department_label": employee.get_department_display() if employee.department else "",
     })
 

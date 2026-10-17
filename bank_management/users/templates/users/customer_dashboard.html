@@ -1,11 +1,15 @@
 {% extends "base.html" %}
+{% block title %}Customer Dashboard{% endblock %}
 {% block content %}
-<h2>Customer Dashboard</h2>
-
-<p>Welcome, {{ user.username }}.</p>
+<div class="page-head">
+    <div>
+        <h1>Customer Dashboard {% if user.customer.kyc_verification.is_fully_verified %}<span class="badge badge-ok">KYC verified</span>{% endif %}</h1>
+        <p class="page-sub">Welcome back, <strong>{{ user.username }}</strong>.</p>
+    </div>
+</div>
 
 {% if not user.customer.kyc_verification.is_fully_verified %}
-<div style="border:1px solid red; padding:10px; background:#ffe8e8; margin-bottom:15px;">
+<div class="notice notice-bad">
     <strong>Action Required:</strong> Please complete your KYC verification to unlock
     online payments, loan applications, ATM card requests, and cheque book requests.
     <a href="{% url 'kyc_dashboard' %}">Complete KYC Now</a>
@@ -13,113 +17,114 @@
 {% endif %}
 
 {% if due_reminders %}
-<div style="border:1px solid orange; padding:10px; background:#fff8e1; margin-bottom:15px;">
-    <strong>EMI Reminders</strong>
-    <table border="1" cellpadding="6" cellspacing="0" style="margin-top:8px; background:#ffffff;">
-        <tr>
-            <th>Loan</th>
-            <th>Installment</th>
-            <th>Amount</th>
-            <th>Due date</th>
-            <th>Status</th>
-            <th></th>
-        </tr>
+<section class="alert-card">
+    <div class="card-head">
+        <h2>Action Required: Loan EMI Reminders</h2>
+        <span class="badge badge-warn">{{ due_reminders|length }} due</span>
+    </div>
+    <div class="emi-grid">
         {% for r in due_reminders %}
-        <tr>
-            <td>#{{ r.loan.id }} ({{ r.loan.get_loan_type_display }})</td>
-            <td>{{ r.installment_number }}</td>
-            <td>{{ r.emi_amount }}</td>
-            <td>{{ r.due_date }}</td>
-            <td>{% if r.get_dpd_days > 0 %}<strong style="color:red;">Overdue by {{ r.get_dpd_days }} days</strong>{% else %}Upcoming{% endif %}</td>
-            <td><a href="{% url 'loan_detail' r.loan.id %}">Pay Now</a></td>
-        </tr>
+        <div class="emi {% if r.get_dpd_days > 0 %}emi-over{% else %}emi-soon{% endif %}">
+            <div class="emi-top">
+                <div>
+                    <div class="emi-title">#{{ r.loan.id }} ({{ r.loan.get_loan_type_display }})</div>
+                    <div class="muted">Installment {{ r.installment_number }} &bull; Due {{ r.due_date }}</div>
+                </div>
+                <div class="emi-amount">&#8377;{{ r.emi_amount }}</div>
+            </div>
+            <div class="emi-foot">
+                {% if r.get_dpd_days > 0 %}<span class="badge badge-bad">Overdue by {{ r.get_dpd_days }} day{{ r.get_dpd_days|pluralize }}</span>{% else %}<span class="badge badge-info">Upcoming</span>{% endif %}
+                <a class="btn {% if r.get_dpd_days > 0 %}btn-danger{% endif %}" href="{% url 'loan_detail' r.loan.id %}">Pay Now</a>
+            </div>
+        </div>
         {% endfor %}
-    </table>
-</div>
+    </div>
+</section>
 {% endif %}
 
-<h3>Your Profile</h3>
-<table border="1" cellpadding="8">
-    <tr>
-        <th>Customer Type</th>
-        <td>{{ user.customer.customer_type }}</td>
-    </tr>
-    <tr>
-        <th>Date of Birth</th>
-        <td>{{ user.customer.dob }}</td>
-    </tr>
-    <tr>
-        <th>Gender</th>
-        <td>{{ user.customer.gender }}</td>
-    </tr>
-    <tr>
-        <th>Address</th>
-        <td>{{ user.customer.address }}</td>
-    </tr>
-    <tr>
-        <th>KYC Status</th>
-        <td>{{ user.customer.kyc_status }}</td>
-    </tr>
-</table>
+<div class="dash-grid">
+    <div>
+        {% for account in user.customer.accounts.all %}
+        <section class="card">
+            <div class="card-head">
+                <div>
+                    <h2>{{ account.get_account_type_display }} Account</h2>
+                    <div class="acct-no">{{ account.account_no }} &bull; {{ account.branch.name }}</div>
+                </div>
+                <span class="badge {% if account.get_status_display == 'Active' %}badge-ok{% else %}badge-bad{% endif %}">{{ account.get_status_display }}</span>
+            </div>
+            <div class="grid grid-3">
+                <div class="stat-box">
+                    <div class="stat-label">Total available balance</div>
+                    <div class="stat-value">&#8377;{{ account.balance }}</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Daily transfer limit</div>
+                    <div class="stat-value">&#8377;{{ account.daily_limit }}</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Remaining today</div>
+                    <div class="stat-value">&#8377;{{ account.get_remaining_daily_limit }}</div>
+                    <div class="progress"><span style="width: {% widthratio account.get_remaining_daily_limit account.daily_limit 100 %}%"></span></div>
+                </div>
+            </div>
+            <div class="actions">
+                <a class="btn btn-primary" href="{% url 'customer_transfer' %}">Send Money</a>
+                <a class="btn" href="{% url 'transaction_history' account.id %}">View History</a>
+                <a class="btn" href="{% url 'download_account_statement' account.id %}">Download Statement</a>
+            </div>
+        </section>
+        {% empty %}
+        <section class="card">
+            <p class="muted">You have no accounts yet. Contact your branch to open one.</p>
+        </section>
+        {% endfor %}
+    </div>
 
-<h3>Your Accounts</h3>
-<table border="1" cellpadding="8">
-    <tr>
-        <th>Account No</th>
-        <th>Branch</th>
-        <th>Type</th>
-        <th>Balance</th>
-        <th>Daily Limit</th>
-        <th>Remaining Today</th>
-        <th>Status</th>
-        <th>Actions</th>
-    </tr>
-    {% for account in user.customer.accounts.all %}
-    <tr>
-        <td>{{ account.account_no }}</td>
-        <td>{{ account.branch.name }}</td>
-        <td>{{ account.get_account_type_display }}</td>
-        <td>{{ account.balance }}</td>
-        <td>{{ account.daily_limit }}</td>
-        <td>{{ account.get_remaining_daily_limit }}</td>
-        <td>{{ account.get_status_display }}</td>
-        <td>
-            <a href="{% url 'transaction_history' account.id %}">View History</a>
-            | <a href="{% url 'download_account_statement' account.id %}">Download Statement</a>
-        </td>
-    </tr>
-    {% empty %}
-    <tr>
-        <td colspan="7">You have no accounts yet. Contact your branch to open one.</td>
-    </tr>
-    {% endfor %}
-</table>
+    <section class="card">
+        <div class="card-head"><h2>Your Profile</h2></div>
+        <div class="kv"><span>Customer type</span><span>{{ user.customer.customer_type }}</span></div>
+        <div class="kv"><span>Date of birth</span><span>{{ user.customer.dob }}</span></div>
+        <div class="kv"><span>Gender</span><span>{{ user.customer.gender }}</span></div>
+        <div class="kv"><span>Address</span><span>{{ user.customer.address }}</span></div>
+        <div class="kv"><span>KYC status</span><span>{{ user.customer.kyc_status }}</span></div>
+        <div class="actions"><a class="btn" href="{% url 'kyc_dashboard' %}">Update Profile Documents</a></div>
+    </section>
+</div>
 
-<h3>Transfer Money</h3>
-<p><a href="{% url 'customer_transfer' %}">Send Money to Another Account</a></p>
-<p><a href="{% url 'my_spending_summary' %}">Spending Summary</a></p>
-<p><a href="{% url 'my_goals' %}">Savings Goals</a></p>
-<p><a href="{% url 'my_recurring' %}">Recurring Payments</a></p>
-<p><a href="{% url 'my_insights' %}">Money Insights</a></p>
+<div class="dash-grid-2">
+    <section class="card">
+        <div class="card-head"><h2>Transfer Money &amp; Insights</h2></div>
+        <div class="tiles-2">
+            <a class="tile" href="{% url 'customer_transfer' %}"><span><strong>Send Money</strong><small>Send Money to Another Account</small></span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+            <a class="tile" href="{% url 'my_spending_summary' %}"><span><strong>Spending Summary</strong><small>Spending by category</small></span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+            <a class="tile" href="{% url 'my_goals' %}"><span><strong>Savings Goals</strong><small>Track progress to a target</small></span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+            <a class="tile" href="{% url 'my_recurring' %}"><span><strong>Recurring Payments</strong><small>Standing instructions</small></span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+        </div>
+        <div class="insight-strip">
+            <span><strong>Money Insights</strong><br><span class="muted">Safe to spend, cash flow, goals and loans.</span></span>
+            <a class="btn" href="{% url 'my_insights' %}">View Report</a>
+        </div>
+    </section>
 
-<h3>Search Transactions</h3>
-<p><a href="{% url 'customer_search_transactions' %}">Search by Account Number</a></p>
+    <section class="card">
+        <div class="card-head"><h2>Banking Services</h2></div>
+        <a class="svc" href="{% url 'kyc_dashboard' %}"><span><strong>KYC Verification</strong><small>Verify your identity documents</small></span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+        <a class="svc" href="{% url 'request_atm_card' %}"><span><strong>Request ATM Card</strong><small>Apply for a debit card</small></span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+        <a class="svc" href="{% url 'my_atm_cards' %}"><span><strong>My ATM Cards</strong><small>See your cards and their status</small></span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+        <a class="svc svc-danger" href="{% url 'card_controls' %}"><span><strong>Card Controls and Emergency Freeze</strong><small>Freeze a card or all cards</small></span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+        <a class="svc" href="{% url 'my_security_activity' %}"><span><strong>Security Activity</strong><small>Recent sign-ins and account activity</small></span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+        <a class="svc" href="{% url 'support_my_cases' %}"><span><strong>My Cases (disputes and complaints)</strong><small>Raise a case or check its status</small></span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+        <a class="svc" href="{% url 'request_cheque_book' %}"><span><strong>Request Cheque Book</strong><small>Order a new cheque book</small></span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+        <a class="svc" href="{% url 'my_cheque_books' %}"><span><strong>My Cheque Book Requests</strong><small>Track your requests</small></span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+    </section>
+</div>
 
-<h3>Loans</h3>
-<ul>
-    <li><a href="{% url 'apply_loan' %}">Apply for a Loan</a></li>
-    <li><a href="{% url 'my_loans' %}">My Loans</a></li>
-</ul>
-
-<h3>Banking Services</h3>
-<ul>
-    <li><a href="{% url 'kyc_dashboard' %}">KYC Verification</a></li>
-    <li><a href="{% url 'request_atm_card' %}">Request ATM Card</a></li>
-    <li><a href="{% url 'my_atm_cards' %}">My ATM Cards</a></li>
-    <li><a href="{% url 'card_controls' %}">Card Controls and Emergency Freeze</a></li>
-    <li><a href="{% url 'my_security_activity' %}">Security Activity</a></li>
-    <li><a href="{% url 'support_my_cases' %}">My Cases (disputes and complaints)</a></li>
-    <li><a href="{% url 'request_cheque_book' %}">Request Cheque Book</a></li>
-    <li><a href="{% url 'my_cheque_books' %}">My Cheque Book Requests</a></li>
-</ul>
+<section class="card">
+    <div class="card-head"><h2>Loans</h2></div>
+    <div class="actions" style="margin-top:0;">
+        <a class="btn btn-primary" href="{% url 'apply_loan' %}">Apply for a Loan</a>
+        <a class="btn" href="{% url 'my_loans' %}">My Loans</a>
+    </div>
+</section>
 {% endblock %}

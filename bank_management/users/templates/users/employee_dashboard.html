@@ -1,16 +1,69 @@
 {% extends "base.html" %}
+{% block title %}Employee Dashboard{% endblock %}
 {% block content %}
-<h2>Employee Dashboard</h2>
-<p>Welcome, {{ user.username }}.{% if department_label %} Department: <strong>{{ department_label }}</strong>.{% endif %}</p>
+<div class="page-head">
+    <div>
+        <h1>Employee Dashboard</h1>
+        <p class="page-sub">Welcome back, {{ user.username }}.{% if department_label %} Department: <strong>{{ department_label }}</strong>.{% endif %}</p>
+    </div>
+</div>
 {% if not department_label %}
-<p><em>No department assigned yet. Ask an admin to assign one. Until then you will not receive department notifications.</em></p>
+<div class="notice">No department assigned yet. Ask an admin to assign one. Until then you will not receive department notifications.</div>
 {% endif %}
-{% for section in sections %}
-<h3>{{ section.title }}{% if section.mine %} <small>(your department)</small>{% endif %}</h3>
-<ul>
-    {% for link in section.links %}
-    <li><a href="{{ link.url }}">{{ link.label }}</a></li>
+
+<div class="kpi-grid">
+    {% for k in kpis %}
+    <a class="kpi{% if k.mine %} kpi-mine{% endif %}" href="{{ k.url }}">
+        <div class="stat-label">{{ k.label }}</div>
+        <div class="stat-value">{{ k.value }}</div>
+        <div class="kpi-hint"><span>{{ k.hint }}</span><span>View</span></div>
+    </a>
     {% endfor %}
-</ul>
-{% endfor %}
+</div>
+
+{% if department == "TRANSACTIONS" %}
+<section class="card">
+    <div class="card-head"><h2>Quick actions</h2></div>
+    <div class="quick-grid">
+        <a class="quick" href="{% url 'deposit' %}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 21h16"/></svg>Process Deposit</a>
+        <a class="quick" href="{% url 'withdraw' %}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3M7 8l5-5 5 5M4 21h16"/></svg>Process Withdrawal</a>
+        <a class="quick" href="{% url 'transfer' %}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h13M16 3l4 4-4 4M17 17H4M8 13l-4 4 4 4"/></svg>Internal Transfer</a>
+        <a class="quick" href="{% url 'pending_transactions' %}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Pending Approvals</a>
+        <a class="quick" href="{% url 'register_customer' %}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="8" r="3.5"/><path d="M3 20c0-3.5 3-6 7-6M18 8v6M15 11h6"/></svg>Register Customer</a>
+    </div>
+</section>
+{% endif %}
+
+<div class="cards-grid">
+    {% for section in sections %}
+    {% if section.mine %}
+    <section class="card card-mine">
+        <div class="card-head">
+            <h2>{{ section.title }} <small class="muted">(your department)</small></h2>
+        </div>
+        <div class="tiles">
+            {% for link in section.links %}
+            <a class="tile" href="{{ link.url }}"><span>{{ link.label }}</span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+    {% endfor %}
+</div>
+
+<h2 class="section-title">More tools</h2>
+<div class="cards-grid">
+    {% for section in sections %}
+    {% if not section.mine %}
+    <details class="card fold">
+        <summary>{{ section.title }}</summary>
+        <div class="tiles">
+            {% for link in section.links %}
+            <a class="tile" href="{{ link.url }}"><span>{{ link.label }}</span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+            {% endfor %}
+        </div>
+    </details>
+    {% endif %}
+    {% endfor %}
+</div>
 {% endblock %}

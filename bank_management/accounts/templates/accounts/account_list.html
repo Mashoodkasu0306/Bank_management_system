@@ -1,35 +1,42 @@
 {% extends "base.html" %}
+{% block title %}All Accounts{% endblock %}
 {% block content %}
-<h2>All Accounts</h2>
-<a href="{% url 'create_account' %}">+ Open New Account</a>
-<table border="1" cellpadding="6">
-    <tr>
-        <th>Account No</th>
-        <th>Customer</th>
-        <th>Branch</th>
-        <th>Type</th>
-        <th>Balance</th>
-        <th>Daily Limit</th>
-        <th>Remaining Today</th>
-        <th>Status</th>
-        <th>Actions</th>
-    </tr>
-    {% for account in accounts %}
-    <tr>
-        <td><a href="{% url 'account_detail' account.id %}">{{ account.account_no }}</a></td>
-        <td>{{ account.customer.user.get_full_name|default:account.customer.user.username }}</td>
-        <td>{{ account.branch.name }}</td>
-        <td>{{ account.get_account_type_display }}</td>
-        <td>{{ account.balance }}</td>
-        <td>{{ account.daily_limit }}</td>
-        <td>{{ account.get_remaining_daily_limit }}</td>
-        <td>{{ account.get_status_display }}</td>>
-        <td><a href="{% url 'transaction_history' account.id %}">History</a></td>
-    </tr>
-    {% empty %}
-    <tr>
-        <td colspan="8">No accounts yet.</td>
-    </tr>
-    {% endfor %}
+<div class="page-head">
+    <h2>All Accounts</h2>
+    <a class="btn btn-primary" href="{% url 'create_account' %}">+ Open New Account</a>
+</div>
+<table>
+    <thead>
+        <tr>
+            <th>Account No</th>
+            <th>Customer</th>
+            <th>Branch</th>
+            <th>Type</th>
+            <th>Balance</th>
+            <th>Daily Limit</th>
+            <th>Remaining Today</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for account in accounts %}
+        <tr>
+            <td><a href="{% url 'account_detail' account.id %}">{{ account.account_no }}</a></td>
+            <td>{{ account.customer.user.get_full_name|default:account.customer.user.username }}</td>
+            <td>{{ account.branch.name }}</td>
+            <td>{{ account.get_account_type_display }}</td>
+            <td>&#8377;{{ account.balance }}</td>
+            <td>&#8377;{{ account.daily_limit }}</td>
+            <td>&#8377;{{ account.get_remaining_daily_limit }}</td>
+            <td><span class="badge {% if account.get_status_display == 'Active' %}badge-ok{% else %}badge-bad{% endif %}">{{ account.get_status_display }}</span></td>
+            <td><a class="btn btn-sm" href="{% url 'transaction_history' account.id %}">History</a></td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="9" class="empty">No accounts yet.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
 </table>
 {% endblock %}

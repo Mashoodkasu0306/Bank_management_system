@@ -1,46 +1,46 @@
 {% extends "base.html" %}
+{% block title %}All Customers{% endblock %}
 {% block content %}
-<h2>All Customers</h2>
-
-{% if messages %}
-{% for message in messages %}
-<p style="color:green;">{{ message }}</p>
-{% endfor %}
-{% endif %}
-
-<a href="{% url 'register_customer' %}">+ Register New Customer</a>
-<br><br>
-
-<table border="1" cellpadding="8">
-    <tr>
-        <th>Username</th>
-        <th>Type</th>
-        <th>Gender</th>
-        <th>KYC Status</th>
-        <th>Active</th>
-        <th>Actions</th>
-    </tr>
-    {% for customer in customers %}
-    <tr>
-        <td>{{ customer.user.username }}</td>
-        <td>{{ customer.customer_type }}</td>
-        <td>{{ customer.gender }}</td>
-        <td>{{ customer.kyc_status }}</td>
-        <td>{{ customer.user.is_active }}</td>
-        <td>
-            <a href="{% url 'customer_360' customer.id %}">View 360</a>
-            | <a href="{% url 'update_customer' customer.id %}">Edit</a>
-            {% if customer.user.is_active %}
-            | <a href="{% url 'deactivate_customer' customer.id %}">Deactivate</a>
-            {% else %}
-            | <a href="{% url 'activate_customer' customer.id %}">Activate</a>
-            {% endif %}
-        </td>
-    </tr>
-    {% empty %}
-    <tr>
-        <td colspan="6">No customers registered yet.</td>
-    </tr>
-    {% endfor %}
+<div class="page-head">
+    <h2>All Customers</h2>
+    <a class="btn btn-primary" href="{% url 'register_customer' %}">+ Register New Customer</a>
+</div>
+<table>
+    <thead>
+        <tr>
+            <th>Username</th>
+            <th>Type</th>
+            <th>Gender</th>
+            <th>KYC Status</th>
+            <th>Active</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for customer in customers %}
+        <tr>
+            <td><strong>{{ customer.user.username }}</strong></td>
+            <td>{{ customer.customer_type }}</td>
+            <td>{{ customer.gender }}</td>
+            <td><span class="badge">{{ customer.kyc_status }}</span></td>
+            <td>{% if customer.user.is_active %}<span class="badge badge-ok">Active</span>{% else %}<span class="badge badge-bad">Inactive</span>{% endif %}</td>
+            <td>
+                <div class="row-actions">
+                    <a class="btn btn-sm" href="{% url 'customer_360' customer.id %}">View 360</a>
+                    <a class="btn btn-sm" href="{% url 'update_customer' customer.id %}">Edit</a>
+                    {% if customer.user.is_active %}
+                    <a class="btn btn-sm" href="{% url 'deactivate_customer' customer.id %}">Deactivate</a>
+                    {% else %}
+                    <a class="btn btn-sm" href="{% url 'activate_customer' customer.id %}">Activate</a>
+                    {% endif %}
+                </div>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="6" class="empty">No customers registered yet.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
 </table>
 {% endblock %}

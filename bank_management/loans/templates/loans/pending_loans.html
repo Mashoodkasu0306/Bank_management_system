@@ -1,28 +1,35 @@
 {% extends "base.html" %}
+{% block title %}Pending Loan Applications{% endblock %}
 {% block content %}
-<h2>Pending Loan Applications</h2>
-<table border="1" cellpadding="6">
-    <tr>
-        <th>Customer</th>
-        <th>Type</th>
-        <th>Amount</th>
-        <th>Tenure</th>
-        <th>Applied</th>
-        <th>Action</th>
-    </tr>
-    {% for loan in loans %}
-    <tr>
-        <td>{{ loan.customer.user.username }}</td>
-        <td>{{ loan.get_loan_type_display }}</td>
-        <td>{{ loan.amount }}</td>
-        <td>{{ loan.tenure_months }} months</td>
-        <td>{{ loan.applied_date }}</td>
-        <td><a href="{% url 'approve_loan' loan.id %}">Review</a></td>
-    </tr>
-    {% empty %}
-    <tr>
-        <td colspan="6">No pending loan applications.</td>
-    </tr>
-    {% endfor %}
+<div class="page-head">
+    <h2>Pending Loan Applications</h2>
+</div>
+<table>
+    <thead>
+        <tr>
+            <th>Customer</th>
+            <th>Type</th>
+            <th>Amount</th>
+            <th>Tenure</th>
+            <th>Applied</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for loan in loans %}
+        <tr>
+            <td><strong>{{ loan.customer.user.username }}</strong></td>
+            <td>{{ loan.get_loan_type_display }}</td>
+            <td>&#8377;{{ loan.amount }}</td>
+            <td>{{ loan.tenure_months }} months</td>
+            <td>{{ loan.applied_date }}</td>
+            <td><a class="btn btn-primary btn-sm" href="{% url 'approve_loan' loan.id %}">Review</a></td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="6" class="empty">No pending loan applications.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
 </table>
 {% endblock %}

@@ -1,59 +1,47 @@
 {% extends "base.html" %}
+{% block title %}Notification Center{% endblock %}
 {% block content %}
-<h2>Notification Center</h2>
+<div class="page-head">
+    <h2>Notification Center</h2>
+    {% if notifications %}<a class="btn" href="{% url 'mark_all_read' %}">Mark All as Read</a>{% endif %}
+</div>
 
-<p>
-    <a href="?tab=ALL"><strong>{% if active_tab == "ALL" %}[All]{% else %}All{% endif %}</strong></a>
-    |
-    <a href="?tab=SECURITY"><strong>{% if active_tab == "SECURITY" %}[Security]{% else %}Security{% endif %}</strong></a>
-    {% if unread_by_group.SECURITY %}({{ unread_by_group.SECURITY }}){% endif %}
-    |
-    <a href="?tab=TRANSACTIONS"><strong>{% if active_tab == "TRANSACTIONS" %}[Transactions]{% else %}Transactions{% endif %}</strong></a>
-    {% if unread_by_group.TRANSACTIONS %}({{ unread_by_group.TRANSACTIONS }}){% endif %}
-    |
-    <a href="?tab=BILLS_LOANS"><strong>{% if active_tab == "BILLS_LOANS" %}[Bills & Loans]{% else %}Bills & Loans{% endif %}</strong></a>
-    {% if unread_by_group.BILLS_LOANS %}({{ unread_by_group.BILLS_LOANS }}){% endif %}
-    |
-    <a href="?tab=SUPPORT"><strong>{% if active_tab == "SUPPORT" %}[Support]{% else %}Support{% endif %}</strong></a>
-    {% if unread_by_group.SUPPORT %}({{ unread_by_group.SUPPORT }}){% endif %}
-</p>
+<div class="chips">
+    <a class="chip{% if active_tab == 'ALL' %} chip-on{% endif %}" href="?tab=ALL">All</a>
+    <a class="chip{% if active_tab == 'SECURITY' %} chip-on{% endif %}" href="?tab=SECURITY">Security{% if unread_by_group.SECURITY %} <span class="chip-count">{{ unread_by_group.SECURITY }}</span>{% endif %}</a>
+    <a class="chip{% if active_tab == 'TRANSACTIONS' %} chip-on{% endif %}" href="?tab=TRANSACTIONS">Transactions{% if unread_by_group.TRANSACTIONS %} <span class="chip-count">{{ unread_by_group.TRANSACTIONS }}</span>{% endif %}</a>
+    <a class="chip{% if active_tab == 'BILLS_LOANS' %} chip-on{% endif %}" href="?tab=BILLS_LOANS">Bills & Loans{% if unread_by_group.BILLS_LOANS %} <span class="chip-count">{{ unread_by_group.BILLS_LOANS }}</span>{% endif %}</a>
+    <a class="chip{% if active_tab == 'SUPPORT' %} chip-on{% endif %}" href="?tab=SUPPORT">Support{% if unread_by_group.SUPPORT %} <span class="chip-count">{{ unread_by_group.SUPPORT }}</span>{% endif %}</a>
+</div>
 
 {% if notifications %}
-<p><a href="{% url 'mark_all_read' %}">Mark All as Read</a></p>
-<table border="1" cellpadding="8">
-    <tr>
-        <th>Priority</th>
-        <th>Category</th>
-        <th>Title</th>
-        <th>Message</th>
-        <th>Time</th>
-        <th>Status</th>
-        <th>Action</th>
-    </tr>
-    {% for n in notifications %}
-    <tr style="{% if not n.is_read %}font-weight: bold; background-color: #eef;{% endif %}">
-        <td>
-            {% if n.priority == 'CRITICAL' %}<span style="color:white; background:#e74c3c; padding:2px 6px; border-radius:3px;">CRITICAL</span>
-            {% elif n.priority == 'HIGH' %}<span style="color:#a94442;">High</span>
-            {% elif n.priority == 'MEDIUM' %}<span style="color:#8a6d3b;">Medium</span>
-            {% else %}<span style="color:#777;">Low</span>{% endif %}
-        </td>
-        <td>{{ n.get_category_display }}</td>
-        <td>{{ n.title }}</td>
-        <td>{{ n.message }}</td>
-        <td>{{ n.created_at }}</td>
-        <td>{% if n.is_read %}Read{% else %}Unread{% endif %}</td>
-        <td>
-            {% if n.link %}
-            <a href="{% url 'mark_notification_read' n.id %}">Open</a>
-            {% else %}
-            -
-            {% endif %}
-        </td>
-    </tr>
-    {% endfor %}
+<table>
+    <thead>
+        <tr>
+            <th>Priority</th>
+            <th>Category</th>
+            <th>Title</th>
+            <th>Message</th>
+            <th>Time</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for n in notifications %}
+        <tr{% if not n.is_read %} class="row-unread"{% endif %}>
+            <td>{% if n.priority == 'CRITICAL' %}<span class="badge badge-bad">Critical</span>{% elif n.priority == 'HIGH' %}<span class="badge badge-warn">High</span>{% elif n.priority == 'MEDIUM' %}<span class="badge badge-info">Medium</span>{% else %}<span class="badge">Low</span>{% endif %}</td>
+            <td>{{ n.get_category_display }}</td>
+            <td>{{ n.title }}</td>
+            <td>{{ n.message }}</td>
+            <td>{{ n.created_at|date:"M j, Y, g:i a" }}</td>
+            <td>{% if n.is_read %}<span class="badge">Read</span>{% else %}<span class="badge badge-info">Unread</span>{% endif %}</td>
+            <td>{% if n.link %}<a class="btn btn-sm" href="{% url 'mark_notification_read' n.id %}">Open</a>{% else %}<span class="muted">-</span>{% endif %}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
 </table>
 {% else %}
-<p>No notifications in this category.</p>
+<p class="muted">No notifications in this category.</p>
 {% endif %}
 {% endblock %}
