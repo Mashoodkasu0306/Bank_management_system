@@ -298,3 +298,7 @@ body.auth .page { margin: 8vh auto 0; }
 .notice-info { background: var(--accent-soft); border-color: #bfdbfe; color: #1e3a8a; }
 .progress-cell { min-width: 180px; }
 .progress-cell .progress { margin: 0 0 4px; }
+.nav .nav-btn { display: flex; gap: 10px; align-items: center; width: 100%; min-height: 44px; padding: 10px 12px; border: 0; border-radius: 8px;
+  background: transparent; color: #cbd5e1; font: inherit; font-size: 14px; font-weight: 500; text-align: left; cursor: pointer; }
+.nav .nav-btn:hover { background: rgba(255, 255, 255, .06); color: #fff; }
+.nav .nav-btn[hidden] { display: none; }

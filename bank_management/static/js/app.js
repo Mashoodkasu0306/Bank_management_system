@@ -19,3 +19,27 @@
     }
   });
 })();
+(function () {
+  if (!("serviceWorker" in navigator)) { return; }
+  window.addEventListener("load", function () {
+    navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch(function () {});
+  });
+})();
+
+(function () {
+  var deferred = null;
+  var btn = document.getElementById("install-app");
+  window.addEventListener("beforeinstallprompt", function (e) {
+    e.preventDefault();
+    deferred = e;
+    if (btn) { btn.hidden = false; }
+  });
+  if (btn) {
+    btn.addEventListener("click", function () {
+      if (!deferred) { return; }
+      deferred.prompt();
+      deferred.userChoice.then(function () { deferred = null; btn.hidden = true; });
+    });
+  }
+  window.addEventListener("appinstalled", function () { if (btn) { btn.hidden = true; } });
+})();

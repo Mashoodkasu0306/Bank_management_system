@@ -6,6 +6,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="#0f1b2d">
+    <link rel="manifest" href="{% url 'pwa_manifest' %}">
+    <link rel="apple-touch-icon" href="{% static 'pwa/apple-touch-icon.png' %}">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Apex Bank">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>{% block title %}Bank Management System{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/app.css' %}">
     <script src="{% static 'js/app.js' %}" defer></script>
@@ -52,6 +58,7 @@
             {% endif %}
         </nav>
         <div class="sidebar-foot nav">
+            <button type="button" class="nav-btn" id="install-app" hidden><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 21h16"/></svg>Install app</button>
             <a href="{% url 'logout' %}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5V3h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg>Logout</a>
         </div>
     </aside>
