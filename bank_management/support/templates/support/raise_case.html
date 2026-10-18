@@ -1,16 +1,17 @@
 {% extends "base.html" %}
+{% block title %}Raise a Case{% endblock %}
 {% block content %}
-<h2>Raise a Case</h2>
-<p>A <strong>dispute</strong> is about one transaction, for example a charge you do not recognise.
-    A <strong>complaint</strong> is about our service.</p>
-<p>The bank answers disputes within {{ deadlines.DISPUTE }} days and complaints within {{ deadlines.COMPLAINT }} days.
-    This page does not move any money. If a dispute is accepted, the bank arranges any refund separately.</p>
+<div class="page-head"><h2>Raise a Case</h2></div>
+<div class="notice notice-info">
+    <p style="margin-top:0;">A <strong>dispute</strong> is about one transaction, for example a charge you do not recognise.
+        A <strong>complaint</strong> is about our service.</p>
+    <p style="margin-bottom:0;">The bank answers disputes within {{ deadlines.DISPUTE }} days and complaints within {{ deadlines.COMPLAINT }} days.
+        This page does not move any money. If a dispute is accepted, the bank arranges any refund separately.</p>
+</div>
 
-<form method="POST" action="{% url 'support_raise_case' %}">
+<form method="POST" action="{% url 'support_raise_case' %}" class="form-card">
     {% csrf_token %}
     {{ form.as_p }}
-    <button type="submit">Submit case</button>
+    <button type="submit" class="btn btn-primary btn-block">Submit case</button>
 </form>
-
-<p><a href="{% url 'support_my_cases' %}">Back to My Cases</a></p>
 {% endblock %}

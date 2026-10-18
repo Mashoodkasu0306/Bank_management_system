@@ -1,52 +1,57 @@
 {% extends "base.html" %}
+{% block title %}Recurring Payments{% endblock %}
 {% block content %}
-<h2>Recurring Payments</h2>
-
-<p>A recurring payment sends money from your account to another account on a schedule. The bank processes due payments on or after the payment date. If a payment cannot be made you are told why, and after 3 failed attempts in a row it is paused.</p>
-
-<p><a href="{% url 'recurring_create' %}">+ New recurring payment</a></p>
+<div class="page-head">
+    <h2>Recurring Payments</h2>
+    <a class="btn btn-primary" href="{% url 'recurring_create' %}">+ New recurring payment</a>
+</div>
+<p class="muted">A recurring payment sends money from your account to another account on a schedule. The bank processes due payments on or after the payment date. If a payment cannot be made you are told why, and after 3 failed attempts in a row it is paused.</p>
 
 {% if payments %}
-<table border="1" cellpadding="8">
-    <tr>
-        <th>Name</th>
-        <th>From</th>
-        <th>To</th>
-        <th>Amount</th>
-        <th>Repeats</th>
-        <th>Next payment</th>
-        <th>Ends</th>
-        <th>Status</th>
-        <th>Last result</th>
-        <th>Actions</th>
-    </tr>
-    {% for p in payments %}
-    <tr>
-        <td>{{ p.name }}</td>
-        <td>{{ p.from_account.account_no }}</td>
-        <td>{{ p.to_account.account_no }}</td>
-        <td align="right">{{ p.amount }}</td>
-        <td>{{ p.get_frequency_display }}</td>
-        <td>{% if p.status == "ACTIVE" %}{{ p.next_run_date }}{% else %}-{% endif %}</td>
-        <td>{{ p.end_date|default:"-" }}</td>
-        <td>{{ p.get_status_display }}</td>
-        <td>{{ p.last_result|default:"-" }}{% if p.consecutive_failures %}<br><small style="color:red;">{{ p.consecutive_failures }} failed in a row</small>{% endif %}</td>
-        <td>
-            {% if p.status == "ACTIVE" %}
-            <form method="POST" action="{% url 'recurring_pause' p.id %}" style="display:inline;">{% csrf_token %}<button type="submit">Pause</button></form>
-            {% elif p.status == "PAUSED" %}
-            <form method="POST" action="{% url 'recurring_resume' p.id %}" style="display:inline;">{% csrf_token %}<button type="submit">Resume</button></form>
-            {% endif %}
-            {% if p.status == "ACTIVE" or p.status == "PAUSED" %}
-            <form method="POST" action="{% url 'recurring_cancel' p.id %}" style="display:inline;" onsubmit="return confirm('Cancel this recurring payment? This cannot be undone.');">{% csrf_token %}<button type="submit">Cancel</button></form>
-            {% else %}-{% endif %}
-        </td>
-    </tr>
-    {% endfor %}
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>From</th>
+            <th>To</th>
+            <th>Amount</th>
+            <th>Repeats</th>
+            <th>Next payment</th>
+            <th>Ends</th>
+            <th>Status</th>
+            <th>Last result</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for p in payments %}
+        <tr>
+            <td><strong>{{ p.name }}</strong></td>
+            <td>{{ p.from_account.account_no }}</td>
+            <td>{{ p.to_account.account_no }}</td>
+            <td style="text-align:right;">&#8377;{{ p.amount }}</td>
+            <td>{{ p.get_frequency_display }}</td>
+            <td>{% if p.status == "ACTIVE" %}{{ p.next_run_date }}{% else %}-{% endif %}</td>
+            <td>{{ p.end_date|default:"-" }}</td>
+            <td><span class="badge {% if p.status == 'ACTIVE' %}badge-ok{% elif p.status == 'PAUSED' %}badge-warn{% endif %}">{{ p.get_status_display }}</span></td>
+            <td>{{ p.last_result|default:"-" }}{% if p.consecutive_failures %}<br><small style="color:var(--bad);">{{ p.consecutive_failures }} failed in a row</small>{% endif %}</td>
+            <td>
+                <div class="row-actions">
+                    {% if p.status == "ACTIVE" %}
+                    <form method="POST" action="{% url 'recurring_pause' p.id %}" class="inline-form">{% csrf_token %}<button type="submit" class="btn btn-sm">Pause</button></form>
+                    {% elif p.status == "PAUSED" %}
+                    <form method="POST" action="{% url 'recurring_resume' p.id %}" class="inline-form">{% csrf_token %}<button type="submit" class="btn btn-sm">Resume</button></form>
+                    {% endif %}
+                    {% if p.status == "ACTIVE" or p.status == "PAUSED" %}
+                    <form method="POST" action="{% url 'recurring_cancel' p.id %}" class="inline-form" onsubmit="return confirm('Cancel this recurring payment? This cannot be undone.');">{% csrf_token %}<button type="submit" class="btn btn-danger btn-sm">Cancel</button></form>
+                    {% else %}<span class="muted">-</span>{% endif %}
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
 </table>
 {% else %}
-<p>You have no recurring payments yet.</p>
+<p class="muted">You have no recurring payments yet.</p>
 {% endif %}
-
-<p><a href="{% url 'customer_dashboard' %}">Back to dashboard</a></p>
 {% endblock %}

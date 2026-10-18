@@ -1,17 +1,17 @@
 {% extends "base.html" %}
 {% block title %}Security Alerts{% endblock %}
 {% block content %}
-<h2>Security Alerts</h2>
-<p>Warnings raised automatically when something looks unusual. Mark an alert as reviewed once you have looked into it.</p>
+<div class="page-head"><h2>Security Alerts</h2></div>
+<p class="muted">Warnings raised automatically when something looks unusual. Mark an alert as reviewed once you have looked into it.</p>
 
-<p>
-    <a href="?status=open">Open ({{ open_count }})</a> |
-    <a href="?status=reviewed">Reviewed</a> |
-    <a href="?status=all">All</a>
-    &nbsp;- showing: <strong>{{ status }}</strong>
-</p>
+<div class="chips">
+    <a class="chip{% if status == 'open' %} chip-on{% endif %}" href="?status=open">Open ({{ open_count }})</a>
+    <a class="chip{% if status == 'reviewed' %} chip-on{% endif %}" href="?status=reviewed">Reviewed</a>
+    <a class="chip{% if status == 'all' %} chip-on{% endif %}" href="?status=all">All</a>
+    <span class="muted">showing: <strong>{{ status }}</strong></span>
+</div>
 
-<table border="1" cellpadding="6" cellspacing="0">
+<table>
     <thead>
         <tr>
             <th>When</th>
@@ -26,22 +26,22 @@
         {% for a in alerts %}
         <tr>
             <td>{{ a.created_at|date:"Y-m-d H:i:s" }}</td>
-            <td>{{ a.get_alert_type_display }}</td>
+            <td><span class="badge badge-warn">{{ a.get_alert_type_display }}</span></td>
             <td>{{ a.subject }}</td>
             <td>{{ a.message }}</td>
-            <td>{% if a.is_reviewed %}Reviewed by {{ a.reviewed_by.username|default:"-" }} on {{ a.reviewed_at|date:"Y-m-d H:i" }}{% else %}Open{% endif %}</td>
+            <td>{% if a.is_reviewed %}<span class="badge badge-ok">Reviewed by {{ a.reviewed_by.username|default:"-" }} on {{ a.reviewed_at|date:"Y-m-d H:i" }}</span>{% else %}<span class="badge badge-bad">Open</span>{% endif %}</td>
             <td>
                 {% if not a.is_reviewed %}
-                <form method="post" action="{% url 'review_alert' a.id %}">
+                <form method="post" action="{% url 'review_alert' a.id %}" class="inline-form">
                     {% csrf_token %}
-                    <button type="submit">Mark reviewed</button>
+                    <button type="submit" class="btn btn-primary btn-sm">Mark reviewed</button>
                 </form>
-                {% else %}-{% endif %}
+                {% else %}<span class="muted">-</span>{% endif %}
             </td>
         </tr>
         {% empty %}
         <tr>
-            <td colspan="6">No alerts here.</td>
+            <td colspan="6" class="empty">No alerts here.</td>
         </tr>
         {% endfor %}
     </tbody>

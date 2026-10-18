@@ -1,53 +1,50 @@
 {% extends "base.html" %}
+{% block title %}My Security Activity{% endblock %}
 {% block content %}
-<h2>My Security Activity</h2>
-<p>The important things that happened on your account recently, newest first.
+<div class="page-head"><h2>My Security Activity</h2></div>
+<div class="notice notice-info">The important things that happened on your account recently, newest first.
     If you see something you do not recognise, <a href="{% url 'card_controls' %}">freeze your cards</a>
-    and contact the bank.</p>
+    and contact the bank.</div>
 
-<table border="1" cellpadding="8">
-    <tr>
-        <th>Previous sign-in</th>
-        <td>
-            {% if previous_login %}
-            {{ previous_login.created_at }} from {% if previous_login.ip_address %}{{ previous_login.ip_address }}{% else %}an unknown address{% endif %}
-            {% else %}
-            This is your first recorded sign-in.
-            {% endif %}
-        </td>
-    </tr>
-    <tr>
-        <th>Failed sign-ins in the last 7 days</th>
-        <td>{{ failed_week }}{% if failed_week %} <strong style="color:red;">If this was not you, contact the bank.</strong>{% endif %}</td>
-    </tr>
-    <tr>
-        <th>Emergency freeze</th>
-        <td>{% if freeze %}ON since {{ freeze.started_at }}{% else %}Off{% endif %}</td>
-    </tr>
-</table>
+<section class="card">
+    <div class="kv">
+        <span>Previous sign-in</span>
+        <span>{% if previous_login %}{{ previous_login.created_at|date:"M j, Y, g:i a" }} from {% if previous_login.ip_address %}{{ previous_login.ip_address }}{% else %}an unknown address{% endif %}{% else %}This is your first recorded sign-in.{% endif %}</span>
+    </div>
+    <div class="kv">
+        <span>Failed sign-ins in the last 7 days</span>
+        <span>{{ failed_week }}{% if failed_week %} <span class="badge badge-bad">If this was not you, contact the bank.</span>{% endif %}</span>
+    </div>
+    <div class="kv">
+        <span>Emergency freeze</span>
+        <span>{% if freeze %}<span class="badge badge-bad">ON since {{ freeze.started_at|date:"M j, Y, g:i a" }}</span>{% else %}<span class="badge badge-ok">Off</span>{% endif %}</span>
+    </div>
+</section>
 
 <h3>Recent activity</h3>
 {% if rows %}
-<table border="1" cellpadding="8">
-    <tr>
-        <th>When</th>
-        <th>What happened</th>
-        <th>Details</th>
-        <th>From (IP address)</th>
-    </tr>
-    {% for row in rows %}
-    <tr>
-        <td>{{ row.when }}</td>
-        <td>{% if row.warn %}<strong style="color:red;">{{ row.label }}</strong>{% else %}{{ row.label }}{% endif %}</td>
-        <td>{{ row.details }}</td>
-        <td>{% if row.ip %}{{ row.ip }}{% else %}-{% endif %}</td>
-    </tr>
-    {% endfor %}
+<table>
+    <thead>
+        <tr>
+            <th>When</th>
+            <th>What happened</th>
+            <th>Details</th>
+            <th>From (IP address)</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in rows %}
+        <tr>
+            <td>{{ row.when }}</td>
+            <td>{% if row.warn %}<span class="badge badge-bad">{{ row.label }}</span>{% else %}{{ row.label }}{% endif %}</td>
+            <td>{{ row.details }}</td>
+            <td>{% if row.ip %}{{ row.ip }}{% else %}-{% endif %}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
 </table>
-<p><small>Up to 100 recent entries are shown. This list cannot be changed.</small></p>
+<p class="muted"><small>Up to 100 recent entries are shown. This list cannot be changed.</small></p>
 {% else %}
-<p>Nothing recorded yet.</p>
+<p class="muted">Nothing recorded yet.</p>
 {% endif %}
-
-<p><a href="{% url 'customer_dashboard' %}">Back to Dashboard</a></p>
 {% endblock %}

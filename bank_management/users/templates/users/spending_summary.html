@@ -1,52 +1,52 @@
 {% extends "base.html" %}
+{% block title %}Spending Summary{% endblock %}
 {% block content %}
-<h2>Spending Summary</h2>
+<div class="page-head"><h2>Spending Summary</h2></div>
 
-<p>
-    <a href="{% url 'my_spending_summary' %}?month={{ s.prev_key }}">&laquo; Previous month</a>
-    &nbsp;|&nbsp;
-    <strong>{{ s.month_label }}</strong>
-    &nbsp;|&nbsp;
-    {% if s.next_key %}<a href="{% url 'my_spending_summary' %}?month={{ s.next_key }}">Next month &raquo;</a>{% else %}This is the latest month{% endif %}
-</p>
+<div class="chips">
+    <a class="chip" href="{% url 'my_spending_summary' %}?month={{ s.prev_key }}">&laquo; Previous month</a>
+    <span class="chip chip-on">{{ s.month_label }}</span>
+    {% if s.next_key %}<a class="chip" href="{% url 'my_spending_summary' %}?month={{ s.next_key }}">Next month &raquo;</a>{% else %}<span class="muted">This is the latest month</span>{% endif %}
+</div>
 
-<table border="1" cellpadding="8">
-    <tr><th align="left">Money in</th><td align="right">{{ s.income }}</td></tr>
-    <tr><th align="left">Money out</th><td align="right">{{ s.total_out }}</td></tr>
-    <tr><th align="left">Left over</th><td align="right">{{ s.net }}</td></tr>
-    {% if s.loan_received %}
-    <tr><th align="left">Loan received (not counted as money in)</th><td align="right">{{ s.loan_received }}</td></tr>
-    {% endif %}
-</table>
+<div class="grid grid-3">
+    <div class="card"><div class="stat-label">Money in</div><div class="stat-value">&#8377;{{ s.income }}</div></div>
+    <div class="card"><div class="stat-label">Money out</div><div class="stat-value">&#8377;{{ s.total_out }}</div></div>
+    <div class="card"><div class="stat-label">Left over</div><div class="stat-value">&#8377;{{ s.net }}</div></div>
+</div>
+{% if s.loan_received %}
+<p><span class="badge badge-info">Loan received (not counted as money in): &#8377;{{ s.loan_received }}</span></p>
+{% endif %}
 
 <h3>Where your money went</h3>
-
-<table border="1" cellpadding="8" style="width:100%; max-width:640px;">
-    <tr>
-        <th>Category</th>
-        <th>Amount</th>
-        <th>Share</th>
-    </tr>
-    {% for row in s.rows %}
-    <tr>
-        <td>{{ row.label }}</td>
-        <td align="right">{{ row.amount }}</td>
-        <td>
-            <div style="background:#e5e7eb; width:200px;"><div style="background:#4472C4; height:14px; width:{{ row.percent }}%;"></div></div>
-            {{ row.percent }}%
-        </td>
-    </tr>
-    {% empty %}
-    <tr>
-        <td colspan="3">No spending in this month.</td>
-    </tr>
-    {% endfor %}
+<table>
+    <thead>
+        <tr>
+            <th>Category</th>
+            <th>Amount</th>
+            <th>Share</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in s.rows %}
+        <tr>
+            <td>{{ row.label }}</td>
+            <td style="text-align:right;">&#8377;{{ row.amount }}</td>
+            <td class="progress-cell">
+                <div class="progress progress-lg progress-blue"><span style="width:{{ row.percent }}%;"></span></div>
+                {{ row.percent }}%
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="3" class="empty">No spending in this month.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
 </table>
 
-<p style="color:#555;">
+<p class="muted">
     Only completed payments are counted. Failed and waiting payments are left out.
     {% if s.own_transfers %}Transfers between your own accounts are not counted.{% endif %}
 </p>
-
-<p><a href="{% url 'customer_dashboard' %}">Back to dashboard</a></p>
 {% endblock %}

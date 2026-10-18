@@ -1,36 +1,37 @@
 {% extends "base.html" %}
+{% block title %}Update Customer{% endblock %}
 {% block content %}
-<h2>Update Customer: {{ customer.user.username }}</h2>
+<div class="page-head">
+    <h2>Update Customer: {{ customer.user.username }}</h2>
+    <a class="btn" href="{% url 'customer_list' %}">Back to Customer List</a>
+</div>
 
-<form method="POST">
+<form method="POST" class="form-card">
     {% csrf_token %}
-    <label>Customer Type</label><br>
-    <select name="customer_type" required>
-        <option value="INDIVIDUAL" {% if customer.customer_type == "INDIVIDUAL" %}selected{% endif %}>Individual</option>
-        <option value="BUSINESS" {% if customer.customer_type == "BUSINESS" %}selected{% endif %}>Business</option>
-    </select><br><br>
-
-    <label>Date of Birth</label><br>
-    <input type="date" name="dob" value="{{ customer.dob|date:'Y-m-d' }}" required><br><br>
-
-    <label>Gender</label><br>
-    <select name="gender" required>
-        <option value="MALE" {% if customer.gender == "MALE" %}selected{% endif %}>Male</option>
-        <option value="FEMALE" {% if customer.gender == "FEMALE" %}selected{% endif %}>Female</option>
-        <option value="OTHER" {% if customer.gender == "OTHER" %}selected{% endif %}>Other</option>
-    </select><br><br>
-
-    <label>Address</label><br>
-    <textarea name="address" required>{{ customer.address }}</textarea><br><br>
-
-    <label>KYC Status</label><br>
-    <select name="kyc_status" required>
-        <option value="PENDING" {% if customer.kyc_status == "PENDING" %}selected{% endif %}>Pending</option>
-        <option value="VERIFIED" {% if customer.kyc_status == "VERIFIED" %}selected{% endif %}>Verified</option>
-    </select><br><br>
-
-    <button type="submit">Update Customer</button>
+    <div class="field">
+        <label for="id_customer_type">Customer Type</label>
+        <select id="id_customer_type" name="customer_type" required>
+            <option value="INDIVIDUAL" {% if customer.customer_type == "INDIVIDUAL" %}selected{% endif %}>Individual</option>
+            <option value="BUSINESS" {% if customer.customer_type == "BUSINESS" %}selected{% endif %}>Business</option>
+        </select>
+    </div>
+    <div class="field"><label for="id_dob">Date of Birth</label><input type="date" id="id_dob" name="dob" value="{{ customer.dob|date:'Y-m-d' }}" required></div>
+    <div class="field">
+        <label for="id_gender">Gender</label>
+        <select id="id_gender" name="gender" required>
+            <option value="MALE" {% if customer.gender == "MALE" %}selected{% endif %}>Male</option>
+            <option value="FEMALE" {% if customer.gender == "FEMALE" %}selected{% endif %}>Female</option>
+            <option value="OTHER" {% if customer.gender == "OTHER" %}selected{% endif %}>Other</option>
+        </select>
+    </div>
+    <div class="field"><label for="id_address">Address</label><textarea id="id_address" name="address" rows="3" required>{{ customer.address }}</textarea></div>
+    <div class="field">
+        <label for="id_kyc_status">KYC Status</label>
+        <select id="id_kyc_status" name="kyc_status" required>
+            <option value="PENDING" {% if customer.kyc_status == "PENDING" %}selected{% endif %}>Pending</option>
+            <option value="VERIFIED" {% if customer.kyc_status == "VERIFIED" %}selected{% endif %}>Verified</option>
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary btn-block">Update Customer</button>
 </form>
-
-<a href="{% url 'customer_list' %}">Back to Customer List</a>
 {% endblock %}

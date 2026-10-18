@@ -1,33 +1,38 @@
 {% extends "base.html" %}
+{% block title %}Savings Goals{% endblock %}
 {% block content %}
-<h2>Savings Goals</h2>
-
-<p>A goal is a target to save towards. It does not move or lock any money: progress is simply your account balance compared with the target.</p>
-
-<p><a href="{% url 'goal_create' %}">+ New goal</a></p>
-
-{% for g in goals %}
-<div style="border:1px solid #ccc; padding:12px; margin-bottom:12px; max-width:640px;">
-    <strong>{{ g.goal.name }}</strong>
-    &nbsp; <small>Account {{ g.goal.account.account_no }}</small>
-
-    <div style="background:#e5e7eb; margin:8px 0;"><div style="background:{% if g.achieved %}#16a34a{% else %}#4472C4{% endif %}; height:14px; width:{{ g.percent }}%;"></div></div>
-
-    <p>{{ g.percent }}% funded: {{ g.saved }} of {{ g.target }}{% if not g.achieved %} ({{ g.remaining }} to go){% endif %}</p>
-
-    {% if g.achieved %}<p style="color:green;"><strong>Goal reached!</strong></p>{% endif %}
-    {% if g.overdue %}<p style="color:#b45309;">Target date has passed ({{ g.goal.target_date }}).</p>{% elif g.goal.target_date and not g.achieved %}<p>{{ g.days_left }} days left (target date {{ g.goal.target_date }}).</p>{% endif %}
-    {% if not g.account_active %}<p style="color:red;">This account is closed, so this goal can no longer grow.</p>{% endif %}
-
-    <a href="{% url 'goal_edit' g.goal.id %}">Edit</a>
-    <form method="POST" action="{% url 'goal_archive' g.goal.id %}" style="display:inline; margin-left:10px;">
-        {% csrf_token %}
-        <button type="submit">Archive</button>
-    </form>
+<div class="page-head">
+    <h2>Savings Goals</h2>
+    <a class="btn btn-primary" href="{% url 'goal_create' %}">+ New goal</a>
 </div>
-{% empty %}
-<p>You have no savings goals yet.</p>
-{% endfor %}
+<p class="muted">A goal is a target to save towards. It does not move or lock any money: progress is simply your account balance compared with the target.</p>
 
-<p><a href="{% url 'customer_dashboard' %}">Back to dashboard</a></p>
+<div class="cards-grid">
+    {% for g in goals %}
+    <section class="card">
+        <div class="card-head">
+            <h2>{{ g.goal.name }}</h2>
+            <small class="muted">Account {{ g.goal.account.account_no }}</small>
+        </div>
+
+        <div class="progress progress-lg{% if not g.achieved %} progress-blue{% endif %}"><span style="width: {{ g.percent }}%;"></span></div>
+
+        <p>{{ g.percent }}% funded: {{ g.saved }} of {{ g.target }}{% if not g.achieved %} ({{ g.remaining }} to go){% endif %}</p>
+
+        {% if g.achieved %}<p><span class="badge badge-ok">Goal reached!</span></p>{% endif %}
+        {% if g.overdue %}<p><span class="badge badge-warn">Target date has passed ({{ g.goal.target_date }}).</span></p>{% elif g.goal.target_date and not g.achieved %}<p class="muted">{{ g.days_left }} days left (target date {{ g.goal.target_date }}).</p>{% endif %}
+        {% if not g.account_active %}<p><span class="badge badge-bad">This account is closed, so this goal can no longer grow.</span></p>{% endif %}
+
+        <div class="row-actions">
+            <a class="btn btn-sm" href="{% url 'goal_edit' g.goal.id %}">Edit</a>
+            <form method="POST" action="{% url 'goal_archive' g.goal.id %}" class="inline-form">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm">Archive</button>
+            </form>
+        </div>
+    </section>
+    {% empty %}
+    <p class="muted">You have no savings goals yet.</p>
+    {% endfor %}
+</div>
 {% endblock %}

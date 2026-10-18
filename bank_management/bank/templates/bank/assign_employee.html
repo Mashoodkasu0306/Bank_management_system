@@ -1,31 +1,28 @@
 {% extends "base.html" %}
+{% block title %}Assign Employee to Branch{% endblock %}
 {% block content %}
-<h2>Assign Employee to Branch</h2>
+<div class="page-head"><h2>Assign Employee to Branch</h2></div>
 
-{% if messages %}
-  {% for message in messages %}
-    <p style="color:green;">{{ message }}</p>
-  {% endfor %}
-{% endif %}
-
-<form method="POST">
+<form method="POST" class="form-card">
     {% csrf_token %}
-    <label>Unassigned Employee</label><br>
-    <select name="employee" required>
-        <option value="">-- Select Employee --</option>
-        {% for emp in employees %}
-        <option value="{{ emp.id }}">{{ emp.user.username }}</option>
-        {% endfor %}
-    </select><br><br>
-
-    <label>Branch</label><br>
-    <select name="branch" required>
-        <option value="">-- Select Branch --</option>
-        {% for branch in branches %}
-        <option value="{{ branch.id }}">{{ branch.name }} ({{ branch.branch_code }})</option>
-        {% endfor %}
-    </select><br><br>
-
-    <button type="submit">Assign</button>
+    <div class="field">
+        <label for="id_employee">Unassigned Employee</label>
+        <select id="id_employee" name="employee" required>
+            <option value="">-- Select Employee --</option>
+            {% for emp in employees %}
+            <option value="{{ emp.id }}">{{ emp.user.username }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="field">
+        <label for="id_branch">Branch</label>
+        <select id="id_branch" name="branch" required>
+            <option value="">-- Select Branch --</option>
+            {% for branch in branches %}
+            <option value="{{ branch.id }}">{{ branch.name }} ({{ branch.branch_code }})</option>
+            {% endfor %}
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary btn-block">Assign</button>
 </form>
 {% endblock %}

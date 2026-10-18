@@ -1,32 +1,18 @@
 {% extends "base.html" %}
+{% block title %}Create Bank{% endblock %}
 {% block content %}
-<h2>Create Bank</h2>
+<div class="page-head">
+    <h2>Create Bank</h2>
+    <a class="btn" href="{% url 'bank_list' %}">View All Banks</a>
+</div>
 
-{% if messages %}
-  {% for message in messages %}
-    <p style="color:green;">{{ message }}</p>
-  {% endfor %}
-{% endif %}
-
-<form method="POST">
+<form method="POST" class="form-card">
     {% csrf_token %}
-    <label>Bank Name</label><br>
-    <input type="text" name="name" required><br><br>
-
-    <label>Bank Code</label><br>
-    <input type="text" name="code" required><br><br>
-
-    <label>Head Office Address</label><br>
-    <textarea name="head_office_address"></textarea><br><br>
-
-    <label>Contact Email</label><br>
-    <input type="email" name="contact_email"><br><br>
-
-    <label>Contact Phone</label><br>
-    <input type="text" name="contact_phone"><br><br>
-
-    <button type="submit">Create Bank</button>
+    <div class="field"><label for="id_name">Bank Name</label><input type="text" id="id_name" name="name" required></div>
+    <div class="field"><label for="id_code">Bank Code</label><input type="text" id="id_code" name="code" required></div>
+    <div class="field"><label for="id_head_office_address">Head Office Address</label><textarea id="id_head_office_address" name="head_office_address" rows="3"></textarea></div>
+    <div class="field"><label for="id_contact_email">Contact Email</label><input type="email" id="id_contact_email" name="contact_email"></div>
+    <div class="field"><label for="id_contact_phone">Contact Phone</label><input type="text" id="id_contact_phone" name="contact_phone"></div>
+    <button type="submit" class="btn btn-primary btn-block">Create Bank</button>
 </form>
-
-<a href="{% url 'bank_list' %}">View All Banks</a>
 {% endblock %}

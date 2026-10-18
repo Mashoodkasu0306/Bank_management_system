@@ -1,13 +1,15 @@
 {% extends "base.html" %}
+{% block title %}New recurring payment{% endblock %}
 {% block content %}
-<h2>New recurring payment</h2>
+<div class="page-head"><h2>New recurring payment</h2></div>
+<p class="muted">This saves the schedule only. No money moves until a payment falls due.</p>
 
-<p>This saves the schedule only. No money moves until a payment falls due.</p>
-
-<form method="POST">
+<form method="POST" class="form-card">
     {% csrf_token %}
     {{ form.as_p }}
-    <button type="submit">Save recurring payment</button>
-    <a href="{% url 'my_recurring' %}">Cancel</a>
+    <div class="row-actions">
+        <button type="submit" class="btn btn-primary">Save recurring payment</button>
+        <a class="btn" href="{% url 'my_recurring' %}">Cancel</a>
+    </div>
 </form>
 {% endblock %}

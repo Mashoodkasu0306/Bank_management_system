@@ -1,87 +1,79 @@
 {% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
 {% block content %}
-<h2>Admin Dashboard</h2>
-<p>Welcome, {{ user.username }}.</p>
+<div class="page-head">
+    <div>
+        <h2>Admin Dashboard</h2>
+        <p class="page-sub">Welcome, {{ user.username }}.</p>
+    </div>
+</div>
 
 <h3>Summary</h3>
-<table border="1" cellpadding="8">
-    <tr>
-        <th>Total Customers</th>
-        <td>{{ total_customers }}</td>
-    </tr>
-    <tr>
-        <th>Total Employees</th>
-        <td>{{ total_employees }}</td>
-    </tr>
-    <tr>
-        <th>Total Banks</th>
-        <td>{{ total_banks }}</td>
-    </tr>
-    <tr>
-        <th>Total Branches</th>
-        <td>{{ total_branches }}</td>
-    </tr>
-    <tr>
-        <th>Total Accounts</th>
-        <td>{{ total_accounts }}</td>
-    </tr>
-    <tr>
-        <th>Total Balance Across All Accounts</th>
-        <td>{{ total_balance }}</td>
-    </tr>
-    <tr>
-        <th>Total Transactions</th>
-        <td>{{ total_transactions }}</td>
-    </tr>
-    <tr>
-        <th>Total Successful Transaction Volume</th>
-        <td>{{ total_successful_volume }}</td>
-    </tr>
-</table>
+<div class="grid grid-4">
+    <div class="card"><div class="stat-label">Total Customers</div><div class="stat-value">{{ total_customers }}</div></div>
+    <div class="card"><div class="stat-label">Total Employees</div><div class="stat-value">{{ total_employees }}</div></div>
+    <div class="card"><div class="stat-label">Total Banks</div><div class="stat-value">{{ total_banks }}</div></div>
+    <div class="card"><div class="stat-label">Total Branches</div><div class="stat-value">{{ total_branches }}</div></div>
+    <div class="card"><div class="stat-label">Total Accounts</div><div class="stat-value">{{ total_accounts }}</div></div>
+    <div class="card"><div class="stat-label">Total Balance Across All Accounts</div><div class="stat-value">&#8377;{{ total_balance }}</div></div>
+    <div class="card"><div class="stat-label">Total Transactions</div><div class="stat-value">{{ total_transactions }}</div></div>
+    <div class="card"><div class="stat-label">Total Successful Transaction Volume</div><div class="stat-value">&#8377;{{ total_successful_volume }}</div></div>
+</div>
 
-<h3>Bank Structure</h3>
-<ul>
-    <li><a href="{% url 'bank_list' %}">View Banks</a></li>
-    <li><a href="{% url 'branch_list' %}">View Branches</a></li>
-    <li><a href="{% url 'create_bank' %}">Create Bank</a></li>
-    <li><a href="{% url 'create_branch' %}">Create Branch</a></li>
-    <li><a href="{% url 'assign_employee' %}">Assign Employee to Branch</a></li>
-</ul>
-
-<h3>Customers</h3>
-<ul>
-    <li><a href="{% url 'customer_list' %}">View All Customers</a></li>
-</ul>
-
-<h3>Accounts</h3>
-<ul>
-    <li><a href="{% url 'create_account' %}">Open New Account</a></li>
-    <li><a href="{% url 'account_list' %}">View All Accounts</a></li>
-</ul>
-
-<h3>Transactions</h3>
-<ul>
-    <li><a href="{% url 'all_transactions' %}">All Transactions (with Employee/Customer filter)</a></li>
-    <li><a href="{% url 'pending_transactions' %}">Pending Approvals</a></li>
-    <li><a href="{% url 'run_recurring_page' %}">Run Due Recurring Payments</a></li>
-</ul>
-<h3>Loans</h3>
-<ul>
-    <li><a href="{% url 'pending_loans' %}">Pending Loan Applications</a></li>
-    <li><a href="{% url 'all_loans' %}">All Loans</a></li>
-    <li><a href="{% url 'pending_foreclosures' %}">Pending Foreclosure Requests</a></li>
-</ul>
-
-<h3>Banking Services</h3>
-<ul>
-    <li><a href="{% url 'services_dashboard' %}">Services Dashboard</a></li>
-    <li><a href="{% url 'pending_kyc_documents' %}">Pending KYC Documents</a></li>
-    <li><a href="{% url 'pending_atm_card_requests' %}">Pending ATM Card Requests</a></li>
-    <li><a href="{% url 'pending_cheque_book_requests' %}">Pending Cheque Book Requests</a></li>
-</ul>
-
-<h3>Django Admin Panel</h3>
-<ul>
-    <li><a href="{% url 'admin:index' %}">Open Django Admin Panel</a></li>
-</ul>
+<div class="cards-grid card-gap">
+    <section class="card">
+        <div class="card-head"><h2>Bank Structure</h2></div>
+        <div class="tiles">
+            <a class="tile" href="{% url 'bank_list' %}"><span>View Banks</span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+            <a class="tile" href="{% url 'branch_list' %}"><span>View Branches</span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+            <a class="tile" href="{% url 'create_bank' %}"><span>Create Bank</span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+            <a class="tile" href="{% url 'create_branch' %}"><span>Create Branch</span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+            <a class="tile" href="{% url 'assign_employee' %}"><span>Assign Employee to Branch</span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+        </div>
+    </section>
+    <section class="card">
+        <div class="card-head"><h2>Customers</h2></div>
+        <div class="tiles">
+            <a class="tile" href="{% url 'customer_list' %}"><span>View All Customers</span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+        </div>
+    </section>
+    <section class="card">
+        <div class="card-head"><h2>Accounts</h2></div>
+        <div class="tiles">
+            <a class="tile" href="{% url 'create_account' %}"><span>Open New Account</span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+            <a class="tile" href="{% url 'account_list' %}"><span>View All Accounts</span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+        </div>
+    </section>
+    <section class="card">
+        <div class="card-head"><h2>Transactions</h2></div>
+        <div class="tiles">
+            <a class="tile" href="{% url 'all_transactions' %}"><span>All Transactions (with Employee/Customer filter)</span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+            <a class="tile" href="{% url 'pending_transactions' %}"><span>Pending Approvals</span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+            <a class="tile" href="{% url 'run_recurring_page' %}"><span>Run Due Recurring Payments</span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+        </div>
+    </section>
+    <section class="card">
+        <div class="card-head"><h2>Loans</h2></div>
+        <div class="tiles">
+            <a class="tile" href="{% url 'pending_loans' %}"><span>Pending Loan Applications</span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+            <a class="tile" href="{% url 'all_loans' %}"><span>All Loans</span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+            <a class="tile" href="{% url 'pending_foreclosures' %}"><span>Pending Foreclosure Requests</span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+        </div>
+    </section>
+    <section class="card">
+        <div class="card-head"><h2>Banking Services</h2></div>
+        <div class="tiles">
+            <a class="tile" href="{% url 'services_dashboard' %}"><span>Services Dashboard</span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+            <a class="tile" href="{% url 'pending_kyc_documents' %}"><span>Pending KYC Documents</span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+            <a class="tile" href="{% url 'pending_atm_card_requests' %}"><span>Pending ATM Card Requests</span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+            <a class="tile" href="{% url 'pending_cheque_book_requests' %}"><span>Pending Cheque Book Requests</span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+        </div>
+    </section>
+    <section class="card">
+        <div class="card-head"><h2>Django Admin Panel</h2></div>
+        <div class="tiles">
+            <a class="tile" href="{% url 'admin:index' %}"><span>Open Django Admin Panel</span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+        </div>
+    </section>
+</div>
 {% endblock %}

@@ -1,46 +1,29 @@
 {% extends "base.html" %}
+{% block title %}Create Branch{% endblock %}
 {% block content %}
-<h2>Create Branch</h2>
+<div class="page-head">
+    <h2>Create Branch</h2>
+    <a class="btn" href="{% url 'branch_list' %}">View All Branches</a>
+</div>
 
-{% if messages %}
-  {% for message in messages %}
-    <p style="color:green;">{{ message }}</p>
-  {% endfor %}
-{% endif %}
-
-<form method="POST">
+<form method="POST" class="form-card">
     {% csrf_token %}
-    <label>Bank</label><br>
-    <select name="bank" required>
-        <option value="">-- Select Bank --</option>
-        {% for bank in banks %}
-        <option value="{{ bank.id }}">{{ bank.name }}</option>
-        {% endfor %}
-    </select><br><br>
-
-    <label>Branch Name</label><br>
-    <input type="text" name="name" required><br><br>
-
-    <label>Branch Code</label><br>
-    <input type="text" name="branch_code" required><br><br>
-
-    <label>Address</label><br>
-    <textarea name="address" required></textarea><br><br>
-
-    <label>City</label><br>
-    <input type="text" name="city" required><br><br>
-
-    <label>State</label><br>
-    <input type="text" name="state" required><br><br>
-
-    <label>IFSC Code</label><br>
-    <input type="text" name="ifsc_code" required><br><br>
-
-    <label>Contact Phone</label><br>
-    <input type="text" name="contact_phone"><br><br>
-
-    <button type="submit">Create Branch</button>
+    <div class="field">
+        <label for="id_bank">Bank</label>
+        <select id="id_bank" name="bank" required>
+            <option value="">-- Select Bank --</option>
+            {% for bank in banks %}
+            <option value="{{ bank.id }}">{{ bank.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="field"><label for="id_name">Branch Name</label><input type="text" id="id_name" name="name" required></div>
+    <div class="field"><label for="id_branch_code">Branch Code</label><input type="text" id="id_branch_code" name="branch_code" required></div>
+    <div class="field"><label for="id_address">Address</label><textarea id="id_address" name="address" rows="3" required></textarea></div>
+    <div class="field"><label for="id_city">City</label><input type="text" id="id_city" name="city" required></div>
+    <div class="field"><label for="id_state">State</label><input type="text" id="id_state" name="state" required></div>
+    <div class="field"><label for="id_ifsc_code">IFSC Code</label><input type="text" id="id_ifsc_code" name="ifsc_code" required></div>
+    <div class="field"><label for="id_contact_phone">Contact Phone</label><input type="text" id="id_contact_phone" name="contact_phone"></div>
+    <button type="submit" class="btn btn-primary btn-block">Create Branch</button>
 </form>
-
-<a href="{% url 'branch_list' %}">View All Branches</a>
 {% endblock %}

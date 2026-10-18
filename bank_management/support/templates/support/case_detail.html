@@ -1,57 +1,55 @@
 {% extends "base.html" %}
+{% block title %}Case {{ case.reference }}{% endblock %}
 {% block content %}
-<h2>{{ case.reference }}: {{ case.subject }}</h2>
+<div class="page-head">
+    <h2>{{ case.reference }}: {{ case.subject }}</h2>
+    <span class="badge {% if case.is_open %}badge-warn{% elif case.status == 'ACCEPTED' %}badge-ok{% elif case.status == 'REJECTED' %}badge-bad{% else %}badge-info{% endif %}">{{ case.get_status_display }}</span>
+</div>
 
-<table border="1" cellpadding="8">
-    <tr><th>Type</th><td>{{ case.get_case_type_display }}</td></tr>
-    <tr><th>About</th><td>{{ case.get_category_display }}</td></tr>
-    <tr><th>Status</th><td>{{ case.get_status_display }}</td></tr>
-    <tr><th>Raised on</th><td>{{ case.created_at }}</td></tr>
-    {% if case.is_open %}<tr><th>Answer due by</th><td>{{ case.due_at }}</td></tr>{% endif %}
-    {% if case.account %}<tr><th>Account</th><td>{{ case.account.account_no }}</td></tr>{% endif %}
-    {% if case.transaction %}<tr><th>Transaction</th><td>{{ case.transaction.timestamp }}: {{ case.transaction.get_transaction_type_display }} {{ case.transaction.amount }}</td></tr>{% endif %}
-</table>
+<section class="card">
+    <div class="kv-grid">
+        <div class="kv"><span>Type</span><span>{{ case.get_case_type_display }}</span></div>
+        <div class="kv"><span>About</span><span>{{ case.get_category_display }}</span></div>
+        <div class="kv"><span>Status</span><span>{{ case.get_status_display }}</span></div>
+        <div class="kv"><span>Raised on</span><span>{{ case.created_at|date:"M j, Y, g:i a" }}</span></div>
+        {% if case.is_open %}<div class="kv"><span>Answer due by</span><span>{{ case.due_at|date:"M j, Y" }}</span></div>{% endif %}
+        {% if case.account %}<div class="kv"><span>Account</span><span>{{ case.account.account_no }}</span></div>{% endif %}
+        {% if case.transaction %}<div class="kv"><span>Transaction</span><span>{{ case.transaction.timestamp|date:"M j, Y, g:i a" }}: {{ case.transaction.get_transaction_type_display }} {{ case.transaction.amount }}</span></div>{% endif %}
+    </div>
+</section>
 
-<h3>What you wrote</h3>
-<p>{{ case.description|linebreaksbr }}</p>
+<section class="card">
+    <div class="card-head"><h2>What you wrote</h2></div>
+    <p style="margin:0;">{{ case.description|linebreaksbr }}</p>
+</section>
 
 {% if not case.is_open %}
-<div style="border:1px solid #888; padding:10px; margin:15px 0;">
-    <strong>The bank's decision: {{ case.get_status_display }}</strong> on {{ case.decided_at }}<br>
+<section class="card decision">
+    <strong>The bank's decision: {{ case.get_status_display }}</strong> on {{ case.decided_at|date:"M j, Y" }}<br>
     {{ case.decision_note|linebreaksbr }}
-</div>
+</section>
 {% endif %}
 
 <h3>Messages</h3>
 {% if thread %}
-<table border="1" cellpadding="8">
-    <tr>
-        <th>From</th>
-        <th>When</th>
-        <th>Message</th>
-    </tr>
-    {% for m in thread %}
-    <tr>
-        <td>{% if m.from_staff %}The bank{% else %}You{% endif %}</td>
-        <td>{{ m.created_at }}</td>
-        <td>{{ m.body|linebreaksbr }}</td>
-    </tr>
-    {% endfor %}
-</table>
+{% for m in thread %}
+<div class="bubble{% if m.from_staff %} bubble-bank{% endif %}">
+    <div class="bubble-meta"><strong>{% if m.from_staff %}The bank{% else %}You{% endif %}</strong><span>{{ m.created_at|date:"M j, Y, g:i a" }}</span></div>
+    {{ m.body|linebreaksbr }}
+</div>
+{% endfor %}
 {% else %}
-<p>No messages yet.</p>
+<p class="muted">No messages yet.</p>
 {% endif %}
 
 {% if case.is_open %}
 <h3>Add a reply</h3>
-<form method="POST" action="{% url 'support_case_reply' case.id %}">
+<form method="POST" action="{% url 'support_case_reply' case.id %}" class="form-card">
     {% csrf_token %}
     {{ form.as_p }}
-    <button type="submit">Send reply</button>
+    <button type="submit" class="btn btn-primary btn-block">Send reply</button>
 </form>
 {% else %}
-<p>This case is closed, so replies are turned off. If something is still wrong, please raise a new case.</p>
+<p class="muted">This case is closed, so replies are turned off. If something is still wrong, please raise a new case.</p>
 {% endif %}
-
-<p><a href="{% url 'support_my_cases' %}">Back to My Cases</a></p>
 {% endblock %}

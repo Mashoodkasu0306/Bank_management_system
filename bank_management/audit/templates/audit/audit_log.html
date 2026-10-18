@@ -1,34 +1,39 @@
 {% extends "base.html" %}
 {% block title %}Audit Log{% endblock %}
 {% block content %}
-<h2>Audit Log</h2>
-<p>A record of who did what, and when. Entries cannot be changed or deleted.</p>
+<div class="page-head"><h2>Audit Log</h2></div>
+<p class="muted">A record of who did what, and when. Entries cannot be changed or deleted.</p>
 
-<form method="get">
-    <label>User type:
+<form method="get" class="filter-bar">
+    <div class="field">
+        <label for="user-type">User type:</label>
         <select name="user_type" id="user-type">
             <option value="">All users</option>
             {% for value, label in user_types %}
             <option value="{{ value }}" {% if value == selected_user_type %}selected{% endif %}>{{ label }}</option>
             {% endfor %}
         </select>
-    </label>
-    <label>Action:
+    </div>
+    <div class="field">
+        <label for="action-select">Action:</label>
         <select name="action" id="action-select">
             <option value="">All actions</option>
             {% for a in actions %}
             <option value="{{ a }}" {% if a == selected_action %}selected{% endif %}>{{ a }}</option>
             {% endfor %}
         </select>
-    </label>
-    <label>Name (optional): <input type="text" name="username" value="{{ username }}"></label>
-    <button type="submit">Filter</button>
-    <a href="{% url 'audit_log' %}">Clear</a>
+    </div>
+    <div class="field">
+        <label for="id_username">Name (optional):</label>
+        <input type="text" id="id_username" name="username" value="{{ username }}">
+    </div>
+    <button type="submit" class="btn btn-primary">Filter</button>
+    <a class="btn" href="{% url 'audit_log' %}">Clear</a>
 </form>
 
 <p>Showing {{ entries|length }} of {{ total }} matching entries (newest first, up to {{ max_rows }}).</p>
 
-<table border="1" cellpadding="6" cellspacing="0">
+<table>
     <thead>
         <tr>
             <th>When</th>
@@ -44,14 +49,14 @@
         <tr>
             <td>{{ e.created_at|date:"Y-m-d H:i:s" }}</td>
             <td>{{ e.actor_username|default:"-" }}</td>
-            <td>{{ e.action }}</td>
+            <td><span class="badge badge-info">{{ e.action }}</span></td>
             <td>{% if e.target_type %}{{ e.target_type }} #{{ e.target_id }}{% else %}-{% endif %}</td>
             <td>{{ e.details|default:"-" }}</td>
             <td>{{ e.ip_address|default:"-" }}</td>
         </tr>
         {% empty %}
         <tr>
-            <td colspan="6">No entries found.</td>
+            <td colspan="6" class="empty">No entries found.</td>
         </tr>
         {% endfor %}
     </tbody>

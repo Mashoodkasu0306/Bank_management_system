@@ -288,3 +288,13 @@ body.auth .page { margin: 8vh auto 0; }
 .vcard-off, .vcard-frozen { background: linear-gradient(135deg, #334155 0%, #64748b 100%); box-shadow: 0 10px 22px rgba(15, 27, 45, .18); }
 .vcard-emergency { background: linear-gradient(135deg, #7f1d1d 0%, #dc2626 100%); box-shadow: 0 14px 30px rgba(127, 29, 29, .3); }
 .inline-form input[type=text] { min-height: 34px; min-width: 220px; padding: 4px 10px; font-size: 13.5px; }
+.bubble { max-width: 680px; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line); background: #fff; margin-bottom: 10px; }
+.bubble-bank { background: #f0f6ff; border-color: #bfdbfe; }
+.bubble-meta { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: 12.5px; color: var(--muted); margin-bottom: 4px; }
+.decision { border-left: 4px solid var(--accent); }
+.progress-lg { height: 12px; }
+.progress-blue > span { background: var(--accent); }
+.badge-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
+.notice-info { background: var(--accent-soft); border-color: #bfdbfe; color: #1e3a8a; }
+.progress-cell { min-width: 180px; }
+.progress-cell .progress { margin: 0 0 4px; }

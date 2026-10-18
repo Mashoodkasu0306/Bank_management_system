@@ -1,8 +1,12 @@
 {% extends "base.html" %}
+{% block title %}Run Due Recurring Payments{% endblock %}
 {% block content %}
-<h2>Run Due Recurring Payments</h2>
+<div class="page-head"><h2>Run Due Recurring Payments</h2></div>
 
-<p>Active recurring payments: {{ active_count }}. Paused: {{ paused_count }}.</p>
+<div class="badge-row">
+    <span class="badge badge-ok">Active recurring payments: {{ active_count }}</span>
+    <span class="badge badge-warn">Paused: {{ paused_count }}</span>
+</div>
 
 {% if ran %}
 <h3>Run finished</h3>
@@ -12,34 +16,36 @@
 {% endif %}
 
 {% if results %}
-<table border="1" cellpadding="8">
-    <tr>
-        <th>Payment</th>
-        <th>Customer</th>
-        <th>Amount</th>
-        <th>{% if ran %}Result{% else %}What will happen{% endif %}</th>
-        <th>Reason</th>
-    </tr>
-    {% for r in results %}
-    <tr>
-        <td>#{{ r.id }} {{ r.name }}</td>
-        <td>{{ r.customer }}</td>
-        <td align="right">{{ r.amount|default_if_none:"-" }}</td>
-        <td>{{ r.label }}</td>
-        <td>{{ r.reason|default:"-" }}</td>
-    </tr>
-    {% endfor %}
+<table>
+    <thead>
+        <tr>
+            <th>Payment</th>
+            <th>Customer</th>
+            <th>Amount</th>
+            <th>{% if ran %}Result{% else %}What will happen{% endif %}</th>
+            <th>Reason</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for r in results %}
+        <tr>
+            <td>#{{ r.id }} {{ r.name }}</td>
+            <td>{{ r.customer }}</td>
+            <td style="text-align:right;">{{ r.amount|default_if_none:"-" }}</td>
+            <td>{{ r.label }}</td>
+            <td>{{ r.reason|default:"-" }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
 </table>
 {% elif not ran %}
-<p>Nothing is due.</p>
+<p class="muted">Nothing is due.</p>
 {% endif %}
 
 {% if not ran and results %}
-<form method="POST" style="margin-top:12px;">
+<form method="POST" class="actions">
     {% csrf_token %}
-    <button type="submit">Run due payments now</button>
+    <button type="submit" class="btn btn-primary">Run due payments now</button>
 </form>
 {% endif %}
-
-<p><a href="{% url 'home' %}">Back to home</a></p>
 {% endblock %}

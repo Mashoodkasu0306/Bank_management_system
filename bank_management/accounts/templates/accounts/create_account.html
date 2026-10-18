@@ -1,36 +1,46 @@
 {% extends "base.html" %}
+{% block title %}Open New Account{% endblock %}
 {% block content %}
-<h2>Open New Account</h2>
-<form method="post">
+<div class="page-head"><h2>Open New Account</h2></div>
+
+<form method="post" class="form-card">
     {% csrf_token %}
-    <label>Customer:</label>
-    <select name="customer" required>
-        <option value="">Select Customer</option>
-        {% for customer in customers %}
-        <option value="{{ customer.id }}">{{ customer.user.get_full_name|default:customer.user.username }}</option>
-        {% endfor %}
-    </select>
+    <div class="field">
+        <label for="id_customer">Customer:</label>
+        <select id="id_customer" name="customer" required>
+            <option value="">Select Customer</option>
+            {% for customer in customers %}
+            <option value="{{ customer.id }}">{{ customer.user.get_full_name|default:customer.user.username }}</option>
+            {% endfor %}
+        </select>
+    </div>
 
     {% if is_admin %}
-    <label>Branch:</label>
-    <select name="branch" required>
-        <option value="">Select Branch</option>
-        {% for branch in branches %}
-        <option value="{{ branch.id }}">{{ branch.name }} ({{ branch.branch_code }})</option>
-        {% endfor %}
-    </select>
+    <div class="field">
+        <label for="id_branch">Branch:</label>
+        <select id="id_branch" name="branch" required>
+            <option value="">Select Branch</option>
+            {% for branch in branches %}
+            <option value="{{ branch.id }}">{{ branch.name }} ({{ branch.branch_code }})</option>
+            {% endfor %}
+        </select>
+    </div>
     {% endif %}
 
-    <label>Account Type:</label>
-    <select name="account_type" required>
-        <option value="SAVINGS">Savings</option>
-        <option value="CURRENT">Current</option>
-        <option value="LOAN">Loan</option>
-    </select>
+    <div class="field">
+        <label for="id_account_type">Account Type:</label>
+        <select id="id_account_type" name="account_type" required>
+            <option value="SAVINGS">Savings</option>
+            <option value="CURRENT">Current</option>
+            <option value="LOAN">Loan</option>
+        </select>
+    </div>
 
-    <label>Opening Deposit:</label>
-    <input type="number" name="balance" step="0.01" min="0" value="0">
+    <div class="field">
+        <label for="id_balance">Opening Deposit:</label>
+        <input type="number" id="id_balance" name="balance" step="0.01" min="0" value="0">
+    </div>
 
-    <button type="submit">Create Account</button>
+    <button type="submit" class="btn btn-primary btn-block">Create Account</button>
 </form>
 {% endblock %}

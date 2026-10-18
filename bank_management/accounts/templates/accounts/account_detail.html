@@ -1,13 +1,29 @@
 {% extends "base.html" %}
+{% block title %}Account Detail{% endblock %}
 {% block content %}
-<h2>Account Detail</h2>
-<p><strong>Account No:</strong> {{ account.account_no }}</p>
-<p><strong>Customer:</strong> {{ account.customer.user.get_full_name|default:account.customer.user.username }}</p>
-<p><strong>Branch:</strong> {{ account.branch.name }}</p>
-<p><strong>Type:</strong> {{ account.get_account_type_display }}</p>
-<p><strong>Balance:</strong> {{ account.balance }}</p>
-<p><strong>Status:</strong> {{ account.get_status_display }}</p>
-<p><strong>Daily Transaction Limit:</strong> {{ account.daily_limit }}</p>
-<p><strong>Remaining Today:</strong> {{ account.get_remaining_daily_limit }}</p>
-<p><strong>Opened:</strong> {{ account.open_date }}</p>
+<div class="page-head">
+    <div>
+        <h2>Account Detail</h2>
+        <p class="page-sub"><span class="badge {% if account.get_status_display == 'Active' %}badge-ok{% else %}badge-bad{% endif %}">{{ account.get_status_display }}</span></p>
+    </div>
+    <div class="stat-box">
+        <div class="stat-label">Balance</div>
+        <div class="stat-value">&#8377;{{ account.balance }}</div>
+    </div>
+</div>
+
+<section class="card">
+    <div class="kv-grid">
+        <div class="kv"><span>Account No:</span><span>{{ account.account_no }}</span></div>
+        <div class="kv"><span>Customer:</span><span>{{ account.customer.user.get_full_name|default:account.customer.user.username }}</span></div>
+        <div class="kv"><span>Branch:</span><span>{{ account.branch.name }}</span></div>
+        <div class="kv"><span>Type:</span><span>{{ account.get_account_type_display }}</span></div>
+        <div class="kv"><span>Balance:</span><span>{{ account.balance }}</span></div>
+        <div class="kv"><span>Status:</span><span>{{ account.get_status_display }}</span></div>
+        <div class="kv"><span>Daily Transaction Limit:</span><span>{{ account.daily_limit }}</span></div>
+        <div class="kv"><span>Remaining Today:</span><span>{{ account.get_remaining_daily_limit }}</span></div>
+        <div class="kv"><span>Opened:</span><span>{{ account.open_date }}</span></div>
+    </div>
+    <div class="actions"><a class="btn btn-primary" href="{% url 'transaction_history' account.id %}">View History</a></div>
+</section>
 {% endblock %}

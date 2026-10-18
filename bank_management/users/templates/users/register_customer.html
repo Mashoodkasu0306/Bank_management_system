@@ -1,42 +1,32 @@
 {% extends "base.html" %}
+{% block title %}Register New Customer{% endblock %}
 {% block content %}
-<h2>Register New Customer</h2>
+<div class="page-head">
+    <h2>Register New Customer</h2>
+    <a class="btn" href="{% url 'customer_list' %}">View All Customers</a>
+</div>
 
-{% if messages %}
-{% for message in messages %}
-<p style="color:red;">{{ message }}</p>
-{% endfor %}
-{% endif %}
-
-<form method="POST">
+<form method="POST" class="form-card">
     {% csrf_token %}
-    <label>Username</label><br>
-    <input type="text" name="username" required><br><br>
-
-    <label>Password</label><br>
-    <input type="password" name="password" required><br><br>
-
-    <label>Customer Type</label><br>
-    <select name="customer_type" required>
-        <option value="INDIVIDUAL">Individual</option>
-        <option value="BUSINESS">Business</option>
-    </select><br><br>
-
-    <label>Date of Birth</label><br>
-    <input type="date" name="dob" required><br><br>
-
-    <label>Gender</label><br>
-    <select name="gender" required>
-        <option value="MALE">Male</option>
-        <option value="FEMALE">Female</option>
-        <option value="OTHER">Other</option>
-    </select><br><br>
-
-    <label>Address</label><br>
-    <textarea name="address" required></textarea><br><br>
-
-    <button type="submit">Register Customer</button>
+    <div class="field"><label for="id_username">Username</label><input type="text" id="id_username" name="username" required></div>
+    <div class="field"><label for="id_password">Password</label><input type="password" id="id_password" name="password" required></div>
+    <div class="field">
+        <label for="id_customer_type">Customer Type</label>
+        <select id="id_customer_type" name="customer_type" required>
+            <option value="INDIVIDUAL">Individual</option>
+            <option value="BUSINESS">Business</option>
+        </select>
+    </div>
+    <div class="field"><label for="id_dob">Date of Birth</label><input type="date" id="id_dob" name="dob" required></div>
+    <div class="field">
+        <label for="id_gender">Gender</label>
+        <select id="id_gender" name="gender" required>
+            <option value="MALE">Male</option>
+            <option value="FEMALE">Female</option>
+            <option value="OTHER">Other</option>
+        </select>
+    </div>
+    <div class="field"><label for="id_address">Address</label><textarea id="id_address" name="address" rows="3" required></textarea></div>
+    <button type="submit" class="btn btn-primary btn-block">Register Customer</button>
 </form>
-
-<a href="{% url 'customer_list' %}">View All Customers</a>
 {% endblock %}
