@@ -1,27 +1,27 @@
 {% extends "base.html" %}
+{% block title %}Request ATM Card{% endblock %}
 {% block content %}
-<h2>Request ATM Card</h2>
+<div class="page-head">
+    <h2>Request ATM Card</h2>
+    <a class="btn" href="{% url 'my_atm_cards' %}">View My ATM Card Requests</a>
+</div>
 
 {% if not accounts %}
-<p>You have no eligible active Savings/Current accounts to request an ATM card for.</p>
+<p class="muted">You have no eligible active Savings/Current accounts to request an ATM card for.</p>
 {% else %}
-<form method="post">
+<form method="post" class="form-card">
     {% csrf_token %}
-    <p>
-        <label>Select Account:</label>
-        <select name="account" required>
+    <div class="field">
+        <label for="id_account_pick">Select Account:</label>
+        <select name="account" id="id_account_pick" required>
             <option value="">-- Select --</option>
             {% for account in accounts %}
-            <option value="{{ account.id }}">{{ account.account_no }} ({{ account.get_account_type_display }}) -
-                Balance: {{ account.balance }}</option>
+            <option value="{{ account.id }}">{{ account.account_no }} ({{ account.get_account_type_display }}) - Balance: {{ account.balance }}</option>
             {% endfor %}
         </select>
-    </p>
+    </div>
     {{ form.as_p }}
-    <button type="submit">Submit Request</button>
+    <button type="submit" class="btn btn-primary btn-block">Submit Request</button>
 </form>
 {% endif %}
-
-<p><a href="{% url 'my_atm_cards' %}">View My ATM Card Requests</a></p>
-<p><a href="{% url 'customer_dashboard' %}">Back to Dashboard</a></p>
 {% endblock %}

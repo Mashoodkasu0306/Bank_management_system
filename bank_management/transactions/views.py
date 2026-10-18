@@ -704,10 +704,10 @@ def branch_report(request):
         return redirect("employee_dashboard")
 
     branch = employee.branch
-    accounts = Account.objects.filter(branch=branch)
+    accounts = Account.objects.filter(branch=branch).select_related("customer__user")
     total_balance = accounts.aggregate(total=Sum("balance"))["total"] or 0
     branch_txn_filter = Q(from_account__branch=branch) | Q(to_account__branch=branch)
-    recent_txns = Transaction.objects.filter(branch_txn_filter).order_by("-timestamp")[:50]
+    recent_txns = Transaction.objects.filter(branch_txn_filter).select_related("from_account", "to_account").order_by("-timestamp")[:50]
     total_transactions = Transaction.objects.filter(branch_txn_filter).count()
 
     context = {

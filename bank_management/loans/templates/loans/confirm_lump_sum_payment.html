@@ -1,21 +1,26 @@
 {% extends "base.html" %}
+{% block title %}Confirm Payment{% endblock %}
 {% block content %}
-<h2>Confirm Payment</h2>
-<p>Loan #{{ loan.id }} - {{ loan.get_loan_type_display }}</p>
-<p><strong>Amount:</strong> {{ amount }}</p>
-<p><strong>From Account:</strong> {{ account.account_no }} (Balance: {{ account.balance }})</p>
-<p><strong>Mode:</strong> {{ mode }}</p>
-{% if mode == "UPI" %}
-<p><strong>UPI ID:</strong> {{ upi_id }}</p>
-{% endif %}
+<div class="page-head">
+    <div>
+        <h2>Confirm Payment</h2>
+        <p class="page-sub">Loan #{{ loan.id }} - {{ loan.get_loan_type_display }}</p>
+    </div>
+</div>
+<section class="card form-card">
+    <div class="kv"><span>Amount:</span><span><strong>&#8377;{{ amount }}</strong></span></div>
+    <div class="kv"><span>From Account:</span><span>{{ account.account_no }} (Balance: {{ account.balance }})</span></div>
+    <div class="kv"><span>Mode:</span><span>{{ mode }}</span></div>
+    {% if mode == "UPI" %}<div class="kv"><span>UPI ID:</span><span>{{ upi_id }}</span></div>{% endif %}
 
-<form method="post" action="{% url 'confirm_pay_lump_sum' loan.id %}">
-    {% csrf_token %}
-    <input type="hidden" name="amount" value="{{ amount }}">
-    <input type="hidden" name="account" value="{{ account.id }}">
-    <input type="hidden" name="mode_of_transaction" value="{{ mode }}">
-    <input type="hidden" name="upi_id" value="{{ upi_id }}">
-    <button type="submit">Confirm & Pay</button>
-</form>
-<a href="{% url 'loan_detail' loan.id %}">Cancel</a>
+    <form method="post" action="{% url 'confirm_pay_lump_sum' loan.id %}" class="actions">
+        {% csrf_token %}
+        <input type="hidden" name="amount" value="{{ amount }}">
+        <input type="hidden" name="account" value="{{ account.id }}">
+        <input type="hidden" name="mode_of_transaction" value="{{ mode }}">
+        <input type="hidden" name="upi_id" value="{{ upi_id }}">
+        <button type="submit" class="btn btn-primary">Confirm & Pay</button>
+        <a class="btn" href="{% url 'loan_detail' loan.id %}">Cancel</a>
+    </form>
+</section>
 {% endblock %}

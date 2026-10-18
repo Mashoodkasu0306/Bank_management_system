@@ -1,36 +1,36 @@
 {% extends "base.html" %}
+{% block title %}Review Loan Application{% endblock %}
 {% block content %}
-<h2>Review Loan Application</h2>
+<div class="page-head"><h2>Review Loan Application</h2></div>
 
-<p><strong>Customer:</strong> {{ loan.customer.user.username }}</p>
-<p><strong>Type:</strong> {{ loan.get_loan_type_display }}</p>
-<p><strong>Amount:</strong> {{ loan.amount }}</p>
-<p><strong>Tenure:</strong> {{ loan.tenure_months }} months</p>
-<p><strong>Disbursement Account:</strong> {{ loan.account.account_no }}</p>
+<section class="card">
+    <div class="kv-grid">
+        <div class="kv"><span>Customer:</span><span>{{ loan.customer.user.username }}</span></div>
+        <div class="kv"><span>Type:</span><span>{{ loan.get_loan_type_display }}</span></div>
+        <div class="kv"><span>Amount:</span><span>&#8377;{{ loan.amount }}</span></div>
+        <div class="kv"><span>Tenure:</span><span>{{ loan.tenure_months }} months</span></div>
+        <div class="kv"><span>Disbursement Account:</span><span>{{ loan.account.account_no }}</span></div>
+    </div>
+</section>
 
-<form method="post" id="loan-approval-form">
+<form method="post" id="loan-approval-form" class="form-card">
     {% csrf_token %}
-    <p>
-        <label><input type="radio" name="action" value="approve" onchange="toggleLoanFields()" checked>
-            Approve</label><br>
-        <label><input type="radio" name="action" value="reject" onchange="toggleLoanFields()"> Reject</label>
-    </p>
-
-    <div id="loan-approve-fields">
-        <p>
-            <label>Interest Rate (% annual):</label>
-            <input type="number" step="0.01" name="interest_rate">
-        </p>
+    <div class="choice-row">
+        <label class="choice"><input type="radio" name="action" value="approve" onchange="toggleLoanFields()" checked> Approve</label>
+        <label class="choice"><input type="radio" name="action" value="reject" onchange="toggleLoanFields()"> Reject</label>
     </div>
 
-    <div id="loan-reject-fields" style="display:none;">
-        <p>
-            <label>Reason:</label>
-            <input type="text" name="remarks">
-        </p>
+    <div id="loan-approve-fields" class="field">
+        <label for="id_interest_rate">Interest Rate (% annual):</label>
+        <input type="number" step="0.01" id="id_interest_rate" name="interest_rate">
     </div>
 
-    <button type="submit">Submit Decision</button>
+    <div id="loan-reject-fields" class="field" style="display:none;">
+        <label for="id_remarks">Reason:</label>
+        <input type="text" id="id_remarks" name="remarks">
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-block">Submit Decision</button>
 </form>
 
 <script>

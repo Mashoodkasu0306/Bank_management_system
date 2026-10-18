@@ -1,66 +1,67 @@
 {% extends "base.html" %}
+{% block title %}Emergency Freezes{% endblock %}
 {% block content %}
-<h2>Emergency Freezes</h2>
-<p>These customers pressed the emergency button. Their cards are frozen and their online transfers are blocked.
-    Lift a freeze only after you have confirmed who the customer is, and write down how.</p>
+<div class="page-head"><h2>Emergency Freezes</h2></div>
+<div class="notice">These customers pressed the emergency button. Their cards are frozen and their online transfers are blocked.
+    Lift a freeze only after you have confirmed who the customer is, and write down how.</div>
 
-<h3>Active freezes</h3>
+<h3>Active freezes {% if active %}<span class="badge badge-bad">{{ active|length }}</span>{% endif %}</h3>
 {% if active %}
-<table border="1" cellpadding="8">
-    <tr>
-        <th>Customer</th>
-        <th>Started</th>
-        <th>Cards frozen</th>
-        <th>Lift</th>
-    </tr>
-    {% for f in active %}
-    <tr>
-        <td>{{ f.customer.user.username }}</td>
-        <td>{{ f.started_at }}</td>
-        <td>{{ f.cards_frozen }}</td>
-        <td>
-            <form method="POST" action="{% url 'lift_freeze' f.id %}"
-                onsubmit="return confirm('Lift this freeze? Only do this after confirming who the customer is.');">
-                {% csrf_token %}
-                <input type="text" name="note" placeholder="How was identity confirmed?" required size="40"
-                    maxlength="300">
-                <button type="submit">Lift freeze</button>
-            </form>
-        </td>
-    </tr>
-    {% endfor %}
+<table>
+    <thead>
+        <tr>
+            <th>Customer</th>
+            <th>Started</th>
+            <th>Cards frozen</th>
+            <th>Lift</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for f in active %}
+        <tr>
+            <td><strong>{{ f.customer.user.username }}</strong></td>
+            <td>{{ f.started_at|date:"M j, Y, g:i a" }}</td>
+            <td>{{ f.cards_frozen }}</td>
+            <td>
+                <form method="POST" action="{% url 'lift_freeze' f.id %}" class="inline-form" onsubmit="return confirm('Lift this freeze? Only do this after confirming who the customer is.');">
+                    {% csrf_token %}
+                    <input type="text" name="note" placeholder="How was identity confirmed?" required size="40" maxlength="300">
+                    <button type="submit" class="btn btn-danger btn-sm">Lift freeze</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
 </table>
 {% else %}
-<p>No active freezes.</p>
+<p class="muted">No active freezes.</p>
 {% endif %}
 
 <h3>Recently lifted</h3>
 {% if lifted %}
-<table border="1" cellpadding="8">
-    <tr>
-        <th>Customer</th>
-        <th>Started</th>
-        <th>Lifted</th>
-        <th>By</th>
-        <th>Note</th>
-    </tr>
-    {% for f in lifted %}
-    <tr>
-        <td>{{ f.customer.user.username }}</td>
-        <td>{{ f.started_at }}</td>
-        <td>{{ f.lifted_at }}</td>
-        <td>{% if f.lifted_by %}{{ f.lifted_by.username }}{% else %}-{% endif %}</td>
-        <td>{{ f.lift_note }}</td>
-    </tr>
-    {% endfor %}
+<table>
+    <thead>
+        <tr>
+            <th>Customer</th>
+            <th>Started</th>
+            <th>Lifted</th>
+            <th>By</th>
+            <th>Note</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for f in lifted %}
+        <tr>
+            <td><strong>{{ f.customer.user.username }}</strong></td>
+            <td>{{ f.started_at|date:"M j, Y, g:i a" }}</td>
+            <td>{{ f.lifted_at|date:"M j, Y, g:i a" }}</td>
+            <td>{% if f.lifted_by %}{{ f.lifted_by.username }}{% else %}-{% endif %}</td>
+            <td>{{ f.lift_note }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
 </table>
 {% else %}
-<p>Nothing lifted yet.</p>
-{% endif %}
-
-{% if user.employee %}
-<p><a href="{% url 'employee_dashboard' %}">Back to Dashboard</a></p>
-{% else %}
-<p><a href="{% url 'admin_dashboard' %}">Back to Admin Dashboard</a></p>
+<p class="muted">Nothing lifted yet.</p>
 {% endif %}
 {% endblock %}

@@ -1,0 +1,18 @@
+{% with owner=req.account.customer.user %}
+<div class="vcard{% if req.status != 'APPROVED' %} vcard-off{% elif req.freeze_state == 'EMERGENCY' %} vcard-emergency{% elif req.freeze_state %} vcard-frozen{% endif %}">
+    <div class="vcard-top">
+        <span class="vcard-bank">Apex Core Banking</span>
+        <svg class="vcard-nfc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M8 7c2.5 3 2.5 7 0 10"/><path d="M12 4.5c4 4.5 4 10.500 0 15"/><path d="M16 2c5.500 6 5.500 14 0 20"/></svg>
+    </div>
+    <div class="vcard-chip"></div>
+    <div class="vcard-number">{% if req.status == 'APPROVED' and req.masked_card_number %}&bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull; {{ req.masked_card_number|cut:" "|cut:"-"|slice:"-4:" }}{% else %}&bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull;{% endif %}</div>
+    <div class="vcard-bottom">
+        <div>
+            <div class="vcard-label">Card holder</div>
+            <div class="vcard-name">{{ owner.get_full_name|default:owner.username|upper }}</div>
+        </div>
+        <div class="vcard-type">{{ req.card_type }}</div>
+    </div>
+    {% if req.status == 'APPROVED' and req.freeze_state %}<div class="vcard-stamp">Frozen</div>{% elif req.status == 'PENDING' %}<div class="vcard-stamp">Pending</div>{% elif req.status == 'REJECTED' %}<div class="vcard-stamp">Rejected</div>{% endif %}
+</div>
+{% endwith %}

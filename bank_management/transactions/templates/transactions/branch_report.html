@@ -1,68 +1,69 @@
 {% extends "base.html" %}
+{% block title %}Branch Report{% endblock %}
 {% block content %}
-<h2>Branch Report: {{ branch.name }} ({{ branch.branch_code }})</h2>
-<table border="1" cellpadding="8">
-    <tr>
-        <th>Total Accounts</th>
-        <td>{{ total_accounts }}</td>
-    </tr>
-    <tr>
-        <th>Total Balance</th>
-        <td>{{ total_balance }}</td>
-    </tr>
-    <tr>
-        <th>Total Transactions</th>
-        <td>{{ total_transactions }}</td>
-    </tr>
-</table>
+<div class="page-head"><h2>Branch Report: {{ branch.name }} ({{ branch.branch_code }})</h2></div>
+
+<div class="grid grid-3">
+    <div class="card"><div class="stat-label">Total Accounts</div><div class="stat-value">{{ total_accounts }}</div></div>
+    <div class="card"><div class="stat-label">Total Balance</div><div class="stat-value">&#8377;{{ total_balance }}</div></div>
+    <div class="card"><div class="stat-label">Total Transactions</div><div class="stat-value">{{ total_transactions }}</div></div>
+</div>
 
 <h3>Accounts</h3>
-<table border="1" cellpadding="6">
-    <tr>
-        <th>Account No</th>
-        <th>Customer</th>
-        <th>Type</th>
-        <th>Balance</th>
-        <th>Status</th>
-    </tr>
-    {% for account in accounts %}
-    <tr>
-        <td>{{ account.account_no }}</td>
-        <td>{{ account.customer.user.get_full_name|default:account.customer.user.username }}</td>
-        <td>{{ account.account_type }}</td>
-        <td>{{ account.balance }}</td>
-        <td>{{ account.status }}</td>
-    </tr>
-    {% empty %}
-    <tr>
-        <td colspan="5">No accounts in this branch.</td>
-    </tr>
-    {% endfor %}
+<table>
+    <thead>
+        <tr>
+            <th>Account No</th>
+            <th>Customer</th>
+            <th>Type</th>
+            <th>Balance</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for account in accounts %}
+        <tr>
+            <td>{{ account.account_no }}</td>
+            <td>{{ account.customer.user.get_full_name|default:account.customer.user.username }}</td>
+            <td>{{ account.get_account_type_display }}</td>
+            <td>&#8377;{{ account.balance }}</td>
+            <td><span class="badge {% if account.get_status_display == 'Active' %}badge-ok{% else %}badge-bad{% endif %}">{{ account.get_status_display }}</span></td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5" class="empty">No accounts in this branch.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
 </table>
 
 <h3>Recent Transactions (last 50)</h3>
-<table border="1" cellpadding="6">
-    <tr>
-        <th>Date</th>
-        <th>Type</th>
-        <th>From</th>
-        <th>To</th>
-        <th>Amount</th>
-        <th>Status</th>
-    </tr>
-    {% for txn in recent_transactions %}
-    <tr>
-        <td>{{ txn.timestamp }}</td>
-        <td>{{ txn.transaction_type }}</td>
-        <td>{{ txn.from_account.account_no|default:"-" }}</td>
-        <td>{{ txn.to_account.account_no|default:"-" }}</td>
-        <td>{{ txn.amount }}</td>
-        <td>{{ txn.status }}</td>
-    </tr>
-    {% empty %}
-    <tr>
-        <td colspan="6">No transactions yet.</td>
-    </tr>
-    {% endfor %}
+<table>
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Type</th>
+            <th>From</th>
+            <th>To</th>
+            <th>Amount</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for txn in recent_transactions %}
+        <tr>
+            <td>{{ txn.timestamp|date:"M j, Y, g:i a" }}</td>
+            <td>{{ txn.transaction_type }}</td>
+            <td>{{ txn.from_account.account_no|default:"-" }}</td>
+            <td>{{ txn.to_account.account_no|default:"-" }}</td>
+            <td><strong>&#8377;{{ txn.amount }}</strong></td>
+            <td><span class="badge {% if txn.status == 'SUCCESS' %}badge-ok{% elif txn.status == 'PENDING' %}badge-warn{% else %}badge-bad{% endif %}">{{ txn.status }}</span></td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="6" class="empty">No transactions yet.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
 </table>
 {% endblock %}

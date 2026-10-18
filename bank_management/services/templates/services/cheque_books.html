@@ -1,132 +1,112 @@
 {% extends "base.html" %}
+{% block title %}Cheque Book{% endblock %}
 {% block content %}
 {% if form %}
-<h2>Request Cheque Book</h2>
+<div class="page-head">
+    <h2>Request Cheque Book</h2>
+    <a class="btn" href="{% url 'my_cheque_books' %}">View My Cheque Book Requests</a>
+</div>
 {% if accounts %}
-<form method="post">
+<form method="post" class="form-card">
     {% csrf_token %}
-    <p>
-        <label>Select Account:</label>
-        <select name="account" required>
+    <div class="field">
+        <label for="id_account_pick">Select Account:</label>
+        <select name="account" id="id_account_pick" required>
             <option value="">-- Select --</option>
             {% for account in accounts %}
-            <option value="{{ account.id }}">{{ account.account_no }} ({{ account.get_account_type_display }}) -
-                Balance: {{ account.balance }}</option>
+            <option value="{{ account.id }}">{{ account.account_no }} ({{ account.get_account_type_display }}) - Balance: {{ account.balance }}</option>
             {% endfor %}
         </select>
-    </p>
+    </div>
     {{ form.as_p }}
-    <button type="submit">Submit Request</button>
+    <button type="submit" class="btn btn-primary btn-block">Submit Request</button>
 </form>
 {% else %}
-<p>You have no eligible active Savings/Current accounts to request a cheque book for.</p>
+<p class="muted">You have no eligible active Savings/Current accounts to request a cheque book for.</p>
 {% endif %}
-<p><a href="{% url 'my_cheque_books' %}">View My Cheque Book Requests</a></p>
 
 {% elif cheque_request %}
-<h2>Cheque Book Request Status</h2>
-<table border="1" cellpadding="8">
-    <tr>
-        <th>Account</th>
-        <td>{{ cheque_request.account.account_no }}</td>
-    </tr>
-    <tr>
-        <th>Leaf Count</th>
-        <td>{{ cheque_request.leaf_count }}</td>
-    </tr>
-    <tr>
-        <th>Status</th>
-        <td>{{ cheque_request.get_status_display }}</td>
-    </tr>
-    <tr>
-        <th>Delivery Address</th>
-        <td>{{ cheque_request.delivery_address }}</td>
-    </tr>
-    <tr>
-        <th>Requested At</th>
-        <td>{{ cheque_request.requested_at }}</td>
-    </tr>
+<div class="page-head">
+    <h2>Cheque Book Request Status</h2>
+    <span class="badge {% if cheque_request.status == 'REJECTED' %}badge-bad{% elif cheque_request.status == 'PENDING' %}badge-warn{% else %}badge-ok{% endif %}">{{ cheque_request.get_status_display }}</span>
+</div>
+<section class="card form-card">
+    <div class="kv"><span>Account</span><span>{{ cheque_request.account.account_no }}</span></div>
+    <div class="kv"><span>Leaf Count</span><span>{{ cheque_request.leaf_count }}</span></div>
+    <div class="kv"><span>Status</span><span>{{ cheque_request.get_status_display }}</span></div>
+    <div class="kv"><span>Delivery Address</span><span>{{ cheque_request.delivery_address }}</span></div>
+    <div class="kv"><span>Requested At</span><span>{{ cheque_request.requested_at|date:"M j, Y, g:i a" }}</span></div>
     {% if cheque_request.status == 'APPROVED' or cheque_request.status == 'PROCESSING' %}
-    <tr>
-        <th>Fee</th>
-        <td>{{ cheque_request.cheque_book_fee }}</td>
-    </tr>
-    <tr>
-        <th>Fee Paid</th>
-        <td>{% if cheque_request.fee_charged %}Yes{% else %}No — payment required{% endif %}</td>
-    </tr>
-    <tr>
-        <th>Approved At</th>
-        <td>{{ cheque_request.approved_at }}</td>
-    </tr>
+    <div class="kv"><span>Fee</span><span>{{ cheque_request.cheque_book_fee }}</span></div>
+    <div class="kv"><span>Fee Paid</span><span>{% if cheque_request.fee_charged %}Yes{% else %}No &mdash; payment required{% endif %}</span></div>
+    <div class="kv"><span>Approved At</span><span>{{ cheque_request.approved_at|date:"M j, Y, g:i a" }}</span></div>
     {% endif %}
     {% if cheque_request.status == 'REJECTED' %}
-    <tr>
-        <th>Rejection Reason</th>
-        <td>{{ cheque_request.rejection_reason }}</td>
-    </tr>
+    <div class="kv"><span>Rejection Reason</span><span>{{ cheque_request.rejection_reason }}</span></div>
     {% endif %}
-</table>
+</section>
 
 {% if cheque_request.status == 'APPROVED' and cheque_request.cheque_book_fee > 0 and not cheque_request.fee_charged %}
-<h3>Pay Cheque Book Fee</h3>
-<form method="post" action="{% url 'pay_cheque_book_fee' cheque_request.id %}" id="fee-payment-form">
-    {% csrf_token %}
-    <p>
-        <label>Mode of Transaction:</label>
-        <select name="mode_of_transaction" id="id_mode_of_transaction" onchange="togglePaymentFields()">
-            <option value="">-- Select Mode --</option>
-            <option value="NETBANKING">Net Banking</option>
-            <option value="UPI">UPI</option>
-            <option value="CARD">Card</option>
-        </select>
-    </p>
-
-    <div id="netbanking-fields" style="display:none;">
-        <p>
-            <label>Select Account:</label>
-            <select name="account_netbanking">
-                <option value="">-- Select --</option>
-                {% for acc in my_accounts %}
-                <option value="{{ acc.id }}">{{ acc.account_no }} - Balance: {{ acc.balance }}</option>
-                {% endfor %}
+<section class="card form-card">
+    <div class="card-head"><h2>Pay Cheque Book Fee</h2></div>
+    <form method="post" action="{% url 'pay_cheque_book_fee' cheque_request.id %}" id="fee-payment-form">
+        {% csrf_token %}
+        <div class="field">
+            <label for="id_mode_of_transaction">Mode of Transaction:</label>
+            <select name="mode_of_transaction" id="id_mode_of_transaction" onchange="togglePaymentFields()">
+                <option value="">-- Select Mode --</option>
+                <option value="NETBANKING">Net Banking</option>
+                <option value="UPI">UPI</option>
+                <option value="CARD">Card</option>
             </select>
-        </p>
-    </div>
+        </div>
 
-    <div id="upi-fields" style="display:none;">
-        <p>
-            <label>UPI ID:</label>
-            <input type="text" name="upi_id" placeholder="yourname@upi">
-        </p>
-    </div>
+        <div id="netbanking-fields" style="display:none;">
+            <div class="field">
+                <label for="id_account_netbanking">Select Account:</label>
+                <select name="account_netbanking" id="id_account_netbanking">
+                    <option value="">-- Select --</option>
+                    {% for acc in my_accounts %}
+                    <option value="{{ acc.id }}">{{ acc.account_no }} - Balance: {{ acc.balance }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
 
-    <div id="card-fields" style="display:none;">
-        <p>
-            <label>Select Account (linked to card):</label>
-            <select name="account_card">
-                <option value="">-- Select --</option>
-                {% for acc in my_accounts %}
-                <option value="{{ acc.id }}">{{ acc.account_no }} - Balance: {{ acc.balance }}</option>
-                {% endfor %}
-            </select>
-        </p>
-        <p>
-            <label>Card Number:</label>
-            <input type="text" name="card_number" placeholder="XXXX-XXXX-XXXX-1234" maxlength="19">
-        </p>
-        <p>
-            <label>CVV:</label>
-            <input type="text" name="card_cvv" placeholder="123" maxlength="3">
-        </p>
-        <p>
-            <label>Expiry Date (MM/YY):</label>
-            <input type="text" name="card_expiry" placeholder="MM/YY" maxlength="5">
-        </p>
-    </div>
+        <div id="upi-fields" style="display:none;">
+            <div class="field">
+                <label for="id_upi_id">UPI ID:</label>
+                <input type="text" id="id_upi_id" name="upi_id" placeholder="yourname@upi">
+            </div>
+        </div>
 
-    <button type="submit">Continue to Pay {{ cheque_request.cheque_book_fee }}</button>
-</form>
+        <div id="card-fields" style="display:none;">
+            <div class="field">
+                <label for="id_account_card">Select Account (linked to card):</label>
+                <select name="account_card" id="id_account_card">
+                    <option value="">-- Select --</option>
+                    {% for acc in my_accounts %}
+                    <option value="{{ acc.id }}">{{ acc.account_no }} - Balance: {{ acc.balance }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="field">
+                <label for="id_card_number">Card Number:</label>
+                <input type="text" id="id_card_number" name="card_number" placeholder="XXXX-XXXX-XXXX-1234" maxlength="19">
+            </div>
+            <div class="field">
+                <label for="id_card_cvv">CVV:</label>
+                <input type="text" id="id_card_cvv" name="card_cvv" placeholder="123" maxlength="3">
+            </div>
+            <div class="field">
+                <label for="id_card_expiry">Expiry Date (MM/YY):</label>
+                <input type="text" id="id_card_expiry" name="card_expiry" placeholder="MM/YY" maxlength="5">
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block">Continue to Pay {{ cheque_request.cheque_book_fee }}</button>
+    </form>
+</section>
 
 <script>
     function togglePaymentFields() {
@@ -138,34 +118,38 @@
 </script>
 {% endif %}
 
-<p><a href="{% url 'my_cheque_books' %}">View All My Cheque Book Requests</a></p>
+<a class="btn" href="{% url 'my_cheque_books' %}">View All My Cheque Book Requests</a>
 
 {% else %}
-<h2>My Cheque Book Requests</h2>
+<div class="page-head">
+    <h2>My Cheque Book Requests</h2>
+    <a class="btn btn-primary" href="{% url 'request_cheque_book' %}">Request New Cheque Book</a>
+</div>
 {% if cheque_requests %}
-<table border="1" cellpadding="8">
-    <tr>
-        <th>Account</th>
-        <th>Leaves</th>
-        <th>Status</th>
-        <th>Requested At</th>
-        <th>Details</th>
-    </tr>
-    {% for req in cheque_requests %}
-    <tr>
-        <td>{{ req.account.account_no }}</td>
-        <td>{{ req.leaf_count }}</td>
-        <td>{{ req.get_status_display }}</td>
-        <td>{{ req.requested_at }}</td>
-        <td><a href="{% url 'cheque_book_status' req.id %}">View</a></td>
-    </tr>
-    {% endfor %}
+<table>
+    <thead>
+        <tr>
+            <th>Account</th>
+            <th>Leaves</th>
+            <th>Status</th>
+            <th>Requested At</th>
+            <th>Details</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for req in cheque_requests %}
+        <tr>
+            <td>{{ req.account.account_no }}</td>
+            <td>{{ req.leaf_count }}</td>
+            <td><span class="badge {% if req.status == 'REJECTED' %}badge-bad{% elif req.status == 'PENDING' %}badge-warn{% else %}badge-ok{% endif %}">{{ req.get_status_display }}</span></td>
+            <td>{{ req.requested_at|date:"M j, Y, g:i a" }}</td>
+            <td><a class="btn btn-sm" href="{% url 'cheque_book_status' req.id %}">View</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
 </table>
 {% else %}
-<p>You have no cheque book requests yet.</p>
+<p class="muted">You have no cheque book requests yet.</p>
 {% endif %}
-<p><a href="{% url 'request_cheque_book' %}">Request New Cheque Book</a></p>
 {% endif %}
-
-<p><a href="{% url 'customer_dashboard' %}">Back to Dashboard</a></p>
 {% endblock %}

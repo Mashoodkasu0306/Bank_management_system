@@ -1,75 +1,79 @@
 {% extends "base.html" %}
+{% block title %}My Card Controls{% endblock %}
 {% block content %}
-<h2>My Card Controls</h2>
+<div class="page-head"><h2>My Card Controls</h2></div>
 
 {% if freeze %}
-<div style="border:1px solid red; padding:10px; background:#ffe8e8; margin-bottom:15px;">
-    <strong>Emergency freeze is ON</strong> since {{ freeze.started_at }}.
+<div class="notice notice-bad">
+    <strong>Emergency freeze is ON</strong> since {{ freeze.started_at|date:"M j, Y, g:i a" }}.
     Your cards are frozen and online transfers are blocked.
     Please contact the bank to lift it.
 </div>
 {% endif %}
 
 {% if cards %}
-<table border="1" cellpadding="8">
-    <tr>
-        <th>Card</th>
-        <th>Account</th>
-        <th>Status</th>
-        <th>Daily card limit</th>
-        <th>Actions</th>
-    </tr>
-    {% for card in cards %}
-    <tr>
-        <td>{% if card.masked_card_number %}{{ card.masked_card_number }}{% else %}(number pending){% endif %}</td>
-        <td>{{ card.account.account_no }}</td>
-        <td>
-            {% if card.freeze_state == 'EMERGENCY' %}Frozen (emergency)
-            {% elif card.freeze_state == 'CUSTOMER' %}Frozen
-            {% else %}Active{% endif %}
-        </td>
-        <td>{% if card.card_daily_limit %}{{ card.card_daily_limit }}{% else %}Not set{% endif %}</td>
-        <td>
-            {% if freeze %}
-            Locked during the emergency freeze
-            {% else %}
-            <form method="POST" action="{% url 'card_freeze_toggle' card.id %}" style="display:inline;">
-                {% csrf_token %}
-                {% if card.freeze_state %}
-                <input type="hidden" name="action" value="unfreeze">
-                <button type="submit">Unfreeze</button>
+<div class="vcard-grid">
+    {% for card in cards %}{% include "partials/virtual_card.html" with req=card %}{% endfor %}
+</div>
+<table>
+    <thead>
+        <tr>
+            <th>Card</th>
+            <th>Account</th>
+            <th>Status</th>
+            <th>Daily card limit</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for card in cards %}
+        <tr>
+            <td>{% if card.masked_card_number %}{{ card.masked_card_number }}{% else %}(number pending){% endif %}</td>
+            <td>{{ card.account.account_no }}</td>
+            <td>{% if card.freeze_state == 'EMERGENCY' %}<span class="badge badge-bad">Frozen (emergency)</span>{% elif card.freeze_state == 'CUSTOMER' %}<span class="badge badge-warn">Frozen</span>{% else %}<span class="badge badge-ok">Active</span>{% endif %}</td>
+            <td>{% if card.card_daily_limit %}{{ card.card_daily_limit }}{% else %}Not set{% endif %}</td>
+            <td>
+                {% if freeze %}
+                Locked during the emergency freeze
                 {% else %}
-                <input type="hidden" name="action" value="freeze">
-                <button type="submit">Freeze</button>
+                <div class="row-actions">
+                    <form method="POST" action="{% url 'card_freeze_toggle' card.id %}" class="inline-form">
+                        {% csrf_token %}
+                        {% if card.freeze_state %}
+                        <input type="hidden" name="action" value="unfreeze">
+                        <button type="submit" class="btn btn-sm">Unfreeze</button>
+                        {% else %}
+                        <input type="hidden" name="action" value="freeze">
+                        <button type="submit" class="btn btn-sm">Freeze</button>
+                        {% endif %}
+                    </form>
+                    <form method="POST" action="{% url 'card_set_limit' card.id %}" class="inline-form">
+                        {% csrf_token %}
+                        <input type="number" name="limit" step="0.01" min="0" placeholder="Daily limit" value="{{ card.card_daily_limit|default_if_none:'' }}">
+                        <button type="submit" class="btn btn-sm">Save limit</button>
+                    </form>
+                </div>
                 {% endif %}
-            </form>
-            <form method="POST" action="{% url 'card_set_limit' card.id %}" style="display:inline;">
-                {% csrf_token %}
-                <input type="number" name="limit" step="0.01" min="0" placeholder="Daily limit"
-                    value="{{ card.card_daily_limit|default_if_none:'' }}">
-                <button type="submit">Save limit</button>
-            </form>
-            {% endif %}
-        </td>
-    </tr>
-    {% endfor %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
 </table>
-<p><small>The card limit is saved for your card. Card payments are not part of this app yet, so nothing is charged against it.</small></p>
+<p class="muted"><small>The card limit is saved for your card. Card payments are not part of this app yet, so nothing is charged against it.</small></p>
 {% else %}
 <p>You have no active cards yet. <a href="{% url 'request_atm_card' %}">Request an ATM card</a>.</p>
 {% endif %}
 
 {% if not freeze %}
-<h3>Emergency</h3>
-<p>If a card is lost, or you see activity you do not recognise, freeze everything at once.
-    This freezes all your cards and blocks your online transfers and cheque book fee payments.
-    Only the bank can lift it.</p>
-<form method="POST" action="{% url 'emergency_freeze_start' %}"
-    onsubmit="return confirm('Freeze all cards and block online transfers? Only the bank can lift this.');">
-    {% csrf_token %}
-    <button type="submit" style="background:#c0392b; color:white; padding:8px 14px;">Emergency freeze</button>
-</form>
+<section class="card danger-zone">
+    <div class="card-head"><h2>Emergency</h2></div>
+    <p>If a card is lost, or you see activity you do not recognise, freeze everything at once.
+        This freezes all your cards and blocks your online transfers and cheque book fee payments.
+        Only the bank can lift it.</p>
+    <form method="POST" action="{% url 'emergency_freeze_start' %}" onsubmit="return confirm('Freeze all cards and block online transfers? Only the bank can lift this.');">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Emergency freeze</button>
+    </form>
+</section>
 {% endif %}
-
-<p><a href="{% url 'customer_dashboard' %}">Back to Dashboard</a></p>
 {% endblock %}

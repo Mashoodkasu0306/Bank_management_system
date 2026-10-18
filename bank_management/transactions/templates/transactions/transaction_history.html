@@ -1,51 +1,61 @@
 {% extends "base.html" %}
+{% block title %}Transaction History{% endblock %}
 {% block content %}
-<h2>Transaction History: {{ account.account_no }}</h2>
-
-<p>Current Balance: {{ account.balance }}</p>
-
-<table border="1" cellpadding="8">
-    <tr>
-        <th>Date</th>
-        <th>Type</th>
-        <th>From</th>
-        <th>To</th>
-        <th>Amount</th>
-        <th>Mode</th>
-        <th>Status</th>
-        <th>Category</th>
-    </tr>
-    {% for txn in transactions %}
-    <tr>
-        <td>{{ txn.timestamp }}</td>
-        <td>{{ txn.transaction_type }}</td>
-        <td>{{ txn.from_account.account_no|default:"-" }}</td>
-        <td>{{ txn.to_account.account_no|default:"-" }}</td>
-        <td>{{ txn.amount }}</td>
-        <td>{{ txn.mode_of_transaction }}</td>
-        <td>{{ txn.status }}</td>
-        <td>
-            {% if txn.is_loan_related %}
-            {% if txn.from_account_id %}Loan payment{% else %}Loan received{% endif %}
-            {% elif txn.can_relabel %}
-            <form method="POST" action="{% url 'relabel_transaction' txn.id %}" style="margin:0;">
-                {% csrf_token %}
-                <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                <select name="category">
-                    {% for value, label in categories %}
-                    <option value="{{ value }}" {% if value == txn.category %}selected{% endif %}>{{ label }}</option>
-                    {% endfor %}
-                </select>
-                <button type="submit">Save</button>
-            </form>
-            {% elif txn.show_category %}{{ txn.get_category_display }}
-            {% else %}-{% endif %}
-        </td>
-    </tr>
-    {% empty %}
-    <tr>
-        <td colspan="8">No transactions yet.</td>
-    </tr>
-    {% endfor %}
+<div class="page-head">
+    <div>
+        <h2>Transaction History: {{ account.account_no }}</h2>
+    </div>
+    <div class="stat-box">
+        <div class="stat-label">Current balance</div>
+        <div class="stat-value">&#8377;{{ account.balance }}</div>
+    </div>
+</div>
+<table>
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Type</th>
+            <th>From</th>
+            <th>To</th>
+            <th>Amount</th>
+            <th>Mode</th>
+            <th>Status</th>
+            <th>Category</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for txn in transactions %}
+        <tr>
+            <td>{{ txn.timestamp|date:"M j, Y, g:i a" }}</td>
+            <td>{{ txn.transaction_type }}</td>
+            <td>{{ txn.from_account.account_no|default:"-" }}</td>
+            <td>{{ txn.to_account.account_no|default:"-" }}</td>
+            <td><strong>&#8377;{{ txn.amount }}</strong></td>
+            <td>{{ txn.mode_of_transaction }}</td>
+            <td><span class="badge {% if txn.status == 'SUCCESS' %}badge-ok{% elif txn.status == 'PENDING' %}badge-warn{% else %}badge-bad{% endif %}">{{ txn.status }}</span></td>
+            <td>
+                {% if txn.is_loan_related %}
+                {% if txn.from_account_id %}Loan payment{% else %}Loan received{% endif %}
+                {% elif txn.can_relabel %}
+                <form method="POST" action="{% url 'relabel_transaction' txn.id %}" class="inline-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                    <select name="category">
+                        {% for value, label in categories %}
+                        <option value="{{ value }}" {% if value == txn.category %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" class="btn btn-sm">Save</button>
+                </form>
+                {% elif txn.show_category %}{{ txn.get_category_display }}
+                {% else %}-{% endif %}
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="8" class="empty">No transactions yet.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
 </table>
 {% endblock %}

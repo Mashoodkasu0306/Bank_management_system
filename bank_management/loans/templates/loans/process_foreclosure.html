@@ -1,20 +1,24 @@
 {% extends "base.html" %}
+{% block title %}Process Foreclosure{% endblock %}
 {% block content %}
-<h2>Process Foreclosure - Loan #{{ loan.id }}</h2>
-{% if messages %}
-{% for message in messages %}
-<p style="color:{% if message.tags == 'error' %}red{% else %}green{% endif %};">{{ message }}</p>
-{% endfor %}
-{% endif %}
-<p><strong>Customer:</strong> {{ loan.customer.user.username }}</p>
-<p><strong>Account:</strong> {{ loan.account.account_no }} (Balance: {{ loan.account.balance }})</p>
-<p><strong>Outstanding Principal:</strong> {{ outstanding_principal }}</p>
-<p><strong>Accrued Interest:</strong> {{ accrued_interest }}</p>
-<p><strong>Total Payoff Amount:</strong> {{ total }}</p>
+<div class="page-head"><h2>Process Foreclosure - Loan #{{ loan.id }}</h2></div>
 
-<form method="post">
+<section class="card">
+    <div class="kv-grid">
+        <div class="kv"><span>Customer:</span><span>{{ loan.customer.user.username }}</span></div>
+        <div class="kv"><span>Account:</span><span>{{ loan.account.account_no }} (Balance: {{ loan.account.balance }})</span></div>
+    </div>
+</section>
+
+<div class="grid grid-3">
+    <div class="stat-box"><div class="stat-label">Outstanding Principal</div><div class="stat-value">&#8377;{{ outstanding_principal }}</div></div>
+    <div class="stat-box"><div class="stat-label">Accrued Interest</div><div class="stat-value">&#8377;{{ accrued_interest }}</div></div>
+    <div class="stat-box"><div class="stat-label">Total Payoff Amount</div><div class="stat-value">&#8377;{{ total }}</div></div>
+</div>
+
+<form method="post" class="actions">
     {% csrf_token %}
-    <button type="submit" name="action" value="approve">Approve Foreclosure</button>
-    <button type="submit" name="action" value="reject">Reject</button>
+    <button type="submit" name="action" value="approve" class="btn btn-primary">Approve Foreclosure</button>
+    <button type="submit" name="action" value="reject" class="btn btn-danger">Reject</button>
 </form>
 {% endblock %}

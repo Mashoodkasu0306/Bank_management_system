@@ -1,45 +1,31 @@
 {% extends "base.html" %}
+{% block title %}Banking Services Dashboard{% endblock %}
 {% block content %}
-<h2>Banking Services Dashboard</h2>
+<div class="page-head"><h2>Banking Services Dashboard</h2></div>
 
 <h3>Pending Actions</h3>
-<table border="1" cellpadding="8">
-    <tr>
-        <th>Pending KYC Documents</th>
-        <td>{{ pending_kyc }}</td>
-        <td><a href="{% url 'pending_kyc_documents' %}">Review</a></td>
-    </tr>
-    <tr>
-        <th>Pending ATM Card Requests</th>
-        <td>{{ pending_atm }}</td>
-        <td><a href="{% url 'pending_atm_card_requests' %}">Review</a></td>
-    </tr>
-    <tr>
-        <th>Pending Cheque Book Requests</th>
-        <td>{{ pending_cheque }}</td>
-        <td><a href="{% url 'pending_cheque_book_requests' %}">Review</a></td>
-    </tr>
-</table>
+<div class="kpi-grid">
+    <a class="kpi" href="{% url 'pending_kyc_documents' %}">
+        <div class="stat-label">Pending KYC Documents</div>
+        <div class="stat-value">{{ pending_kyc }}</div>
+        <div class="kpi-hint"><span>awaiting verification</span><span>Review</span></div>
+    </a>
+    <a class="kpi" href="{% url 'pending_atm_card_requests' %}">
+        <div class="stat-label">Pending ATM Card Requests</div>
+        <div class="stat-value">{{ pending_atm }}</div>
+        <div class="kpi-hint"><span>waiting for review</span><span>Review</span></div>
+    </a>
+    <a class="kpi" href="{% url 'pending_cheque_book_requests' %}">
+        <div class="stat-label">Pending Cheque Book Requests</div>
+        <div class="stat-value">{{ pending_cheque }}</div>
+        <div class="kpi-hint"><span>waiting for review</span><span>Review</span></div>
+    </a>
+</div>
 
 <h3>Totals</h3>
-<table border="1" cellpadding="8">
-    <tr>
-        <th>Total KYC Verified</th>
-        <td>{{ total_kyc_verified }}</td>
-    </tr>
-    <tr>
-        <th>Total ATM Cards Approved</th>
-        <td>{{ total_atm_approved }}</td>
-    </tr>
-    <tr>
-        <th>Total Cheque Books Approved</th>
-        <td>{{ total_cheque_approved }}</td>
-    </tr>
-</table>
-
-{% if viewer_is_employee %}
-<p><a href="{% url 'employee_dashboard' %}">Back to Dashboard</a></p>
-{% else %}
-<p><a href="{% url 'admin_dashboard' %}">Back to Admin Dashboard</a></p>
-{% endif %}
+<div class="grid grid-3">
+    <div class="card"><div class="stat-label">Total KYC Verified</div><div class="stat-value">{{ total_kyc_verified }}</div></div>
+    <div class="card"><div class="stat-label">Total ATM Cards Approved</div><div class="stat-value">{{ total_atm_approved }}</div></div>
+    <div class="card"><div class="stat-label">Total Cheque Books Approved</div><div class="stat-value">{{ total_cheque_approved }}</div></div>
+</div>
 {% endblock %}

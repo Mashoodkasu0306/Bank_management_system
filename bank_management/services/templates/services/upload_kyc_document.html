@@ -1,18 +1,22 @@
 {% extends "base.html" %}
+{% block title %}Upload KYC Documents{% endblock %}
 {% block content %}
-{% if only_field %}
-<h2>Upload New Document</h2>
-{% else %}
-<h2>Upload KYC Documents</h2>
-<p>Upload as many documents as you have ready — you don't need to do them one at a time. Staff will review each one.</p>
-{% endif %}
+<div class="page-head">
+    <div>
+        {% if only_field %}
+        <h2>Upload New Document</h2>
+        {% else %}
+        <h2>Upload KYC Documents</h2>
+        <p class="page-sub">Upload as many documents as you have ready &mdash; you don't need to do them one at a time. Staff will review each one.</p>
+        {% endif %}
+    </div>
+    <a class="btn" href="{% url 'kyc_dashboard' %}">Back to KYC Dashboard</a>
+</div>
 
-<form method="post" enctype="multipart/form-data">
+<form method="post" enctype="multipart/form-data" class="form-card">
     {% csrf_token %}
     {% if only_field %}<input type="hidden" name="only_field" value="{{ only_field }}">{% endif %}
     {{ form.as_p }}
-    <button type="submit">Upload {% if only_field %}Document{% else %}Documents{% endif %}</button>
+    <button type="submit" class="btn btn-primary btn-block">Upload {% if only_field %}Document{% else %}Documents{% endif %}</button>
 </form>
-
-<p><a href="{% url 'kyc_dashboard' %}">Back to KYC Dashboard</a></p>
 {% endblock %}

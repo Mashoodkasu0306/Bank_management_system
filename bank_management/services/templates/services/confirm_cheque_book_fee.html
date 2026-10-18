@@ -1,41 +1,22 @@
 {% extends "base.html" %}
+{% block title %}Confirm Fee Payment{% endblock %}
 {% block content %}
-<h2>Confirm Fee Payment</h2>
+<div class="page-head"><h2>Confirm Fee Payment</h2></div>
+<section class="card form-card">
+    <div class="kv"><span>Cheque Book Request</span><span>{{ cheque_request.leaf_count }} leaves - {{ cheque_request.account.account_no }}</span></div>
+    <div class="kv"><span>Fee Amount</span><span><strong>&#8377;{{ cheque_request.cheque_book_fee }}</strong></span></div>
+    <div class="kv"><span>Pay From</span><span>{{ account.account_no }} (Balance: {{ account.balance }})</span></div>
+    <div class="kv"><span>Mode</span><span>{{ mode }}</span></div>
+    {% if upi_id %}<div class="kv"><span>UPI ID</span><span>{{ upi_id }}</span></div>{% endif %}
+    {% if card_number %}<div class="kv"><span>Card</span><span>XXXX-XXXX-XXXX-{{ card_number|slice:"-4:" }}</span></div>{% endif %}
 
-<table border="1" cellpadding="8">
-    <tr>
-        <th>Cheque Book Request</th>
-        <td>{{ cheque_request.leaf_count }} leaves - {{ cheque_request.account.account_no }}</td>
-    </tr>
-    <tr>
-        <th>Fee Amount</th>
-        <td>{{ cheque_request.cheque_book_fee }}</td>
-    </tr>
-    <tr>
-        <th>Pay From</th>
-        <td>{{ account.account_no }} (Balance: {{ account.balance }})</td>
-    </tr>
-    <tr>
-        <th>Mode</th>
-        <td>{{ mode }}</td>
-    </tr>
-    {% if upi_id %}<tr>
-        <th>UPI ID</th>
-        <td>{{ upi_id }}</td>
-    </tr>{% endif %}
-    {% if card_number %}<tr>
-        <th>Card</th>
-        <td>XXXX-XXXX-XXXX-{{ card_number|slice:"-4:" }}</td>
-    </tr>{% endif %}
-</table>
-
-<form method="post" action="{% url 'confirm_pay_cheque_book_fee' cheque_request.id %}">
-    {% csrf_token %}
-    <input type="hidden" name="account" value="{{ account.id }}">
-    <input type="hidden" name="mode_of_transaction" value="{{ mode }}">
-    <input type="hidden" name="upi_id" value="{{ upi_id }}">
-    <button type="submit">Confirm and Pay {{ cheque_request.cheque_book_fee }}</button>
-</form>
-
-<p><a href="{% url 'cheque_book_status' cheque_request.id %}">Cancel</a></p>
+    <form method="post" action="{% url 'confirm_pay_cheque_book_fee' cheque_request.id %}" class="actions">
+        {% csrf_token %}
+        <input type="hidden" name="account" value="{{ account.id }}">
+        <input type="hidden" name="mode_of_transaction" value="{{ mode }}">
+        <input type="hidden" name="upi_id" value="{{ upi_id }}">
+        <button type="submit" class="btn btn-primary">Confirm and Pay {{ cheque_request.cheque_book_fee }}</button>
+        <a class="btn" href="{% url 'cheque_book_status' cheque_request.id %}">Cancel</a>
+    </form>
+</section>
 {% endblock %}

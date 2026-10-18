@@ -249,3 +249,42 @@ body.auth .page { margin: 8vh auto 0; }
 .form-card input, .form-card select, .form-card textarea, .auth-card input { width: 100%; }
 .btn-block { width: 100%; }
 .page td.empty { text-align: center; color: var(--muted); padding: 28px 12px; }
+.inline-form { display: flex; gap: 6px; align-items: center; margin: 0; }
+.inline-form select, .inline-form button { min-height: 34px; padding: 4px 10px; font-size: 13.5px; }
+.kv-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 32px; }
+.choice-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+.choice { display: flex; align-items: center; gap: 8px; padding: 10px 16px; border: 1px solid var(--line); border-radius: 10px; background: #fff; cursor: pointer; font-weight: 600; }
+.choice:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+.form-card input[type=radio], .form-card input[type=checkbox] { width: 18px; }
+.page input[type=file] { padding: 8px; border: 1px dashed #cbd5e1; border-radius: 10px; background: #fff; max-width: 100%; }
+.card-gap { margin-top: 16px; }
+@media (max-width: 700px) { .kv-grid { grid-template-columns: minmax(0, 1fr); } }
+.errorlist { list-style: none; padding: 0; margin: 4px 0; color: var(--bad); font-size: 13.5px; }
+.helptext { display: block; color: var(--muted); font-size: 13px; margin-top: 4px; }
+.form-card p { margin: 0 0 16px; }
+.form-card p label { display: block; margin-bottom: 6px; }
+.notice-ok { background: var(--ok-soft); border-color: #a7f3d0; color: var(--ok); }
+.danger-zone { border-color: #fecaca; background: #fff5f5; }
+/* ---- virtual debit card ---- */
+.vcard-wrap { margin-bottom: 20px; }
+.vcard-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 20px; margin-bottom: 20px; }
+.vcard { position: relative; width: 100%; max-width: 380px; aspect-ratio: 1.586; border-radius: 18px; padding: 20px 22px; color: #fff; overflow: hidden;
+  display: flex; flex-direction: column; justify-content: space-between;
+  background: linear-gradient(135deg, #0f1b2d 0%, #1e3a8a 55%, #2563eb 100%); box-shadow: 0 14px 30px rgba(15, 27, 45, .28); }
+.vcard::before { content: ""; position: absolute; right: -60px; top: -70px; width: 210px; height: 210px; border-radius: 50%; background: rgba(255, 255, 255, .08); }
+.vcard::after { content: ""; position: absolute; left: -50px; bottom: -90px; width: 230px; height: 230px; border-radius: 50%; background: rgba(255, 255, 255, .06); }
+.vcard > * { position: relative; z-index: 1; }
+.vcard-top { display: flex; justify-content: space-between; align-items: center; }
+.vcard-bank { font-weight: 700; letter-spacing: .04em; font-size: .95rem; }
+.vcard-nfc { width: 26px; height: 26px; opacity: .85; }
+.vcard-chip { width: 46px; height: 34px; border-radius: 7px; background: linear-gradient(135deg, #f7dc96, #c9a24a); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .15); }
+.vcard-number { font-family: ui-monospace, Consolas, monospace; font-size: clamp(1rem, 4.4vw, 1.4rem); letter-spacing: .12em; text-shadow: 0 1px 2px rgba(0, 0, 0, .35); white-space: nowrap; }
+.vcard-bottom { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; }
+.vcard-label { font-size: 10px; letter-spacing: .1em; text-transform: uppercase; opacity: .7; }
+.vcard-name { font-weight: 600; letter-spacing: .06em; font-size: .9rem; overflow-wrap: anywhere; }
+.vcard-type { font-style: italic; font-weight: 800; font-size: 1.15rem; letter-spacing: .04em; }
+.vcard-stamp { position: absolute; top: 50%; left: 50%; z-index: 2; transform: translate(-50%, -50%) rotate(-12deg); padding: 4px 18px;
+  border: 3px solid rgba(255, 255, 255, .85); border-radius: 8px; font-weight: 800; letter-spacing: .2em; text-transform: uppercase; font-size: 1.3rem; background: rgba(15, 27, 45, .35); }
+.vcard-off, .vcard-frozen { background: linear-gradient(135deg, #334155 0%, #64748b 100%); box-shadow: 0 10px 22px rgba(15, 27, 45, .18); }
+.vcard-emergency { background: linear-gradient(135deg, #7f1d1d 0%, #dc2626 100%); box-shadow: 0 14px 30px rgba(127, 29, 29, .3); }
+.inline-form input[type=text] { min-height: 34px; min-width: 220px; padding: 4px 10px; font-size: 13.5px; }

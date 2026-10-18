@@ -1,13 +1,15 @@
 {% extends "base.html" %}
+{% block title %}Download Account Statement{% endblock %}
 {% block content %}
-<h2>Download Account Statement</h2>
-<p>Account: {{ account.account_no }} ({{ account.get_account_type_display }})</p>
-
-<form method="post">
+<div class="page-head">
+    <div>
+        <h2>Download Account Statement</h2>
+        <p class="page-sub">Account: {{ account.account_no }} ({{ account.get_account_type_display }})</p>
+    </div>
+</div>
+<form method="post" class="form-card">
     {% csrf_token %}
     {{ form.as_p }}
-    <button type="submit">Download PDF</button>
+    <button type="submit" class="btn btn-primary btn-block">Download PDF</button>
 </form>
-
-<p><a href="{% url 'customer_dashboard' %}">Back to Dashboard</a></p>
 {% endblock %}

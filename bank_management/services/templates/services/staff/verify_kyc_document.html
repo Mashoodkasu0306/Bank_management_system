@@ -1,45 +1,32 @@
 {% extends "base.html" %}
+{% block title %}Review KYC Document{% endblock %}
 {% block content %}
-<h2>Review KYC Document</h2>
+<div class="page-head"><h2>Review KYC Document</h2></div>
 
-<table border="1" cellpadding="8">
-    <tr>
-        <th>Customer</th>
-        <td>{{ document.kyc_verification.customer.user.username }}</td>
-    </tr>
-    <tr>
-        <th>Document Type</th>
-        <td>{{ document.get_document_type_display }}</td>
-    </tr>
-    <tr>
-        <th>Uploaded At</th>
-        <td>{{ document.uploaded_at }}</td>
-    </tr>
-    <tr>
-        <th>File</th>
-        <td><a href="{{ document.file.url }}" target="_blank">View Document</a></td>
-    </tr>
-</table>
-
-<form method="post">
-    {% csrf_token %}
-    <p>
-        <label><input type="radio" name="verification_status" value="VERIFIED" onchange="toggleKycFields()" checked>
-            Approve</label><br>
-        <label><input type="radio" name="verification_status" value="REJECTED" onchange="toggleKycFields()">
-            Reject</label>
-    </p>
-    <p>
-        <label>Reviewer Notes (optional):</label><br>
-        <textarea name="reviewer_notes" rows="2" cols="40"></textarea>
-    </p>
-    <div id="kyc-reject-fields" style="display:none;">
-        <p>
-            <label>Rejection Reason:</label><br>
-            <textarea name="rejection_reason" rows="3" cols="40"></textarea>
-        </p>
+<section class="card">
+    <div class="kv-grid">
+        <div class="kv"><span>Customer</span><span>{{ document.kyc_verification.customer.user.username }}</span></div>
+        <div class="kv"><span>Document Type</span><span>{{ document.get_document_type_display }}</span></div>
+        <div class="kv"><span>Uploaded At</span><span>{{ document.uploaded_at|date:"M j, Y, g:i a" }}</span></div>
+        <div class="kv"><span>File</span><span><a class="btn btn-sm" href="{{ document.file.url }}" target="_blank">View Document</a></span></div>
     </div>
-    <button type="submit">Submit Review</button>
+</section>
+
+<form method="post" class="form-card">
+    {% csrf_token %}
+    <div class="choice-row">
+        <label class="choice"><input type="radio" name="verification_status" value="VERIFIED" onchange="toggleKycFields()" checked> Approve</label>
+        <label class="choice"><input type="radio" name="verification_status" value="REJECTED" onchange="toggleKycFields()"> Reject</label>
+    </div>
+    <div class="field">
+        <label for="id_reviewer_notes">Reviewer Notes (optional):</label>
+        <textarea id="id_reviewer_notes" name="reviewer_notes" rows="2" cols="40"></textarea>
+    </div>
+    <div id="kyc-reject-fields" class="field" style="display:none;">
+        <label for="id_rejection_reason">Rejection Reason:</label>
+        <textarea id="id_rejection_reason" name="rejection_reason" rows="3" cols="40"></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary btn-block">Submit Review</button>
 </form>
 <script>
     function toggleKycFields() {
@@ -48,6 +35,4 @@
     }
     toggleKycFields();
 </script>
-
-<p><a href="{% url 'pending_kyc_documents' %}">Back to Pending KYC Documents</a></p>
 {% endblock %}

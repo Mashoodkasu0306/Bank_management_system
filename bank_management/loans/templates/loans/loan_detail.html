@@ -1,140 +1,160 @@
 {% extends "base.html" %}
+{% block title %}Loan Detail{% endblock %}
 {% block content %}
-<h2>Loan Detail</h2>
-{% if messages %}
-{% for message in messages %}
-<p style="color:{% if message.tags == 'error' %}red{% else %}green{% endif %};">{{ message }}</p>
-{% endfor %}
-{% endif %}
-<p><strong>Type:</strong> {{ loan.get_loan_type_display }}</p>
-<p><strong>Repayment Type:</strong> {{ loan.get_repayment_type_display }}</p>
-<p><strong>Customer:</strong> {{ loan.customer.user.username }}</p>
-<p><strong>Account:</strong> {{ loan.account.account_no }}</p>
-<p><strong>Amount:</strong> {{ loan.amount }}</p>
-<p><strong>Tenure:</strong> {{ loan.tenure_months }} months</p>
-<p><strong>Interest Rate:</strong> {{ loan.interest_rate|default:"-" }}</p>
-{% if loan.repayment_type == "EMI" %}
-<p><strong>EMI:</strong> {{ loan.emi_amount|default:"-" }}</p>
-{% else %}
-<p><strong>Total Payable:</strong> {{ loan.lump_sum_total_payable|default:"-" }}</p>
-<p><strong>Paid So Far:</strong> {{ loan.lump_sum_paid }}</p>
-<p><strong>Remaining Balance:</strong> {{ loan.get_lump_sum_remaining }}</p>
-{% endif %}
-<p><strong>Status:</strong> {{ loan.get_status_display }}</p>
-<p><strong>Applied:</strong> {{ loan.applied_date }}</p>
-{% if loan.remarks %}<p><strong>Remarks:</strong> {{ loan.remarks }}</p>{% endif %}
+<div class="page-head">
+    <div>
+        <h2>Loan Detail</h2>
+        <p class="page-sub">{{ loan.get_loan_type_display }} &bull; Applied {{ loan.applied_date }}</p>
+    </div>
+    <span class="badge {% if loan.status == 'APPROVED' %}badge-ok{% elif loan.status == 'PENDING' %}badge-warn{% elif loan.status == 'DEFAULTED' or loan.status == 'REJECTED' %}badge-bad{% endif %}">{{ loan.get_status_display }}</span>
+</div>
 
-{% if loan.status == "APPROVED" and loan.repayment_type == "EMI" %}
-<p><strong>Outstanding Principal:</strong> {{ loan.get_outstanding_principal }}</p>
-<p><strong>Foreclosure Status:</strong> {{ loan.get_foreclosure_status_display }}</p>
-{% endif %}
+<section class="card">
+    <div class="card-head"><h2>Summary</h2></div>
+    <div class="kv-grid">
+        <div class="kv"><span>Type:</span><span>{{ loan.get_loan_type_display }}</span></div>
+        <div class="kv"><span>Repayment Type:</span><span>{{ loan.get_repayment_type_display }}</span></div>
+        <div class="kv"><span>Customer:</span><span>{{ loan.customer.user.username }}</span></div>
+        <div class="kv"><span>Account:</span><span>{{ loan.account.account_no }}</span></div>
+        <div class="kv"><span>Amount:</span><span>&#8377;{{ loan.amount }}</span></div>
+        <div class="kv"><span>Tenure:</span><span>{{ loan.tenure_months }} months</span></div>
+        <div class="kv"><span>Interest Rate:</span><span>{{ loan.interest_rate|default:"-" }}</span></div>
+        {% if loan.repayment_type == "EMI" %}
+        <div class="kv"><span>EMI:</span><span>{{ loan.emi_amount|default:"-" }}</span></div>
+        {% else %}
+        <div class="kv"><span>Total Payable:</span><span>{{ loan.lump_sum_total_payable|default:"-" }}</span></div>
+        <div class="kv"><span>Paid So Far:</span><span>{{ loan.lump_sum_paid }}</span></div>
+        <div class="kv"><span>Remaining Balance:</span><span>{{ loan.get_lump_sum_remaining }}</span></div>
+        {% endif %}
+        <div class="kv"><span>Status:</span><span>{{ loan.get_status_display }}</span></div>
+        <div class="kv"><span>Applied:</span><span>{{ loan.applied_date }}</span></div>
+        {% if loan.remarks %}<div class="kv"><span>Remarks:</span><span>{{ loan.remarks }}</span></div>{% endif %}
+        {% if loan.status == "APPROVED" and loan.repayment_type == "EMI" %}
+        <div class="kv"><span>Outstanding Principal:</span><span>{{ loan.get_outstanding_principal }}</span></div>
+        <div class="kv"><span>Foreclosure Status:</span><span>{{ loan.get_foreclosure_status_display }}</span></div>
+        {% endif %}
+    </div>
+</section>
 
 {% if is_owner and foreclosure_preview %}
-<h3>Foreclose This Loan</h3>
-<p>Outstanding Principal: {{ foreclosure_preview.outstanding_principal }}</p>
-<p>Accrued Interest: {{ foreclosure_preview.accrued_interest }}</p>
-<p><strong>Total Payoff Amount: {{ foreclosure_preview.total }}</strong></p>
-<form method="post" action="{% url 'request_foreclosure' loan.id %}">
-    {% csrf_token %}
-    <button type="submit">Request Foreclosure</button>
-</form>
+<section class="card">
+    <div class="card-head"><h2>Foreclose This Loan</h2></div>
+    <div class="grid grid-3">
+        <div class="stat-box"><div class="stat-label">Outstanding Principal</div><div class="stat-value">&#8377;{{ foreclosure_preview.outstanding_principal }}</div></div>
+        <div class="stat-box"><div class="stat-label">Accrued Interest</div><div class="stat-value">&#8377;{{ foreclosure_preview.accrued_interest }}</div></div>
+        <div class="stat-box"><div class="stat-label">Total Payoff Amount</div><div class="stat-value">&#8377;{{ foreclosure_preview.total }}</div></div>
+    </div>
+    <form method="post" action="{% url 'request_foreclosure' loan.id %}" class="actions">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary">Request Foreclosure</button>
+    </form>
+</section>
 {% endif %}
 
 {% if is_owner and loan.repayment_type == "LUMP_SUM" and loan.status == "APPROVED" %}
-<h3>Make a Payment</h3>
-<p>Remaining Balance: {{ loan.get_lump_sum_remaining }}</p>
-<form method="post" action="{% url 'pay_lump_sum' loan.id %}">
-    {% csrf_token %}
-    <label>Amount:</label>
-    <input type="number" step="0.01" name="amount" required><br><br>
-    <label>Payment Mode:</label>
-    <select name="mode_of_transaction" id="mode_of_transaction"
-        onchange="var isUpi = (this.value === 'UPI'); document.getElementById('upi_field').style.display = isUpi ? 'block' : 'none'; document.getElementById('account_field').style.display = isUpi ? 'none' : 'block'; document.getElementById('account_select').required = !isUpi;">
-        <option value="NETBANKING">Net Banking</option>
-        <option value="UPI">UPI</option>
-    </select><br><br>
-    <div id="upi_field" style="display:none;">
-        <label>UPI ID:</label>
-        <input type="text" name="upi_id" placeholder="yourname@upi"><br><br>
+<section class="card">
+    <div class="card-head">
+        <h2>Make a Payment</h2>
+        <span class="badge badge-info">Remaining Balance: {{ loan.get_lump_sum_remaining }}</span>
     </div>
-    <div id="account_field">
-        <label>Pay From Account:</label>
-        <select name="account" id="account_select" required>
-            <option value="">Select Account</option>
-            {% for acc in my_accounts %}
-            <option value="{{ acc.id }}">{{ acc.account_no }} (Balance: {{ acc.balance }})</option>
-            {% endfor %}
-        </select><br><br>
-    </div>
-    <button type="submit">Continue</button>
-</form>
+    <form method="post" action="{% url 'pay_lump_sum' loan.id %}" class="form-card" style="border:0; padding:0;">
+        {% csrf_token %}
+        <div class="field"><label for="id_amount">Amount:</label><input type="number" step="0.01" id="id_amount" name="amount" required></div>
+        <div class="field">
+            <label for="mode_of_transaction">Payment Mode:</label>
+            <select name="mode_of_transaction" id="mode_of_transaction" onchange="var isUpi = (this.value === 'UPI'); document.getElementById('upi_field').style.display = isUpi ? 'block' : 'none'; document.getElementById('account_field').style.display = isUpi ? 'none' : 'block'; document.getElementById('account_select').required = !isUpi;">
+                <option value="NETBANKING">Net Banking</option>
+                <option value="UPI">UPI</option>
+            </select>
+        </div>
+        <div id="upi_field" class="field" style="display:none;">
+            <label for="id_upi">UPI ID:</label>
+            <input type="text" id="id_upi" name="upi_id" placeholder="yourname@upi">
+        </div>
+        <div id="account_field" class="field">
+            <label for="account_select">Pay From Account:</label>
+            <select name="account" id="account_select" required>
+                <option value="">Select Account</option>
+                {% for acc in my_accounts %}
+                <option value="{{ acc.id }}">{{ acc.account_no }} (Balance: {{ acc.balance }})</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Continue</button>
+    </form>
+</section>
 {% endif %}
 
-<h3>Documents</h3>
-<ul>
-    {% for doc in documents %}
-    <li>{{ doc.get_document_type_display }} - <a href="{{ doc.file.url }}" target="_blank">View</a> ({{ doc.uploaded_at }})</li>
-    {% empty %}
-    <li>No documents uploaded.</li>
-    {% endfor %}
-</ul>
-
-{% if is_owner and loan.status == "PENDING" %}
-<h4>Upload Additional Document</h4>
-<form method="post" action="{% url 'upload_loan_document' loan.id %}" enctype="multipart/form-data">
-    {% csrf_token %}
-    <select name="document_type">
-        <option value="ID_PROOF">ID Proof</option>
-        <option value="INCOME_PROOF">Income Proof</option>
-        <option value="ADDRESS_PROOF">Address Proof</option>
-        <option value="OTHER">Other</option>
-    </select>
-    <input type="file" name="document" required>
-    <button type="submit">Upload</button>
-</form>
-{% endif %}
+<section class="card">
+    <div class="card-head"><h2>Documents</h2></div>
+    <ul>
+        {% for doc in documents %}
+        <li>{{ doc.get_document_type_display }} - <a href="{{ doc.file.url }}" target="_blank">View</a> ({{ doc.uploaded_at|date:"M j, Y, g:i a" }})</li>
+        {% empty %}
+        <li>No documents uploaded.</li>
+        {% endfor %}
+    </ul>
+    {% if is_owner and loan.status == "PENDING" %}
+    <h4>Upload Additional Document</h4>
+    <form method="post" action="{% url 'upload_loan_document' loan.id %}" enctype="multipart/form-data" class="filter-bar">
+        {% csrf_token %}
+        <select name="document_type">
+            <option value="ID_PROOF">ID Proof</option>
+            <option value="INCOME_PROOF">Income Proof</option>
+            <option value="ADDRESS_PROOF">Address Proof</option>
+            <option value="OTHER">Other</option>
+        </select>
+        <input type="file" name="document" required>
+        <button type="submit" class="btn btn-primary">Upload</button>
+    </form>
+    {% endif %}
+</section>
 
 {% if loan.repayment_type == "EMI" %}
 <h3>Repayment Schedule</h3>
-<table border="1" cellpadding="6">
-    <tr>
-        <th>#</th>
-        <th>Due Date</th>
-        <th>EMI</th>
-        <th>Principal</th>
-        <th>Interest</th>
-        <th>Closing Balance</th>
-        <th>Status</th>
-        <th>DPD</th>
-        <th>Paid On</th>{% if is_owner %}<th>Action</th>{% endif %}
-    </tr>
-    {% for r in repayments %}
-    <tr>
-        <td>{{ r.installment_number }}</td>
-        <td>{{ r.due_date }}</td>
-        <td>{{ r.emi_amount }}</td>
-        <td>{{ r.principal_component }}</td>
-        <td>{{ r.interest_component }}</td>
-        <td>{{ r.closing_balance }}</td>
-        <td>{{ r.get_status_display }}</td>
-        <td>{{ r.get_dpd_bucket }}</td>
-        <td>{{ r.paid_date|default:"-" }}</td>
-        {% if is_owner %}
-        <td>
-            {% if r.status == "PENDING" %}
-            <form method="post" action="{% url 'pay_emi' r.id %}">
-                {% csrf_token %}
-                <button type="submit">Pay EMI</button>
-            </form>
+<table>
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Due Date</th>
+            <th>EMI</th>
+            <th>Principal</th>
+            <th>Interest</th>
+            <th>Closing Balance</th>
+            <th>Status</th>
+            <th>DPD</th>
+            <th>Paid On</th>{% if is_owner %}<th>Action</th>{% endif %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for r in repayments %}
+        <tr>
+            <td>{{ r.installment_number }}</td>
+            <td>{{ r.due_date }}</td>
+            <td>{{ r.emi_amount }}</td>
+            <td>{{ r.principal_component }}</td>
+            <td>{{ r.interest_component }}</td>
+            <td>{{ r.closing_balance }}</td>
+            <td><span class="badge {% if r.paid_date %}badge-ok{% elif r.status == 'PENDING' %}badge-warn{% else %}badge-bad{% endif %}">{{ r.get_status_display }}</span></td>
+            <td>{{ r.get_dpd_bucket }}</td>
+            <td>{{ r.paid_date|default:"-" }}</td>
+            {% if is_owner %}
+            <td>
+                {% if r.status == "PENDING" %}
+                <form method="post" action="{% url 'pay_emi' r.id %}" class="inline-form">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary btn-sm">Pay EMI</button>
+                </form>
+                {% endif %}
+            </td>
             {% endif %}
-        </td>
-        {% endif %}
-    </tr>
-    {% empty %}
-    <tr>
-        <td colspan="10">No repayment schedule yet (loan not approved).</td>
-    </tr>
-    {% endfor %}
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="10" class="empty">No repayment schedule yet (loan not approved).</td>
+        </tr>
+        {% endfor %}
+    </tbody>
 </table>
 {% endif %}
 {% endblock %}

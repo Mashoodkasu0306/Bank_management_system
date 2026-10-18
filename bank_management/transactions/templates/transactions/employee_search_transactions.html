@@ -1,48 +1,45 @@
 {% extends "base.html" %}
+{% block title %}Search Customer Transactions{% endblock %}
 {% block content %}
-<h2>Search Customer Transactions by Account Number</h2>
-
-{% if messages %}
-{% for message in messages %}
-<p style="color:{% if message.tags == 'error' %}red{% else %}green{% endif %};">{{ message }}</p>
-{% endfor %}
-{% endif %}
-
-<form method="GET">
-    <label>Account Number</label><br>
-    <input type="text" name="account_no" value="{{ account_no }}" required>
-    <button type="submit">Search</button>
+<div class="page-head"><h2>Search Customer Transactions by Account Number</h2></div>
+<form method="GET" class="filter-bar">
+    <div class="field">
+        <label for="id_account_no">Account Number</label>
+        <input type="text" id="id_account_no" name="account_no" value="{{ account_no }}" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Search</button>
 </form>
 
 {% if account %}
-<h3>Results for {{ account.account_no }}</h3>
-<p>Customer: {{ account.customer.user.get_full_name|default:account.customer.user.username }}</p>
-<p>Current Balance: {{ account.balance }}</p>
-<table border="1" cellpadding="6">
-    <tr>
-        <th>Date</th>
-        <th>Type</th>
-        <th>From</th>
-        <th>To</th>
-        <th>Amount</th>
-        <th>Mode</th>
-        <th>Status</th>
-    </tr>
-    {% for txn in transactions %}
-    <tr>
-        <td>{{ txn.timestamp }}</td>
-        <td>{{ txn.transaction_type }}</td>
-        <td>{{ txn.from_account.account_no|default:"-" }}</td>
-        <td>{{ txn.to_account.account_no|default:"-" }}</td>
-        <td>{{ txn.amount }}</td>
-        <td>{{ txn.mode_of_transaction }}</td>
-        <td>{{ txn.status }}</td>
-    </tr>
-    {% empty %}
-    <tr>
-        <td colspan="7">No transactions for this account.</td>
-    </tr>
-    {% endfor %}
+<div class="page-head">
+    <div>
+        <h3>Results for {{ account.account_no }}</h3>
+        <p class="page-sub">Customer: {{ account.customer.user.get_full_name|default:account.customer.user.username }}</p>
+    </div>
+    <div class="stat-box">
+        <div class="stat-label">Current balance</div>
+        <div class="stat-value">&#8377;{{ account.balance }}</div>
+    </div>
+</div>
+<table>
+    <thead>
+        <tr><th>Date</th><th>Type</th><th>From</th><th>To</th><th>Amount</th><th>Mode</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+        {% for txn in transactions %}
+        <tr>
+            <td>{{ txn.timestamp|date:"M j, Y, g:i a" }}</td>
+            <td>{{ txn.transaction_type }}</td>
+            <td>{{ txn.from_account.account_no|default:"-" }}</td>
+            <td>{{ txn.to_account.account_no|default:"-" }}</td>
+            <td><strong>&#8377;{{ txn.amount }}</strong></td>
+            <td>{{ txn.mode_of_transaction }}</td>
+            <td><span class="badge {% if txn.status == 'SUCCESS' %}badge-ok{% elif txn.status == 'PENDING' %}badge-warn{% else %}badge-bad{% endif %}">{{ txn.status }}</span></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" class="empty">No transactions for this account.</td></tr>
+        {% endfor %}
+    </tbody>
 </table>
 {% endif %}
 {% endblock %}
