@@ -15,9 +15,9 @@
     <div class="card"><div class="stat-label">Total Banks</div><div class="stat-value">{{ total_banks }}</div></div>
     <div class="card"><div class="stat-label">Total Branches</div><div class="stat-value">{{ total_branches }}</div></div>
     <div class="card"><div class="stat-label">Total Accounts</div><div class="stat-value">{{ total_accounts }}</div></div>
-    <div class="card"><div class="stat-label">Total Balance Across All Accounts</div><div class="stat-value">&#8377;{{ total_balance }}</div></div>
+    <div class="card"><div class="stat-label">Total Balance Across All Accounts</div><div class="stat-value">&#8377;{{ total_balance|floatformat:2 }}</div></div>
     <div class="card"><div class="stat-label">Total Transactions</div><div class="stat-value">{{ total_transactions }}</div></div>
-    <div class="card"><div class="stat-label">Total Successful Transaction Volume</div><div class="stat-value">&#8377;{{ total_successful_volume }}</div></div>
+    <div class="card"><div class="stat-label">Total Successful Transaction Volume</div><div class="stat-value">&#8377;{{ total_successful_volume|floatformat:2 }}</div></div>
 </div>
 
 <div class="cards-grid card-gap">

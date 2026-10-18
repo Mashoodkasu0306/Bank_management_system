@@ -55,7 +55,7 @@
         {% endfor %}
     </tbody>
 </table>
-<p>Total balance (active savings and current accounts): <strong>{{ total_balance }}</strong></p>
+<p>Total balance (active savings and current accounts): <strong>{{ total_balance|floatformat:2 }}</strong></p>
 {% else %}
 <p class="muted">No accounts.</p>
 {% endif %}
