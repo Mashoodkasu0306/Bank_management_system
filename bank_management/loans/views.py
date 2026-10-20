@@ -10,6 +10,7 @@ from accounts.models import Account
 from transactions.models import Transaction
 from users.models import Employee
 from bank.views import is_admin_or_employee
+from core.validators import parse_money
 from .models import Loan, LoanRepayment, LoanDocument, validate_document_extension, validate_document_size
 from .utils import generate_amortization_schedule, check_eligibility
 from services.helpers import require_verified_kyc, check_income_proof_for_loan
@@ -60,7 +61,7 @@ def apply_loan(request):
             return redirect("apply_loan")
 
         try:
-            amount = Decimal(amount_raw)
+            amount = parse_money(amount_raw)
             tenure_months = int(tenure_raw)
         except (InvalidOperation, ValueError, TypeError):
             messages.error(request, "Invalid amount or tenure.")
@@ -415,7 +416,7 @@ def pay_lump_sum(request, loan_id):
         upi_id = request.POST.get("upi_id", "").strip()
 
         try:
-            amount = Decimal(amount_raw)
+            amount = parse_money(amount_raw)
         except InvalidOperation:
             messages.error(request, "Invalid amount.")
             return redirect("loan_detail", loan_id=loan.id)
@@ -485,7 +486,7 @@ def confirm_pay_lump_sum(request, loan_id):
         return redirect("loan_detail", loan_id=loan.id)
 
     try:
-        amount = Decimal(amount_raw)
+        amount = parse_money(amount_raw)
     except InvalidOperation:
         messages.error(request, "Invalid amount.")
         return redirect("loan_detail", loan_id=loan.id)

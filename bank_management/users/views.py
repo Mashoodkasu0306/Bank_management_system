@@ -1,6 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
+from audit.lockout import is_locked_out, LOCKOUT_MINUTES
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.views.decorators.cache import never_cache
@@ -31,6 +34,19 @@ def user_login(request):
     if request.method == "POST":
         username = request.POST.get("username")
         password = request.POST.get("password")
+
+        # Bot trap: real users never see this hidden field.
+        if request.POST.get("website"):
+            messages.error(request, "Invalid username/password, or your account has been deactivated.")
+            return render(request, "users/login.html")
+
+        # Lockout after too many recent failed logins for this username.
+        if is_locked_out(username):
+            messages.error(
+                request,
+                f"Too many failed attempts. Please wait {LOCKOUT_MINUTES} minutes and try again.",
+            )
+            return render(request, "users/login.html")
 
         user = authenticate(request, username=username, password=password)
 
@@ -130,11 +146,21 @@ def admin_dashboard(request):
 @user_passes_test(is_admin_or_employee)
 def register_customer(request):
     if request.method == "POST":
-        username = request.POST["username"]
-        password = request.POST["password"]
+        username = request.POST.get("username", "").strip()
+        password = request.POST.get("password", "")
 
         if User.objects.filter(username=username).exists():
             messages.error(request, "Username already exists.")
+            return render(request, "users/register_customer.html")
+
+        if not username or not password:
+            messages.error(request, "Username and password are required.")
+            return render(request, "users/register_customer.html")
+
+        try:
+            validate_password(password, user=User(username=username))
+        except ValidationError as exc:
+            messages.error(request, " ".join(exc.messages))
             return render(request, "users/register_customer.html")
 
         # Which branch gets the new account: staff use their own branch;

@@ -12,6 +12,7 @@ from accounts.models import Account
 from .models import Transaction
 from users.models import Employee, Customer
 from bank.views import is_admin_or_employee
+from core.validators import parse_money
 from services.helpers import require_verified_kyc
 from notifications.helpers import notify, notify_pending_transaction
 from audit.helpers import log_action
@@ -79,7 +80,7 @@ def deposit_view(request):
         amount_raw = request.POST["amount"]
 
         try:
-            amount = Decimal(amount_raw)
+            amount = parse_money(amount_raw)
         except InvalidOperation:
             messages.error(request, "Invalid amount.")
             return redirect("deposit")
@@ -144,7 +145,7 @@ def withdraw_view(request):
         amount_raw = request.POST["amount"]
 
         try:
-            amount = Decimal(amount_raw)
+            amount = parse_money(amount_raw)
         except InvalidOperation:
             messages.error(request, "Invalid amount.")
             return redirect("withdraw")
@@ -227,7 +228,7 @@ def transfer_view(request):
             return redirect("transfer")
 
         try:
-            amount = Decimal(amount_raw)
+            amount = parse_money(amount_raw)
         except InvalidOperation:
             messages.error(request, "Invalid amount.")
             return redirect("transfer")
@@ -410,7 +411,7 @@ def customer_transfer_view(request):
             return redirect("customer_transfer")
 
         try:
-            amount = Decimal(amount_raw)
+            amount = parse_money(amount_raw)
         except InvalidOperation:
             messages.error(request, "Invalid amount.")
             return redirect("customer_transfer")
