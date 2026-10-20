@@ -8,7 +8,7 @@
         <div class="kv"><span>Customer</span><span>{{ document.kyc_verification.customer.user.username }}</span></div>
         <div class="kv"><span>Document Type</span><span>{{ document.get_document_type_display }}</span></div>
         <div class="kv"><span>Uploaded At</span><span>{{ document.uploaded_at|date:"M j, Y, g:i a" }}</span></div>
-        <div class="kv"><span>File</span><span><a class="btn btn-sm" href="{{ document.file.url }}" target="_blank">View Document</a></span></div>
+        <div class="kv"><span>File</span><span><a class="btn btn-sm" href="{% url 'kyc_document_download' document.id %}" target="_blank">View Document</a></span></div>
     </div>
 </section>
 

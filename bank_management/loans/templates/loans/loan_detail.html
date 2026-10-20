@@ -89,7 +89,7 @@
     <div class="card-head"><h2>Documents</h2></div>
     <ul>
         {% for doc in documents %}
-        <li>{{ doc.get_document_type_display }} - <a href="{{ doc.file.url }}" target="_blank">View</a> ({{ doc.uploaded_at|date:"M j, Y, g:i a" }})</li>
+        <li>{{ doc.get_document_type_display }} - <a href="{% url 'loan_document_download' doc.id %}" target="_blank">View</a> ({{ doc.uploaded_at|date:"M j, Y, g:i a" }})</li>
         {% empty %}
         <li>No documents uploaded.</li>
         {% endfor %}

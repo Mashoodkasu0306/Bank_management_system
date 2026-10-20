@@ -1,11 +1,12 @@
 from django.urls import path
-from . import views
+from . import views, document_views
 
 urlpatterns = [
     path("apply/", views.apply_loan, name="apply_loan"),
     path("my/", views.my_loans, name="my_loans"),
     path("<int:loan_id>/", views.loan_detail, name="loan_detail"),
     path("<int:loan_id>/upload-document/", views.upload_loan_document, name="upload_loan_document"),
+    path("document/<int:document_id>/file/", document_views.loan_document_download, name="loan_document_download"),
     path("pending/", views.pending_loans, name="pending_loans"),
     path("all/", views.all_loans, name="all_loans"),
     path("defaulted/", views.defaulted_loans, name="defaulted_loans"),

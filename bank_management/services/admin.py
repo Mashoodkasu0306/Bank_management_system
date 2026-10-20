@@ -1,3 +1,4 @@
+from django.urls import reverse
 from django.contrib import admin
 from django.utils.html import format_html
 from .models import (
@@ -39,7 +40,7 @@ class KYCDocumentAdmin(admin.ModelAdmin):
 
     def file_preview(self, obj):
         if obj.file:
-            return format_html('<a href="{}" target="_blank">View Document</a>', obj.file.url)
+            return format_html('<a href="{}" target="_blank">View Document</a>', reverse("kyc_document_download", args=[obj.pk]))
         return 'No file'
     file_preview.short_description = 'Document'
 

@@ -18,7 +18,7 @@
         <tr>
             <td>{{ doc.get_document_type_display }}</td>
             <td>{{ doc.uploaded_at|date:"M j, Y, g:i a" }}</td>
-            <td><a href="{{ doc.file.url }}" target="_blank">View Document</a></td>
+            <td><a href="{% url 'kyc_document_download' doc.id %}" target="_blank">View Document</a></td>
             <td>{% if doc.verification_status == 'PENDING' %}<span class="badge badge-warn">Pending</span>{% elif doc.verification_status == 'VERIFIED' %}<span class="badge badge-ok">Verified</span>{% else %}<span class="badge badge-bad">Rejected</span>{% endif %}</td>
             <td>{% if doc.verification_status == 'PENDING' %}<a class="btn btn-primary btn-sm" href="{% url 'verify_kyc_document' doc.id %}">Review</a>{% else %}<span class="muted">-</span>{% endif %}</td>
         </tr>

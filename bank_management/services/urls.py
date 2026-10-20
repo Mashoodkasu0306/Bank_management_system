@@ -1,5 +1,5 @@
 from django.urls import path
-from . import views, card_views, freeze_views
+from . import views, card_views, freeze_views, document_views
 
 urlpatterns = [
     # ------------------------------------------------------------------
@@ -7,6 +7,7 @@ urlpatterns = [
     # ------------------------------------------------------------------
     path("kyc/", views.kyc_dashboard, name="kyc_dashboard"),
     path("kyc/upload/", views.upload_kyc_document, name="upload_kyc_document"),
+    path("kyc/document/<int:document_id>/file/", document_views.kyc_document_download, name="kyc_document_download"),
 
     # ------------------------------------------------------------------
     # ATM CARD - CUSTOMER
