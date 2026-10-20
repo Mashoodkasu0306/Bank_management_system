@@ -1,0 +1,9 @@
+# Exact versions this project was tested with (Python 3.14).
+# Refresh with: python -m pip freeze  (then check the list by eye)
+asgiref==3.11.1
+charset-normalizer==3.5.1
+Django==6.0.2
+pillow==12.3.0
+reportlab==5.0.1
+sqlparse==0.5.5
+tzdata==2025.3
