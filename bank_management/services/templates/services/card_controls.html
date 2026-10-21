@@ -70,7 +70,7 @@
     <p>If a card is lost, or you see activity you do not recognise, freeze everything at once.
         This freezes all your cards and blocks your online transfers and cheque book fee payments.
         Only the bank can lift it.</p>
-    <form method="POST" action="{% url 'emergency_freeze_start' %}" onsubmit="return confirm('Freeze all cards and block online transfers? Only the bank can lift this.');">
+    <form method="POST" action="{% url 'emergency_freeze_start' %}" data-confirm="Freeze all cards and block online transfers? Only the bank can lift this.">
         {% csrf_token %}
         <button type="submit" class="btn btn-danger">Emergency freeze</button>
     </form>

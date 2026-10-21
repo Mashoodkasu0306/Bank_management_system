@@ -15,8 +15,8 @@
 <form method="post" class="form-card">
     {% csrf_token %}
     <div class="choice-row">
-        <label class="choice"><input type="radio" name="verification_status" value="VERIFIED" onchange="toggleKycFields()" checked> Approve</label>
-        <label class="choice"><input type="radio" name="verification_status" value="REJECTED" onchange="toggleKycFields()"> Reject</label>
+        <label class="choice"><input type="radio" name="verification_status" value="VERIFIED" data-rule="kyc" checked> Approve</label>
+        <label class="choice"><input type="radio" name="verification_status" value="REJECTED" data-rule="kyc" > Reject</label>
     </div>
     <div class="field">
         <label for="id_reviewer_notes">Reviewer Notes (optional):</label>
@@ -28,11 +28,4 @@
     </div>
     <button type="submit" class="btn btn-primary btn-block">Submit Review</button>
 </form>
-<script>
-    function toggleKycFields() {
-        var approved = document.querySelector('input[name="verification_status"][value="VERIFIED"]').checked;
-        document.getElementById('kyc-reject-fields').style.display = approved ? 'none' : 'block';
-    }
-    toggleKycFields();
-</script>
 {% endblock %}

@@ -16,8 +16,8 @@
 <form method="post" id="loan-approval-form" class="form-card">
     {% csrf_token %}
     <div class="choice-row">
-        <label class="choice"><input type="radio" name="action" value="approve" onchange="toggleLoanFields()" checked> Approve</label>
-        <label class="choice"><input type="radio" name="action" value="reject" onchange="toggleLoanFields()"> Reject</label>
+        <label class="choice"><input type="radio" name="action" value="approve" data-rule="loan" checked> Approve</label>
+        <label class="choice"><input type="radio" name="action" value="reject" data-rule="loan" > Reject</label>
     </div>
 
     <div id="loan-approve-fields" class="field">
@@ -33,12 +33,4 @@
     <button type="submit" class="btn btn-primary btn-block">Submit Decision</button>
 </form>
 
-<script>
-    function toggleLoanFields() {
-        var approved = document.querySelector('input[name="action"][value="approve"]').checked;
-        document.getElementById('loan-approve-fields').style.display = approved ? 'block' : 'none';
-        document.getElementById('loan-reject-fields').style.display = approved ? 'none' : 'block';
-    }
-    toggleLoanFields();
-</script>
 {% endblock %}

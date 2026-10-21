@@ -15,8 +15,8 @@
 <form method="post" id="atm-approval-form" class="form-card">
     {% csrf_token %}
     <div class="choice-row">
-        <label class="choice"><input type="radio" name="approval_status" value="APPROVED" onchange="toggleDecisionFields('atm')" checked> Approve</label>
-        <label class="choice"><input type="radio" name="approval_status" value="REJECTED" onchange="toggleDecisionFields('atm')"> Reject</label>
+        <label class="choice"><input type="radio" name="approval_status" value="APPROVED" data-rule="atm" checked> Approve</label>
+        <label class="choice"><input type="radio" name="approval_status" value="REJECTED" data-rule="atm" > Reject</label>
     </div>
     <div id="atm-rejection-fields" class="field" style="display:none;">
         <label for="id_atm_reason">Rejection Reason:</label>
@@ -24,13 +24,6 @@
     </div>
     <button type="submit" class="btn btn-primary btn-block">Submit Decision</button>
 </form>
-<script>
-    function toggleDecisionFields(prefix) {
-        var approved = document.querySelector('input[name="approval_status"][value="APPROVED"]').checked;
-        document.getElementById(prefix + '-rejection-fields').style.display = approved ? 'none': 'block';
-    }
-    toggleDecisionFields('atm');
-</script>
 
 {% elif cheque_request %}
 <div class="page-head"><h2>Approve Cheque Book Request</h2></div>
@@ -47,8 +40,8 @@
 <form method="post" id="cheque-approval-form" class="form-card">
     {% csrf_token %}
     <div class="choice-row">
-        <label class="choice"><input type="radio" name="approval_status" value="APPROVED" onchange="toggleChequeFields()" checked> Approve</label>
-        <label class="choice"><input type="radio" name="approval_status" value="REJECTED" onchange="toggleChequeFields()"> Reject</label>
+        <label class="choice"><input type="radio" name="approval_status" value="APPROVED" data-rule="cheque" checked> Approve</label>
+        <label class="choice"><input type="radio" name="approval_status" value="REJECTED" data-rule="cheque" > Reject</label>
     </div>
     <div id="cheque-approve-fields" class="field">
         <label for="id_cheque_fee">Cheque Book Fee:</label>
@@ -60,14 +53,6 @@
     </div>
     <button type="submit" class="btn btn-primary btn-block">Submit Decision</button>
 </form>
-<script>
-    function toggleChequeFields() {
-        var approved = document.querySelector('input[name="approval_status"][value="APPROVED"]').checked;
-        document.getElementById('cheque-approve-fields').style.display = approved ? 'block' : 'none';
-        document.getElementById('cheque-reject-fields').style.display = approved ? 'none' : 'block';
-    }
-    toggleChequeFields();
-</script>
 
 {% elif atm_card_request %}
 <div class="page-head"><h2>Pending ATM Card Requests</h2></div>

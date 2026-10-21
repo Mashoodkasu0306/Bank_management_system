@@ -61,7 +61,7 @@
 
 <h3>Decide this case</h3>
 <p class="muted">Accepting or rejecting closes the case. The customer sees your written answer. No refund is made from here.</p>
-<form method="POST" action="{% url 'support_staff_decide' case.id %}" class="form-card" onsubmit="return confirm('Save this decision? The customer will see your answer and it cannot be changed.');">
+<form method="POST" action="{% url 'support_staff_decide' case.id %}" class="form-card" data-confirm="Save this decision? The customer will see your answer and it cannot be changed.">
     {% csrf_token %}
     {{ decision_form.as_p }}
     <button type="submit" class="btn btn-danger btn-block">Save decision</button>

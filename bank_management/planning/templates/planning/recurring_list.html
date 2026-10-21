@@ -43,7 +43,7 @@
                     <form method="POST" action="{% url 'recurring_resume' p.id %}" class="inline-form">{% csrf_token %}<button type="submit" class="btn btn-sm">Resume</button></form>
                     {% endif %}
                     {% if p.status == "ACTIVE" or p.status == "PAUSED" %}
-                    <form method="POST" action="{% url 'recurring_cancel' p.id %}" class="inline-form" onsubmit="return confirm('Cancel this recurring payment? This cannot be undone.');">{% csrf_token %}<button type="submit" class="btn btn-danger btn-sm">Cancel</button></form>
+                    <form method="POST" action="{% url 'recurring_cancel' p.id %}" class="inline-form" data-confirm="Cancel this recurring payment? This cannot be undone.">{% csrf_token %}<button type="submit" class="btn btn-danger btn-sm">Cancel</button></form>
                     {% else %}<span class="muted">-</span>{% endif %}
                 </div>
             </td>

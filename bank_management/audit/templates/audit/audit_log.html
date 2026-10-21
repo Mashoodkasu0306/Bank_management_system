@@ -63,33 +63,4 @@
 </table>
 
 {{ action_map|json_script:"action-map" }}
-<script>
-(function () {
-    var map = JSON.parse(document.getElementById("action-map").textContent);
-    var typeSelect = document.getElementById("user-type");
-    var actionSelect = document.getElementById("action-select");
-
-    // When the user type changes, swap the Action list to match it.
-    typeSelect.addEventListener("change", function () {
-        var list = map[typeSelect.value] || map[""];
-        var keep = actionSelect.value;
-        actionSelect.innerHTML = "";
-
-        var all = document.createElement("option");
-        all.value = "";
-        all.textContent = "All actions";
-        actionSelect.appendChild(all);
-
-        list.forEach(function (a) {
-            var opt = document.createElement("option");
-            opt.value = a;
-            opt.textContent = a;
-            if (a === keep) {
-                opt.selected = true;
-            }
-            actionSelect.appendChild(opt);
-        });
-    });
-})();
-</script>
 {% endblock %}

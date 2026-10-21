@@ -62,7 +62,7 @@
         <div class="field"><label for="id_amount">Amount:</label><input type="number" step="0.01" id="id_amount" name="amount" required></div>
         <div class="field">
             <label for="mode_of_transaction">Payment Mode:</label>
-            <select name="mode_of_transaction" id="mode_of_transaction" onchange="var isUpi = (this.value === 'UPI'); document.getElementById('upi_field').style.display = isUpi ? 'block' : 'none'; document.getElementById('account_field').style.display = isUpi ? 'none' : 'block'; document.getElementById('account_select').required = !isUpi;">
+            <select name="mode_of_transaction" id="mode_of_transaction" data-upi-toggle >
                 <option value="NETBANKING">Net Banking</option>
                 <option value="UPI">UPI</option>
             </select>

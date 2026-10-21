@@ -53,7 +53,7 @@
         {% csrf_token %}
         <div class="field">
             <label for="id_mode_of_transaction">Mode of Transaction:</label>
-            <select name="mode_of_transaction" id="id_mode_of_transaction" onchange="togglePaymentFields()">
+            <select name="mode_of_transaction" id="id_mode_of_transaction" data-payment-toggle >
                 <option value="">-- Select Mode --</option>
                 <option value="NETBANKING">Net Banking</option>
                 <option value="UPI">UPI</option>
@@ -108,14 +108,6 @@
     </form>
 </section>
 
-<script>
-    function togglePaymentFields() {
-        var mode = document.getElementById('id_mode_of_transaction').value;
-        document.getElementById('netbanking-fields').style.display = (mode === 'NETBANKING') ? 'block' : 'none';
-        document.getElementById('upi-fields').style.display = (mode === 'UPI') ? 'block' : 'none';
-        document.getElementById('card-fields').style.display = (mode === 'CARD') ? 'block' : 'none';
-    }
-</script>
 {% endif %}
 
 <a class="btn" href="{% url 'my_cheque_books' %}">View All My Cheque Book Requests</a>
