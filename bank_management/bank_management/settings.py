@@ -194,12 +194,11 @@ if os.environ.get("DJANGO_HTTPS", "0") == "1":
 
 
 # ---- Content-Security-Policy (Phase 14D) ----
-# REPORT-ONLY for now: the browser logs what it WOULD block (look in the browser
-# console, marked "[Report Only]") but nothing is blocked. When the pages are
-# clean, move this dict to SECURE_CSP to switch the policy on.
+# ENFORCING (Phase 14D-5): the browser blocks anything not listed here.
+# To debug a blocked page, temporarily rename SECURE_CSP to SECURE_CSP_REPORT_ONLY.
 from django.utils.csp import CSP
 
-SECURE_CSP_REPORT_ONLY = {
+SECURE_CSP = {
     "default-src": [CSP.SELF],
     "script-src": [CSP.SELF, CSP.NONCE],
     "style-src": [CSP.SELF, "'unsafe-inline'"],

@@ -6,7 +6,7 @@ from django.urls import reverse
 
 
 def policy_from(response):
-    header = response["Content-Security-Policy-Report-Only"]
+    header = response["Content-Security-Policy"]
     parsed = {}
     for part in header.split(";"):
         words = part.split()
@@ -35,6 +35,13 @@ class ContentSecurityPolicyTests(TestCase):
         self.assertIn("'self'", scripts)
         self.assertNotIn("'unsafe-inline'", scripts)
         self.assertNotIn("'unsafe-eval'", scripts)
+
+
+class CspIsEnforcedTests(TestCase):
+    def test_policy_is_enforced_not_report_only(self):
+        response = self.client.get(reverse("login"))
+        self.assertIn("Content-Security-Policy", response)
+        self.assertNotIn("Content-Security-Policy-Report-Only", response)
 
 
 class PinnedRequirementsTests(TestCase):
