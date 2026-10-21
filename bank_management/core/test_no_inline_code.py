@@ -5,8 +5,7 @@ from django.conf import settings
 from django.test import SimpleTestCase
 
 SKIP_PARTS = {"B_env", "site-packages", "node_modules", "staticfiles"}
-# offline.html still has one Retry button handler; it is fixed in a later step.
-ALLOWED = {"offline.html"}
+ALLOWED = set()  # no exceptions: no template may have inline code
 
 INLINE_SCRIPT = re.compile(r'<script(?![^>]*\bsrc=)(?![^>]*type="application/json")', re.I)
 HANDLER = re.compile(r"""\son[a-z]+\s*=\s*["']""", re.I)

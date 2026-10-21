@@ -12,7 +12,7 @@
         .mark { width: 56px; height: 56px; border-radius: 14px; background: #0f1b2d; color: #fff; display: grid; place-items: center; margin: 0 auto 16px; font-size: 28px; }
         h1 { font-size: 1.4rem; margin: 0 0 8px; }
         p { color: #6b7280; margin: 0 0 20px; line-height: 1.5; }
-        button { min-height: 44px; padding: 8px 22px; border: 0; border-radius: 10px; background: #2563eb; color: #fff; font: inherit; font-weight: 600; cursor: pointer; }
+        .retry { display: inline-flex; align-items: center; box-sizing: border-box; text-decoration: none; min-height: 44px; padding: 8px 22px; border: 0; border-radius: 10px; background: #2563eb; color: #fff; font: inherit; font-weight: 600; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -20,7 +20,7 @@
         <div class="mark">&#127974;</div>
         <h1>You are offline</h1>
         <p>Apex Core Banking needs an internet connection to show your accounts. Your information is not stored on this device. Check your connection and try again.</p>
-        <button type="button" onclick="location.reload()">Retry</button>
+        <a class="retry" href="">Retry</a>
     </div>
 </body>
 </html>
